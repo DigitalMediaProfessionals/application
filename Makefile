@@ -1,15 +1,14 @@
 SUBDIRS = common/src \
-	dv700/src \
 	CaffeGoogLeNet \
+	CaffeGoogLeNetCam \
 	CaffeMobileNet \
 	CaffeSqueezeNet \
 	KerasGoogLeNet \
 	KerasMobileNet \
 	KerasSqueezeNet \
-	CaffeGoogLeNetCam \
-	TinyYolo \
-	SSDFacePerson \
-	test_monodepth
+	SegNetBasic \
+	YOLOv3 \
+	YOLOv3Camera
 
 .PHONY: all clean
 

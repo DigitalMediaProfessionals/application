@@ -1,23 +1,20 @@
-include ../env.mk
+include ../../env.mk
 
-INC = -I../common -I../dv700/include -I../common/include
-LIB = -L../dv700/lib -ldv700 -L../common/lib -ldv700_util
+INC = -I../../dv-user-driver/include -I../common/include
+LIB = -L../../dv-user-driver/lib -ldv700 -L../common/lib -ldv700_util
 
+CFLAGS = -pthread -std=c++11 -O3 -D$(BDDEF) -Wall -c  $(INC)
 LFLAGS = -pthread -std=c++11 -O3 
-CFLAGS = -pthread -std=c++11 -O3 -D$(BDDEF) -c  $(INC)
-OBJS = CaffeGoogLeNet_gen.o    googleNet.o
 
-TGT=CaffeGoogLeNet
+DEPS = imagenet_1000_categories.h CaffeGoogLeNet_gen.h
+OBJS = CaffeGoogLeNet_gen.o googleNet.o
+TGT  = ../SDCard/CaffeGoogLeNet
+
+%.o: %.cpp $(DEPS)
+	$(GPP) $(CFLAGS) -o $@ $<
 
 all : $(OBJS)
 	$(GPP) $(LFLAGS) $(OBJS) -o $(TGT) $(LIB)
-	
-
-CaffeGoogLeNet_gen.o: CaffeGoogLeNet_gen.h CaffeGoogLeNet_gen.cpp
-	$(GPP) $(CFLAGS) CaffeGoogLeNet_gen.cpp
-	
-googleNet.o: googleNet.cpp
-	$(GPP) $(CFLAGS) googleNet.cpp	
 
 clean:
 	rm *.o

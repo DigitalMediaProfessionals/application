@@ -1,4 +1,4 @@
-include ../../env.mk
+include ../../../env.mk
 
 INC = -I../include
 
@@ -10,7 +10,7 @@ OBJ = $(SRC:.cpp=.o)
 OUT = ../lib/libdv700_util.a
  
 # include directories
-INCLUDES = -I. -I../include/ -I../../dv700/include
+INCLUDES = -I. -I../include/ -I../../../dv-user-driver/include
  
 # C++ compiler flags (-g -O2 -Wall)
 CCFLAGS =  -pthread -std=c++11 -O3 -D$(BDDEF) -Wall
@@ -35,6 +35,6 @@ $(OUT): $(OBJ)
 	ar rcs $(OUT) $(OBJ)
  
 clean:
-	rm -f $(OBJ) $(OUT) Makefile.bak# DO NOT DELETE
+	rm -f $(OBJ) $(OUT)
 
 

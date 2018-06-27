@@ -1,14 +1,14 @@
-include ../env.mk
+include ../../env.mk
 
-INC = -I../common -I../dv700/include -I../common/include
-LIB = -L../dv700/lib -ldv700 -L../common/lib -ldv700_util
+INC = -I../../dv-user-driver/include -I../common/include
+LIB = -L../../dv-user-driver/lib -ldv700 -L../common/lib -ldv700_util
 
 CFLAGS = -pthread -std=c++11 -O3 -D$(BDDEF) -Wall -c  $(INC)
 LFLAGS = -pthread -std=c++11 -O3
 
 DEPS = YOLOv3_gen.h
 OBJS = YOLOv3_gen.o YOLOv3.o
-TGT  = YOLOv3
+TGT  = ../SDCard/YOLOv3
 
 %.o: %.cpp $(DEPS)
 	$(GPP) $(CFLAGS) -o $@ $<

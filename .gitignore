@@ -1,0 +1,6 @@
+*.o
+*.a
+SDCard/Caffe*
+SDCard/Keras*
+SDCard/SegNetBasic
+SDCard/YOLOv3*

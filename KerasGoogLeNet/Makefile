@@ -1,23 +1,20 @@
-include ../env.mk
+include ../../env.mk
 
-INC = -I../common -I../dv700/include -I../common/include
-LIB = -L../dv700/lib -ldv700 -L../common/lib -ldv700_util
+INC = -I../../dv-user-driver/include -I../common/include
+LIB = -L../../dv-user-driver/lib -ldv700 -L../common/lib -ldv700_util
 
-LFLAGS = -pthread -std=c++11 -O3
 CFLAGS = -pthread -std=c++11 -O3 -D$(BDDEF) -Wall -c  $(INC)
-OBJS = KerasGoogLeNet_gen.o    googleNet.o
+LFLAGS = -pthread -std=c++11 -O3 
 
-TGT=KerasGoogLeNet
+DEPS = imagenet_1000_categories.h KerasGoogLeNet_gen.h
+OBJS = KerasGoogLeNet_gen.o googleNet.o
+TGT  = ../SDCard/KerasGoogLeNet
+
+%.o: %.cpp $(DEPS)
+	$(GPP) $(CFLAGS) -o $@ $<
 
 all : $(OBJS)
 	$(GPP) $(LFLAGS) $(OBJS) -o $(TGT) $(LIB)
-	
-
-KerasGoogLeNet_gen.o: KerasGoogLeNet_gen.h KerasGoogLeNet_gen.cpp
-	$(GPP) $(CFLAGS) KerasGoogLeNet_gen.cpp
-	
-googleNet.o: googleNet.cpp
-	$(GPP) $(CFLAGS) googleNet.cpp	
 
 clean:
 	rm *.o

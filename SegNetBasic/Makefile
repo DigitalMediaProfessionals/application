@@ -1,22 +1,20 @@
-include ../env.mk
+include ../../env.mk
 
-INC = -I../common -I../dv700/include -I../common/include
-LIB = -L../dv700/lib -ldv700 -L../common/lib -ldv700_util
+INC = -I../../dv-user-driver/include -I../common/include
+LIB = -L../../dv-user-driver/lib -ldv700 -L../common/lib -ldv700_util
 
-LFLAGS = -pthread -std=c++11 -O3
 CFLAGS = -pthread -std=c++11 -O3 -D$(BDDEF) -Wall -c  $(INC)
-OBJS = SegNetBasic_gen.o segnet.o
+LFLAGS = -pthread -std=c++11 -O3 
 
-TGT=SegNetBasic
+DEPS = SegNetBasic_gen.h
+OBJS = SegNetBasic_gen.o segnet.o
+TGT  = ../SDCard/SegNetBasic
+
+%.o: %.cpp $(DEPS)
+	$(GPP) $(CFLAGS) -o $@ $<
 
 all : $(OBJS)
 	$(GPP) $(LFLAGS) $(OBJS) -o $(TGT) $(LIB)
-
-SegNetBasic_gen.o: SegNetBasic_gen.h SegNetBasic_gen.cpp
-	$(GPP) $(CFLAGS) SegNetBasic_gen.cpp
-
-segnet.o: segnet.cpp
-	$(GPP) $(CFLAGS) segnet.cpp	
 
 clean:
 	rm *.o
