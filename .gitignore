@@ -35,3 +35,8 @@ SDCard/Keras*
 SDCard/SegNetBasic
 SDCard/YOLOv3*
 
+# Generated document files
+doc/
+
+# Generated bin files
+*_weights.bin
