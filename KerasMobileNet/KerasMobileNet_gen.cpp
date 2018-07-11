@@ -2495,7 +2495,7 @@ void CKerasMobileNet::Layer_29() {
   layer.addr_cpu_output = 0x0;
   layer.addr_offset_input = 0x00000000;
   layer.addr_offset_output = 0x000007D0;
-  layer.output_size = 2000;
+  layer.output_size = 4000;
   layer.input_dim[0] = 1;
   layer.input_dim[1] = 1;
   layer.input_dim[2] = 1000;
@@ -2503,7 +2503,7 @@ void CKerasMobileNet::Layer_29() {
   layer.output_dim[0] = 1000;
   layer.output_dim_size = 1;
   layer.is_output = true;
-  layer.is_f32_output = false;
+  layer.is_f32_output = true;
   layer.is_input_hw_layout = true;
   layer.softmax_axis = 2;
   output_layers[0] = &layer;
