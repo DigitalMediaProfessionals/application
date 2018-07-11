@@ -29,9 +29,21 @@
 #include <iostream>
 #include <sstream>
 #include <string>
+#include <vector>
+#include <utility>
+#include <algorithm>
 
 namespace dmp {
 namespace util {
+
+/// @brief Pads the string with spaces to make it centered.
+std::string centered(const std::string& original, int targetSize);
+
+void print_result(const std::vector<std::string>& catstr_vec,
+                  int x, int y, const std::vector<std::pair<float, int> >& f, unsigned int wcol,
+                  unsigned int fcol, unsigned int bcol);
+
+std::vector<std::pair<float, int> > catrank(float* softmax, int count=1000);
 
 /*! Set size for displaying images during processing. Typically, this is the
  * size of the network input. Allocate corresponding memory buffer.

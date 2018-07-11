@@ -43,6 +43,79 @@ static unsigned int SCREEN_H = 0;
 static unsigned int IMAGE_W = 0;
 static unsigned int IMAGE_H = 0;
 
+std::string centered(const std::string& original, int targetSize) {
+  std::string res;
+  int padding = targetSize - original.size();
+  if ((padding >> 1) <= 0) {
+    res = original;
+  }
+  else {
+    res = std::string(padding >> 1, ' ') + original + std::string(padding >> 1, ' ');
+  }
+  for (; (int)res.size() < targetSize; res += ' ') {
+    // Empty by design
+  }
+  if ((int)res.size() != targetSize) {
+    fflush(stdout);
+    fprintf(stderr, "Detected broken implementation of centered(): res.size=%d while targetSize=%d\n",
+            (int)res.size(), targetSize);
+    fflush(stderr);
+    _exit(-1);
+  }
+  return res;
+}
+
+void print_result(const std::vector<std::string>& catstr_vec,
+                  int x, int y, const std::vector<std::pair<float, int> >& f, unsigned int wcol,
+                  unsigned int fcol, unsigned int bcol) {
+  std::vector<std::pair<std::string, float> > result;
+  result.push_back(std::make_pair(catstr_vec[f[0].second], f[0].first));
+  result.push_back(std::make_pair(catstr_vec[f[1].second], f[1].first));
+  result.push_back(std::make_pair(catstr_vec[f[2].second], f[2].first));
+  result.push_back(std::make_pair(catstr_vec[f[3].second], f[3].first));
+  result.push_back(std::make_pair(catstr_vec[f[4].second], f[4].first));
+
+  std::stringstream ss;
+  std::string s;
+  for (unsigned int i = 0; i < result.size(); i++) {
+    std::pair<std::string, float> p = result[i];
+    ss.str("");
+    ss << std::fixed << std::setprecision(3) << p.second << "  " << p.first;
+    s = ss.str();
+    if (s.size() > 45) s = s.substr(0, 45 - 3) + "...";
+    s.resize(45, ' ');
+    if (i == 0)
+      dmp::util::print16x16_toDisplay(x, y + i, s, wcol, bcol);
+    else
+      dmp::util::print16x16_toDisplay(x, y + 2 * i + 1, s, fcol, bcol);
+    if (i == 0) {
+      std::string all_words = p.first;
+      std::string word = all_words.substr(0, all_words.find(","));
+      if (word.size() > 32) word = word.substr(0, 32 - 3) + "...";
+      word = centered(word, 32);
+      // print16x24(16, 18, word,  0xf17f1f00, 0x00000001);
+      // print16x24(((1280/2)/(2*8)-16), 18, word,  0xf17f1f00, 0x00000001);
+      dmp::util::print24x48_toDisplay(((1280 / 2) / 8 - 3 * 16), 54, word,
+                                      0xf17f1f00, 0x00000001);
+    }
+  }
+}
+
+std::vector<std::pair<float, int> > catrank(float* softmax, int count) {
+  std::vector<std::pair<float, int> > v;
+  for (int i = 0; i < count; i++) {
+    std::pair<float, int> p;
+    p.first = softmax[i];
+    p.second = i;
+    v.push_back(p);
+  }
+  std::sort(v.begin(), v.end());
+  std::reverse(v.begin(), v.end());
+
+  std::vector<std::pair<float, int> > r(v.begin(), v.begin() + 5);
+  return r;
+}
+
 void set_inputImageSize(unsigned w, unsigned int h) {
   IMAGE_W = w;
   IMAGE_H = h;
