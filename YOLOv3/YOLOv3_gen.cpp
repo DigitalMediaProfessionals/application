@@ -39,12 +39,12 @@ unsigned int CYOLOv3::get_innerproduct_layer_count() {
 }
 
 int CYOLOv3::initialize() {
-  num_layers = 21;
+  num_layers = 22;
   num_output_layers = 1;
-  num_conv_layers = 17;
+  num_conv_layers = 18;
   num_fc_layers = 0;
   weight_size = 17822496;
-  buffer_size = 4710400;
+  buffer_size = 7536640;
   layers.resize(num_layers);
   output_layers.resize(num_output_layers);
   conv_layers.resize(num_conv_layers);
@@ -73,6 +73,7 @@ int CYOLOv3::initialize() {
   Layer_18();
   Layer_19();
   Layer_20();
+  Layer_21();
 
   //Add 2 memory size requests. One for weights, the other for io buffers
   memory_size_request[0] = weight_size;
@@ -92,19 +93,19 @@ void CYOLOv3::Layer_0() {
   _conf.hw.header.topo = 0x1; // [31:0] Output Destination of each run, 0 = UBUF, 1 = EXTMEM
 
   //Input Configuration:
-  _conf.hw.input.w = 320; // Input Width
+  _conf.hw.input.w = 512; // Input Width
   _conf.hw.input.h = 320; // Input Height
   _conf.hw.input.z = 1; // Input Depth
   _conf.hw.input.c = 3; // Input Channels
   _conf.hw.input.input_base_addr = 0x00000000; // Input byte address
-  _conf.hw.input.tiles = 4; // Number of horizontal tiles (supported with restrictions)
+  _conf.hw.input.tiles = 6; // Number of horizontal tiles (supported with restrictions)
 
   //Output Configuration:
-  _conf.sw.output.w = 320; // Output Width
+  _conf.sw.output.w = 512; // Output Width
   _conf.sw.output.h = 320; // Output Height
   _conf.sw.output.z = 1; // Output Depth
   _conf.sw.output.m = 16; // Output Channels
-  _conf.hw.output.output_base_addr = 0x00096000; // Output byte address
+  _conf.hw.output.output_base_addr = 0x000F0000; // Output byte address
   _conf.hw.output.eltwise_base_addr = 0xDEADBEEF; // Input byte address for elementwise add (0 = UBUF Input Buffer)
   _conf.hw.output.output_mode = 0; // 0 = concat, 1 = eltwise add
 
@@ -117,10 +118,10 @@ void CYOLOv3::Layer_0() {
   //->: batch_normalization_1
   //->: batch_normalization_1
   //->: leaky_re_lu_1
-  _conf.sw.run[0].in_w = 320; // Optional: Input width (not used by HW - discovered on the fly)
+  _conf.sw.run[0].in_w = 512; // Optional: Input width (not used by HW - discovered on the fly)
   _conf.sw.run[0].in_h = 320; // Optional: Input height (not used by HW - discovered on the fly)
   _conf.sw.run[0].in_c = 3; // Optional: Input Channels (not used by HW - discovered on the fly)
-  _conf.sw.run[0].out_w = 320; // Optional: Output width (not used by HW - discovered on the fly)
+  _conf.sw.run[0].out_w = 512; // Optional: Output width (not used by HW - discovered on the fly)
   _conf.sw.run[0].out_h = 320; // Optional: Output height (not used by HW - discovered on the fly)
   _conf.hw.run[0].m = 16; // Output Channels
   _conf.hw.run[0].conv_enable = 1; // 1 = Enabled, 0 = Disabled
@@ -149,13 +150,13 @@ void CYOLOv3::Layer_0() {
   layer.addr_cpu_input = 0x0;
   layer.addr_cpu_output = 0x0;
   layer.addr_offset_input = 0x00000000;
-  layer.addr_offset_output = 0x00096000;
-  layer.output_size = 3276800;
-  layer.input_dim[0] = 320;
+  layer.addr_offset_output = 0x000F0000;
+  layer.output_size = 5242880;
+  layer.input_dim[0] = 512;
   layer.input_dim[1] = 320;
   layer.input_dim[2] = 3;
   layer.input_dim_size = 3;
-  layer.output_dim[0] = 320;
+  layer.output_dim[0] = 512;
   layer.output_dim[1] = 320;
   layer.output_dim[2] = 16;
   layer.output_dim_size = 3;
@@ -172,19 +173,19 @@ void CYOLOv3::Layer_1() {
   _conf.hw.header.topo = 0x1; // [31:0] Output Destination of each run, 0 = UBUF, 1 = EXTMEM
 
   //Input Configuration:
-  _conf.hw.input.w = 320; // Input Width
+  _conf.hw.input.w = 512; // Input Width
   _conf.hw.input.h = 320; // Input Height
   _conf.hw.input.z = 1; // Input Depth
   _conf.hw.input.c = 16; // Input Channels
-  _conf.hw.input.input_base_addr = 0x00096000; // Input byte address
+  _conf.hw.input.input_base_addr = 0x000F0000; // Input byte address
   _conf.hw.input.tiles = 1; // Number of horizontal tiles (supported with restrictions)
 
   //Output Configuration:
-  _conf.sw.output.w = 160; // Output Width
+  _conf.sw.output.w = 256; // Output Width
   _conf.sw.output.h = 160; // Output Height
   _conf.sw.output.z = 1; // Output Depth
   _conf.sw.output.m = 16; // Output Channels
-  _conf.hw.output.output_base_addr = 0x003B6000; // Output byte address
+  _conf.hw.output.output_base_addr = 0x005F0000; // Output byte address
   _conf.hw.output.eltwise_base_addr = 0xDEADBEEF; // Input byte address for elementwise add (0 = UBUF Input Buffer)
   _conf.hw.output.output_mode = 0; // 0 = concat, 1 = eltwise add
 
@@ -194,10 +195,10 @@ void CYOLOv3::Layer_1() {
   //RUN : 0
   //--------------------------------------------------
   //->: max_pooling2d_1
-  _conf.sw.run[0].in_w = 320; // Optional: Input width (not used by HW - discovered on the fly)
+  _conf.sw.run[0].in_w = 512; // Optional: Input width (not used by HW - discovered on the fly)
   _conf.sw.run[0].in_h = 320; // Optional: Input height (not used by HW - discovered on the fly)
   _conf.sw.run[0].in_c = 16; // Optional: Input Channels (not used by HW - discovered on the fly)
-  _conf.sw.run[0].out_w = 160; // Optional: Output width (not used by HW - discovered on the fly)
+  _conf.sw.run[0].out_w = 256; // Optional: Output width (not used by HW - discovered on the fly)
   _conf.sw.run[0].out_h = 160; // Optional: Output height (not used by HW - discovered on the fly)
   _conf.hw.run[0].m = 16; // Output Channels
   _conf.hw.run[0].conv_enable = 0; // 1 = Enabled, 0 = Disabled
@@ -225,14 +226,14 @@ void CYOLOv3::Layer_1() {
   layer.hw_conf = (void*)&_conf;
   layer.addr_cpu_input = 0x0;
   layer.addr_cpu_output = 0x0;
-  layer.addr_offset_input = 0x00096000;
-  layer.addr_offset_output = 0x003B6000;
-  layer.output_size = 819200;
-  layer.input_dim[0] = 320;
+  layer.addr_offset_input = 0x000F0000;
+  layer.addr_offset_output = 0x005F0000;
+  layer.output_size = 1310720;
+  layer.input_dim[0] = 512;
   layer.input_dim[1] = 320;
   layer.input_dim[2] = 16;
   layer.input_dim_size = 3;
-  layer.output_dim[0] = 160;
+  layer.output_dim[0] = 256;
   layer.output_dim[1] = 160;
   layer.output_dim[2] = 16;
   layer.output_dim_size = 3;
@@ -252,15 +253,15 @@ void CYOLOv3::Layer_2() {
   _conf.hw.header.topo = 0x1; // [31:0] Output Destination of each run, 0 = UBUF, 1 = EXTMEM
 
   //Input Configuration:
-  _conf.hw.input.w = 160; // Input Width
+  _conf.hw.input.w = 256; // Input Width
   _conf.hw.input.h = 160; // Input Height
   _conf.hw.input.z = 1; // Input Depth
   _conf.hw.input.c = 16; // Input Channels
-  _conf.hw.input.input_base_addr = 0x003B6000; // Input byte address
-  _conf.hw.input.tiles = 2; // Number of horizontal tiles (supported with restrictions)
+  _conf.hw.input.input_base_addr = 0x005F0000; // Input byte address
+  _conf.hw.input.tiles = 4; // Number of horizontal tiles (supported with restrictions)
 
   //Output Configuration:
-  _conf.sw.output.w = 160; // Output Width
+  _conf.sw.output.w = 256; // Output Width
   _conf.sw.output.h = 160; // Output Height
   _conf.sw.output.z = 1; // Output Depth
   _conf.sw.output.m = 32; // Output Channels
@@ -277,10 +278,10 @@ void CYOLOv3::Layer_2() {
   //->: batch_normalization_2
   //->: batch_normalization_2
   //->: leaky_re_lu_2
-  _conf.sw.run[0].in_w = 160; // Optional: Input width (not used by HW - discovered on the fly)
+  _conf.sw.run[0].in_w = 256; // Optional: Input width (not used by HW - discovered on the fly)
   _conf.sw.run[0].in_h = 160; // Optional: Input height (not used by HW - discovered on the fly)
   _conf.sw.run[0].in_c = 16; // Optional: Input Channels (not used by HW - discovered on the fly)
-  _conf.sw.run[0].out_w = 160; // Optional: Output width (not used by HW - discovered on the fly)
+  _conf.sw.run[0].out_w = 256; // Optional: Output width (not used by HW - discovered on the fly)
   _conf.sw.run[0].out_h = 160; // Optional: Output height (not used by HW - discovered on the fly)
   _conf.hw.run[0].m = 32; // Output Channels
   _conf.hw.run[0].conv_enable = 1; // 1 = Enabled, 0 = Disabled
@@ -308,14 +309,14 @@ void CYOLOv3::Layer_2() {
   layer.hw_conf = (void*)&_conf;
   layer.addr_cpu_input = 0x0;
   layer.addr_cpu_output = 0x0;
-  layer.addr_offset_input = 0x003B6000;
+  layer.addr_offset_input = 0x005F0000;
   layer.addr_offset_output = 0x00000000;
-  layer.output_size = 1638400;
-  layer.input_dim[0] = 160;
+  layer.output_size = 2621440;
+  layer.input_dim[0] = 256;
   layer.input_dim[1] = 160;
   layer.input_dim[2] = 16;
   layer.input_dim_size = 3;
-  layer.output_dim[0] = 160;
+  layer.output_dim[0] = 256;
   layer.output_dim[1] = 160;
   layer.output_dim[2] = 32;
   layer.output_dim_size = 3;
@@ -332,7 +333,7 @@ void CYOLOv3::Layer_3() {
   _conf.hw.header.topo = 0x1; // [31:0] Output Destination of each run, 0 = UBUF, 1 = EXTMEM
 
   //Input Configuration:
-  _conf.hw.input.w = 160; // Input Width
+  _conf.hw.input.w = 256; // Input Width
   _conf.hw.input.h = 160; // Input Height
   _conf.hw.input.z = 1; // Input Depth
   _conf.hw.input.c = 32; // Input Channels
@@ -340,11 +341,11 @@ void CYOLOv3::Layer_3() {
   _conf.hw.input.tiles = 1; // Number of horizontal tiles (supported with restrictions)
 
   //Output Configuration:
-  _conf.sw.output.w = 80; // Output Width
+  _conf.sw.output.w = 128; // Output Width
   _conf.sw.output.h = 80; // Output Height
   _conf.sw.output.z = 1; // Output Depth
   _conf.sw.output.m = 32; // Output Channels
-  _conf.hw.output.output_base_addr = 0x00190000; // Output byte address
+  _conf.hw.output.output_base_addr = 0x00280000; // Output byte address
   _conf.hw.output.eltwise_base_addr = 0xDEADBEEF; // Input byte address for elementwise add (0 = UBUF Input Buffer)
   _conf.hw.output.output_mode = 0; // 0 = concat, 1 = eltwise add
 
@@ -354,10 +355,10 @@ void CYOLOv3::Layer_3() {
   //RUN : 0
   //--------------------------------------------------
   //->: max_pooling2d_2
-  _conf.sw.run[0].in_w = 160; // Optional: Input width (not used by HW - discovered on the fly)
+  _conf.sw.run[0].in_w = 256; // Optional: Input width (not used by HW - discovered on the fly)
   _conf.sw.run[0].in_h = 160; // Optional: Input height (not used by HW - discovered on the fly)
   _conf.sw.run[0].in_c = 32; // Optional: Input Channels (not used by HW - discovered on the fly)
-  _conf.sw.run[0].out_w = 80; // Optional: Output width (not used by HW - discovered on the fly)
+  _conf.sw.run[0].out_w = 128; // Optional: Output width (not used by HW - discovered on the fly)
   _conf.sw.run[0].out_h = 80; // Optional: Output height (not used by HW - discovered on the fly)
   _conf.hw.run[0].m = 32; // Output Channels
   _conf.hw.run[0].conv_enable = 0; // 1 = Enabled, 0 = Disabled
@@ -386,13 +387,13 @@ void CYOLOv3::Layer_3() {
   layer.addr_cpu_input = 0x0;
   layer.addr_cpu_output = 0x0;
   layer.addr_offset_input = 0x00000000;
-  layer.addr_offset_output = 0x00190000;
-  layer.output_size = 409600;
-  layer.input_dim[0] = 160;
+  layer.addr_offset_output = 0x00280000;
+  layer.output_size = 655360;
+  layer.input_dim[0] = 256;
   layer.input_dim[1] = 160;
   layer.input_dim[2] = 32;
   layer.input_dim_size = 3;
-  layer.output_dim[0] = 80;
+  layer.output_dim[0] = 128;
   layer.output_dim[1] = 80;
   layer.output_dim[2] = 32;
   layer.output_dim_size = 3;
@@ -406,23 +407,22 @@ void CYOLOv3::Layer_3() {
 //  ->: batch_normalization_3
 //  ->: batch_normalization_3
 //  ->: leaky_re_lu_3
-//  ->: max_pooling2d_3
 void CYOLOv3::Layer_4() {
   struct top_conv_conf& _conf = get_conv_layer(4);
   //Topo: 00000000000000000000000000000001
   _conf.hw.header.topo = 0x1; // [31:0] Output Destination of each run, 0 = UBUF, 1 = EXTMEM
 
   //Input Configuration:
-  _conf.hw.input.w = 80; // Input Width
+  _conf.hw.input.w = 128; // Input Width
   _conf.hw.input.h = 80; // Input Height
   _conf.hw.input.z = 1; // Input Depth
   _conf.hw.input.c = 32; // Input Channels
-  _conf.hw.input.input_base_addr = 0x00190000; // Input byte address
-  _conf.hw.input.tiles = 1; // Number of horizontal tiles (supported with restrictions)
+  _conf.hw.input.input_base_addr = 0x00280000; // Input byte address
+  _conf.hw.input.tiles = 2; // Number of horizontal tiles (supported with restrictions)
 
   //Output Configuration:
-  _conf.sw.output.w = 40; // Output Width
-  _conf.sw.output.h = 40; // Output Height
+  _conf.sw.output.w = 128; // Output Width
+  _conf.sw.output.h = 80; // Output Height
   _conf.sw.output.z = 1; // Output Depth
   _conf.sw.output.m = 64; // Output Channels
   _conf.hw.output.output_base_addr = 0x00000000; // Output byte address
@@ -438,12 +438,11 @@ void CYOLOv3::Layer_4() {
   //->: batch_normalization_3
   //->: batch_normalization_3
   //->: leaky_re_lu_3
-  //->: max_pooling2d_3
-  _conf.sw.run[0].in_w = 80; // Optional: Input width (not used by HW - discovered on the fly)
+  _conf.sw.run[0].in_w = 128; // Optional: Input width (not used by HW - discovered on the fly)
   _conf.sw.run[0].in_h = 80; // Optional: Input height (not used by HW - discovered on the fly)
   _conf.sw.run[0].in_c = 32; // Optional: Input Channels (not used by HW - discovered on the fly)
-  _conf.sw.run[0].out_w = 40; // Optional: Output width (not used by HW - discovered on the fly)
-  _conf.sw.run[0].out_h = 40; // Optional: Output height (not used by HW - discovered on the fly)
+  _conf.sw.run[0].out_w = 128; // Optional: Output width (not used by HW - discovered on the fly)
+  _conf.sw.run[0].out_h = 80; // Optional: Output height (not used by HW - discovered on the fly)
   _conf.hw.run[0].m = 64; // Output Channels
   _conf.hw.run[0].conv_enable = 1; // 1 = Enabled, 0 = Disabled
   _conf.hw.run[0].p = 3; // Filter Width and Height
@@ -454,9 +453,9 @@ void CYOLOv3::Layer_4() {
   _conf.hw.run[0].conv_pad = 0x1010101; // bits [7:0] = left padding, bits [15:8] = right padding, bits [23:16] = top padding, bits [31:24] = bottom padding
   _conf.hw.run[0].conv_stride = 0x101; // bits [7:0] = X stride, bits [15:8] = Y stride
   _conf.hw.run[0].conv_dilation = 0x0; // bits [7:0] = X dilation, bits [15:8] = Y dilation
-  _conf.hw.run[0].pool_enable = 1;  // 0 = disabled, 1 = max pooling, 2 = average pooling
-  _conf.hw.run[0].pool_size = 0x202; // bits [7:0] = width, bits [15:8] = height
-  _conf.hw.run[0].pool_stride = 0x202; // bits [7:0] = X stride, bits [15:8] = Y stride
+  _conf.hw.run[0].pool_enable = 0;  // 0 = disabled, 1 = max pooling, 2 = average pooling
+  _conf.hw.run[0].pool_size = 0x0; // bits [7:0] = width, bits [15:8] = height
+  _conf.hw.run[0].pool_stride = 0x101; // bits [7:0] = X stride, bits [15:8] = Y stride
   _conf.hw.run[0].pool_pad = 0x0; // bits [7:0] = left padding, bits [15:8] = right padding, bits [23:16] = top padding, bits [31:24] = bottom padding
   _conf.hw.run[0].pool_avg_param = 0x0; // Must be set to 1/pool_size^2 in FP16 format when using average pooling (average pooling assumes square size)
   _conf.hw.run[0].actfunc = 2; // Activation Function: 0 = None, 1 = Tanh, 2 = Leaky ReLU, 3 = Sigmoid, 4 = PReLU, 5 = ELU, 6 = ReLU6
@@ -470,15 +469,15 @@ void CYOLOv3::Layer_4() {
   layer.hw_conf = (void*)&_conf;
   layer.addr_cpu_input = 0x0;
   layer.addr_cpu_output = 0x0;
-  layer.addr_offset_input = 0x00190000;
+  layer.addr_offset_input = 0x00280000;
   layer.addr_offset_output = 0x00000000;
-  layer.output_size = 204800;
-  layer.input_dim[0] = 80;
+  layer.output_size = 1310720;
+  layer.input_dim[0] = 128;
   layer.input_dim[1] = 80;
   layer.input_dim[2] = 32;
   layer.input_dim_size = 3;
-  layer.output_dim[0] = 40;
-  layer.output_dim[1] = 40;
+  layer.output_dim[0] = 128;
+  layer.output_dim[1] = 80;
   layer.output_dim[2] = 64;
   layer.output_dim_size = 3;
   layer.is_output = false;
@@ -487,30 +486,107 @@ void CYOLOv3::Layer_4() {
 }//end of  Layer_4
 
 //Layer_5: Convolution Layer
-//  ->: conv2d_4
-//  ->: batch_normalization_4
-//  ->: batch_normalization_4
-//  ->: leaky_re_lu_4
-//  ->: max_pooling2d_4
+//  ->: max_pooling2d_3
 void CYOLOv3::Layer_5() {
   struct top_conv_conf& _conf = get_conv_layer(5);
   //Topo: 00000000000000000000000000000001
   _conf.hw.header.topo = 0x1; // [31:0] Output Destination of each run, 0 = UBUF, 1 = EXTMEM
 
   //Input Configuration:
-  _conf.hw.input.w = 40; // Input Width
-  _conf.hw.input.h = 40; // Input Height
+  _conf.hw.input.w = 128; // Input Width
+  _conf.hw.input.h = 80; // Input Height
   _conf.hw.input.z = 1; // Input Depth
   _conf.hw.input.c = 64; // Input Channels
   _conf.hw.input.input_base_addr = 0x00000000; // Input byte address
   _conf.hw.input.tiles = 1; // Number of horizontal tiles (supported with restrictions)
 
   //Output Configuration:
-  _conf.sw.output.w = 20; // Output Width
+  _conf.sw.output.w = 64; // Output Width
+  _conf.sw.output.h = 40; // Output Height
+  _conf.sw.output.z = 1; // Output Depth
+  _conf.sw.output.m = 64; // Output Channels
+  _conf.hw.output.output_base_addr = 0x00140000; // Output byte address
+  _conf.hw.output.eltwise_base_addr = 0xDEADBEEF; // Input byte address for elementwise add (0 = UBUF Input Buffer)
+  _conf.hw.output.output_mode = 0; // 0 = concat, 1 = eltwise add
+
+  //Runs Configuration:
+  //->1 run(s)
+  //--------------------------------------------------
+  //RUN : 0
+  //--------------------------------------------------
+  //->: max_pooling2d_3
+  _conf.sw.run[0].in_w = 128; // Optional: Input width (not used by HW - discovered on the fly)
+  _conf.sw.run[0].in_h = 80; // Optional: Input height (not used by HW - discovered on the fly)
+  _conf.sw.run[0].in_c = 64; // Optional: Input Channels (not used by HW - discovered on the fly)
+  _conf.sw.run[0].out_w = 64; // Optional: Output width (not used by HW - discovered on the fly)
+  _conf.sw.run[0].out_h = 40; // Optional: Output height (not used by HW - discovered on the fly)
+  _conf.hw.run[0].m = 64; // Output Channels
+  _conf.hw.run[0].conv_enable = 0; // 1 = Enabled, 0 = Disabled
+  _conf.hw.run[0].p = 1; // Filter Width and Height
+  _conf.hw.run[0].pz = 1; // Filter Depth
+  _conf.hw.run[0].weight_base_addr = 0x0000BDE0; // Filter Weight and Bias byte address
+  _conf.hw.run[0].weight_fmt = 0; // Weight format (0 = random access blocks, 1 = compact stream, 3 = 8-bit qunatized stream)
+  _conf.sw.run[0].weight_size = 0; // Actual size in bytes of LUT, weights and bias (in bytes)
+  _conf.hw.run[0].conv_pad = 0x0; // bits [7:0] = left padding, bits [15:8] = right padding, bits [23:16] = top padding, bits [31:24] = bottom padding
+  _conf.hw.run[0].conv_stride = 0x101; // bits [7:0] = X stride, bits [15:8] = Y stride
+  _conf.hw.run[0].conv_dilation = 0x0; // bits [7:0] = X dilation, bits [15:8] = Y dilation
+  _conf.hw.run[0].pool_enable = 1;  // 0 = disabled, 1 = max pooling, 2 = average pooling
+  _conf.hw.run[0].pool_size = 0x202; // bits [7:0] = width, bits [15:8] = height
+  _conf.hw.run[0].pool_stride = 0x202; // bits [7:0] = X stride, bits [15:8] = Y stride
+  _conf.hw.run[0].pool_pad = 0x0; // bits [7:0] = left padding, bits [15:8] = right padding, bits [23:16] = top padding, bits [31:24] = bottom padding
+  _conf.hw.run[0].pool_avg_param = 0x0; // Must be set to 1/pool_size^2 in FP16 format when using average pooling (average pooling assumes square size)
+  _conf.hw.run[0].actfunc = 0; // Activation Function: 0 = None, 1 = Tanh, 2 = Leaky ReLU, 3 = Sigmoid, 4 = PReLU, 5 = ELU, 6 = ReLU6
+  _conf.hw.run[0].actfunc_param = 0x0; // Leaky ReLU parameter (NOTE: 0x2E66 is 0.1 in FP16)
+  _conf.hw.run[0].rectifi_en = 0; // Rectification, i.e. max(0, x) (NOTE: Can be applied after non-ReLU activation function)
+  _conf.hw.run[0].lrn= 0x0; // [0] : 1 = LRN enable, 0 = LRN disable, [1] : 1 = incl. power func, 0 = excl., [8:11] = x^2 scale factor log2
+  _conf.hw.run[0].ALIGN_0 = 0;//Some comments needed here
+
+  struct fpga_layer& layer = layers[5];
+  layer.type = LT_CONV;
+  layer.hw_conf = (void*)&_conf;
+  layer.addr_cpu_input = 0x0;
+  layer.addr_cpu_output = 0x0;
+  layer.addr_offset_input = 0x00000000;
+  layer.addr_offset_output = 0x00140000;
+  layer.output_size = 327680;
+  layer.input_dim[0] = 128;
+  layer.input_dim[1] = 80;
+  layer.input_dim[2] = 64;
+  layer.input_dim_size = 3;
+  layer.output_dim[0] = 64;
+  layer.output_dim[1] = 40;
+  layer.output_dim[2] = 64;
+  layer.output_dim_size = 3;
+  layer.is_output = false;
+  layer.is_f32_output = false;
+  layer.is_input_hw_layout = true;
+}//end of  Layer_5
+
+//Layer_6: Convolution Layer
+//  ->: conv2d_4
+//  ->: batch_normalization_4
+//  ->: batch_normalization_4
+//  ->: leaky_re_lu_4
+//  ->: max_pooling2d_4
+void CYOLOv3::Layer_6() {
+  struct top_conv_conf& _conf = get_conv_layer(6);
+  //Topo: 00000000000000000000000000000001
+  _conf.hw.header.topo = 0x1; // [31:0] Output Destination of each run, 0 = UBUF, 1 = EXTMEM
+
+  //Input Configuration:
+  _conf.hw.input.w = 64; // Input Width
+  _conf.hw.input.h = 40; // Input Height
+  _conf.hw.input.z = 1; // Input Depth
+  _conf.hw.input.c = 64; // Input Channels
+  _conf.hw.input.input_base_addr = 0x00140000; // Input byte address
+  _conf.hw.input.tiles = 1; // Number of horizontal tiles (supported with restrictions)
+
+  //Output Configuration:
+  _conf.sw.output.w = 32; // Output Width
   _conf.sw.output.h = 20; // Output Height
   _conf.sw.output.z = 1; // Output Depth
   _conf.sw.output.m = 128; // Output Channels
-  _conf.hw.output.output_base_addr = 0x00032000; // Output byte address
+  _conf.hw.output.output_base_addr = 0x00000000; // Output byte address
   _conf.hw.output.eltwise_base_addr = 0xDEADBEEF; // Input byte address for elementwise add (0 = UBUF Input Buffer)
   _conf.hw.output.output_mode = 0; // 0 = concat, 1 = eltwise add
 
@@ -524,10 +600,10 @@ void CYOLOv3::Layer_5() {
   //->: batch_normalization_4
   //->: leaky_re_lu_4
   //->: max_pooling2d_4
-  _conf.sw.run[0].in_w = 40; // Optional: Input width (not used by HW - discovered on the fly)
+  _conf.sw.run[0].in_w = 64; // Optional: Input width (not used by HW - discovered on the fly)
   _conf.sw.run[0].in_h = 40; // Optional: Input height (not used by HW - discovered on the fly)
   _conf.sw.run[0].in_c = 64; // Optional: Input Channels (not used by HW - discovered on the fly)
-  _conf.sw.run[0].out_w = 20; // Optional: Output width (not used by HW - discovered on the fly)
+  _conf.sw.run[0].out_w = 32; // Optional: Output width (not used by HW - discovered on the fly)
   _conf.sw.run[0].out_h = 20; // Optional: Output height (not used by HW - discovered on the fly)
   _conf.hw.run[0].m = 128; // Output Channels
   _conf.hw.run[0].conv_enable = 1; // 1 = Enabled, 0 = Disabled
@@ -550,51 +626,51 @@ void CYOLOv3::Layer_5() {
   _conf.hw.run[0].lrn= 0x0; // [0] : 1 = LRN enable, 0 = LRN disable, [1] : 1 = incl. power func, 0 = excl., [8:11] = x^2 scale factor log2
   _conf.hw.run[0].ALIGN_0 = 0;//Some comments needed here
 
-  struct fpga_layer& layer = layers[5];
+  struct fpga_layer& layer = layers[6];
   layer.type = LT_CONV;
   layer.hw_conf = (void*)&_conf;
   layer.addr_cpu_input = 0x0;
   layer.addr_cpu_output = 0x0;
-  layer.addr_offset_input = 0x00000000;
-  layer.addr_offset_output = 0x00032000;
-  layer.output_size = 102400;
-  layer.input_dim[0] = 40;
+  layer.addr_offset_input = 0x00140000;
+  layer.addr_offset_output = 0x00000000;
+  layer.output_size = 163840;
+  layer.input_dim[0] = 64;
   layer.input_dim[1] = 40;
   layer.input_dim[2] = 64;
   layer.input_dim_size = 3;
-  layer.output_dim[0] = 20;
+  layer.output_dim[0] = 32;
   layer.output_dim[1] = 20;
   layer.output_dim[2] = 128;
   layer.output_dim_size = 3;
   layer.is_output = false;
   layer.is_f32_output = false;
   layer.is_input_hw_layout = true;
-}//end of  Layer_5
+}//end of  Layer_6
 
-//Layer_6: Convolution Layer
+//Layer_7: Convolution Layer
 //  ->: conv2d_5
 //  ->: batch_normalization_5
 //  ->: batch_normalization_5
 //  ->: leaky_re_lu_5
-void CYOLOv3::Layer_6() {
-  struct top_conv_conf& _conf = get_conv_layer(6);
+void CYOLOv3::Layer_7() {
+  struct top_conv_conf& _conf = get_conv_layer(7);
   //Topo: 00000000000000000000000000000001
   _conf.hw.header.topo = 0x1; // [31:0] Output Destination of each run, 0 = UBUF, 1 = EXTMEM
 
   //Input Configuration:
-  _conf.hw.input.w = 20; // Input Width
+  _conf.hw.input.w = 32; // Input Width
   _conf.hw.input.h = 20; // Input Height
   _conf.hw.input.z = 1; // Input Depth
   _conf.hw.input.c = 128; // Input Channels
-  _conf.hw.input.input_base_addr = 0x00032000; // Input byte address
+  _conf.hw.input.input_base_addr = 0x00000000; // Input byte address
   _conf.hw.input.tiles = 1; // Number of horizontal tiles (supported with restrictions)
 
   //Output Configuration:
-  _conf.sw.output.w = 20; // Output Width
+  _conf.sw.output.w = 32; // Output Width
   _conf.sw.output.h = 20; // Output Height
   _conf.sw.output.z = 1; // Output Depth
   _conf.sw.output.m = 256; // Output Channels
-  _conf.hw.output.output_base_addr = 0x00064000; // Output byte address
+  _conf.hw.output.output_base_addr = 0x00050000; // Output byte address
   _conf.hw.output.eltwise_base_addr = 0xDEADBEEF; // Input byte address for elementwise add (0 = UBUF Input Buffer)
   _conf.hw.output.output_mode = 0; // 0 = concat, 1 = eltwise add
 
@@ -607,10 +683,10 @@ void CYOLOv3::Layer_6() {
   //->: batch_normalization_5
   //->: batch_normalization_5
   //->: leaky_re_lu_5
-  _conf.sw.run[0].in_w = 20; // Optional: Input width (not used by HW - discovered on the fly)
+  _conf.sw.run[0].in_w = 32; // Optional: Input width (not used by HW - discovered on the fly)
   _conf.sw.run[0].in_h = 20; // Optional: Input height (not used by HW - discovered on the fly)
   _conf.sw.run[0].in_c = 128; // Optional: Input Channels (not used by HW - discovered on the fly)
-  _conf.sw.run[0].out_w = 20; // Optional: Output width (not used by HW - discovered on the fly)
+  _conf.sw.run[0].out_w = 32; // Optional: Output width (not used by HW - discovered on the fly)
   _conf.sw.run[0].out_h = 20; // Optional: Output height (not used by HW - discovered on the fly)
   _conf.hw.run[0].m = 256; // Output Channels
   _conf.hw.run[0].conv_enable = 1; // 1 = Enabled, 0 = Disabled
@@ -633,44 +709,44 @@ void CYOLOv3::Layer_6() {
   _conf.hw.run[0].lrn= 0x0; // [0] : 1 = LRN enable, 0 = LRN disable, [1] : 1 = incl. power func, 0 = excl., [8:11] = x^2 scale factor log2
   _conf.hw.run[0].ALIGN_0 = 0;//Some comments needed here
 
-  struct fpga_layer& layer = layers[6];
+  struct fpga_layer& layer = layers[7];
   layer.type = LT_CONV;
   layer.hw_conf = (void*)&_conf;
   layer.addr_cpu_input = 0x0;
   layer.addr_cpu_output = 0x0;
-  layer.addr_offset_input = 0x00032000;
-  layer.addr_offset_output = 0x00064000;
-  layer.output_size = 204800;
-  layer.input_dim[0] = 20;
+  layer.addr_offset_input = 0x00000000;
+  layer.addr_offset_output = 0x00050000;
+  layer.output_size = 327680;
+  layer.input_dim[0] = 32;
   layer.input_dim[1] = 20;
   layer.input_dim[2] = 128;
   layer.input_dim_size = 3;
-  layer.output_dim[0] = 20;
+  layer.output_dim[0] = 32;
   layer.output_dim[1] = 20;
   layer.output_dim[2] = 256;
   layer.output_dim_size = 3;
   layer.is_output = false;
   layer.is_f32_output = false;
   layer.is_input_hw_layout = true;
-}//end of  Layer_6
+}//end of  Layer_7
 
-//Layer_7: Convolution Layer
+//Layer_8: Convolution Layer
 //  ->: max_pooling2d_5
-void CYOLOv3::Layer_7() {
-  struct top_conv_conf& _conf = get_conv_layer(7);
+void CYOLOv3::Layer_8() {
+  struct top_conv_conf& _conf = get_conv_layer(8);
   //Topo: 00000000000000000000000000000001
   _conf.hw.header.topo = 0x1; // [31:0] Output Destination of each run, 0 = UBUF, 1 = EXTMEM
 
   //Input Configuration:
-  _conf.hw.input.w = 20; // Input Width
+  _conf.hw.input.w = 32; // Input Width
   _conf.hw.input.h = 20; // Input Height
   _conf.hw.input.z = 1; // Input Depth
   _conf.hw.input.c = 256; // Input Channels
-  _conf.hw.input.input_base_addr = 0x00064000; // Input byte address
+  _conf.hw.input.input_base_addr = 0x00050000; // Input byte address
   _conf.hw.input.tiles = 1; // Number of horizontal tiles (supported with restrictions)
 
   //Output Configuration:
-  _conf.sw.output.w = 10; // Output Width
+  _conf.sw.output.w = 16; // Output Width
   _conf.sw.output.h = 10; // Output Height
   _conf.sw.output.z = 1; // Output Depth
   _conf.sw.output.m = 256; // Output Channels
@@ -684,10 +760,10 @@ void CYOLOv3::Layer_7() {
   //RUN : 0
   //--------------------------------------------------
   //->: max_pooling2d_5
-  _conf.sw.run[0].in_w = 20; // Optional: Input width (not used by HW - discovered on the fly)
+  _conf.sw.run[0].in_w = 32; // Optional: Input width (not used by HW - discovered on the fly)
   _conf.sw.run[0].in_h = 20; // Optional: Input height (not used by HW - discovered on the fly)
   _conf.sw.run[0].in_c = 256; // Optional: Input Channels (not used by HW - discovered on the fly)
-  _conf.sw.run[0].out_w = 10; // Optional: Output width (not used by HW - discovered on the fly)
+  _conf.sw.run[0].out_w = 16; // Optional: Output width (not used by HW - discovered on the fly)
   _conf.sw.run[0].out_h = 10; // Optional: Output height (not used by HW - discovered on the fly)
   _conf.hw.run[0].m = 256; // Output Channels
   _conf.hw.run[0].conv_enable = 0; // 1 = Enabled, 0 = Disabled
@@ -710,40 +786,40 @@ void CYOLOv3::Layer_7() {
   _conf.hw.run[0].lrn= 0x0; // [0] : 1 = LRN enable, 0 = LRN disable, [1] : 1 = incl. power func, 0 = excl., [8:11] = x^2 scale factor log2
   _conf.hw.run[0].ALIGN_0 = 0;//Some comments needed here
 
-  struct fpga_layer& layer = layers[7];
+  struct fpga_layer& layer = layers[8];
   layer.type = LT_CONV;
   layer.hw_conf = (void*)&_conf;
   layer.addr_cpu_input = 0x0;
   layer.addr_cpu_output = 0x0;
-  layer.addr_offset_input = 0x00064000;
+  layer.addr_offset_input = 0x00050000;
   layer.addr_offset_output = 0x00000000;
-  layer.output_size = 51200;
-  layer.input_dim[0] = 20;
+  layer.output_size = 81920;
+  layer.input_dim[0] = 32;
   layer.input_dim[1] = 20;
   layer.input_dim[2] = 256;
   layer.input_dim_size = 3;
-  layer.output_dim[0] = 10;
+  layer.output_dim[0] = 16;
   layer.output_dim[1] = 10;
   layer.output_dim[2] = 256;
   layer.output_dim_size = 3;
   layer.is_output = false;
   layer.is_f32_output = false;
   layer.is_input_hw_layout = true;
-}//end of  Layer_7
+}//end of  Layer_8
 
-//Layer_8: Convolution Layer
+//Layer_9: Convolution Layer
 //  ->: conv2d_6
 //  ->: batch_normalization_6
 //  ->: batch_normalization_6
 //  ->: leaky_re_lu_6
 //  ->: max_pooling2d_6
-void CYOLOv3::Layer_8() {
-  struct top_conv_conf& _conf = get_conv_layer(8);
+void CYOLOv3::Layer_9() {
+  struct top_conv_conf& _conf = get_conv_layer(9);
   //Topo: 00000000000000000000000000000001
   _conf.hw.header.topo = 0x1; // [31:0] Output Destination of each run, 0 = UBUF, 1 = EXTMEM
 
   //Input Configuration:
-  _conf.hw.input.w = 10; // Input Width
+  _conf.hw.input.w = 16; // Input Width
   _conf.hw.input.h = 10; // Input Height
   _conf.hw.input.z = 1; // Input Depth
   _conf.hw.input.c = 256; // Input Channels
@@ -751,11 +827,11 @@ void CYOLOv3::Layer_8() {
   _conf.hw.input.tiles = 1; // Number of horizontal tiles (supported with restrictions)
 
   //Output Configuration:
-  _conf.sw.output.w = 10; // Output Width
+  _conf.sw.output.w = 16; // Output Width
   _conf.sw.output.h = 10; // Output Height
   _conf.sw.output.z = 1; // Output Depth
   _conf.sw.output.m = 512; // Output Channels
-  _conf.hw.output.output_base_addr = 0x0000C800; // Output byte address
+  _conf.hw.output.output_base_addr = 0x000A0000; // Output byte address
   _conf.hw.output.eltwise_base_addr = 0xDEADBEEF; // Input byte address for elementwise add (0 = UBUF Input Buffer)
   _conf.hw.output.output_mode = 0; // 0 = concat, 1 = eltwise add
 
@@ -769,10 +845,10 @@ void CYOLOv3::Layer_8() {
   //->: batch_normalization_6
   //->: leaky_re_lu_6
   //->: max_pooling2d_6
-  _conf.sw.run[0].in_w = 10; // Optional: Input width (not used by HW - discovered on the fly)
+  _conf.sw.run[0].in_w = 16; // Optional: Input width (not used by HW - discovered on the fly)
   _conf.sw.run[0].in_h = 10; // Optional: Input height (not used by HW - discovered on the fly)
   _conf.sw.run[0].in_c = 256; // Optional: Input Channels (not used by HW - discovered on the fly)
-  _conf.sw.run[0].out_w = 10; // Optional: Output width (not used by HW - discovered on the fly)
+  _conf.sw.run[0].out_w = 16; // Optional: Output width (not used by HW - discovered on the fly)
   _conf.sw.run[0].out_h = 10; // Optional: Output height (not used by HW - discovered on the fly)
   _conf.hw.run[0].m = 512; // Output Channels
   _conf.hw.run[0].conv_enable = 1; // 1 = Enabled, 0 = Disabled
@@ -795,51 +871,51 @@ void CYOLOv3::Layer_8() {
   _conf.hw.run[0].lrn= 0x0; // [0] : 1 = LRN enable, 0 = LRN disable, [1] : 1 = incl. power func, 0 = excl., [8:11] = x^2 scale factor log2
   _conf.hw.run[0].ALIGN_0 = 0;//Some comments needed here
 
-  struct fpga_layer& layer = layers[8];
+  struct fpga_layer& layer = layers[9];
   layer.type = LT_CONV;
   layer.hw_conf = (void*)&_conf;
   layer.addr_cpu_input = 0x0;
   layer.addr_cpu_output = 0x0;
   layer.addr_offset_input = 0x00000000;
-  layer.addr_offset_output = 0x0000C800;
-  layer.output_size = 102400;
-  layer.input_dim[0] = 10;
+  layer.addr_offset_output = 0x000A0000;
+  layer.output_size = 163840;
+  layer.input_dim[0] = 16;
   layer.input_dim[1] = 10;
   layer.input_dim[2] = 256;
   layer.input_dim_size = 3;
-  layer.output_dim[0] = 10;
+  layer.output_dim[0] = 16;
   layer.output_dim[1] = 10;
   layer.output_dim[2] = 512;
   layer.output_dim_size = 3;
   layer.is_output = false;
   layer.is_f32_output = false;
   layer.is_input_hw_layout = true;
-}//end of  Layer_8
+}//end of  Layer_9
 
-//Layer_9: Convolution Layer
+//Layer_10: Convolution Layer
 //  ->: conv2d_7
 //  ->: batch_normalization_7
 //  ->: batch_normalization_7
 //  ->: leaky_re_lu_7
-void CYOLOv3::Layer_9() {
-  struct top_conv_conf& _conf = get_conv_layer(9);
+void CYOLOv3::Layer_10() {
+  struct top_conv_conf& _conf = get_conv_layer(10);
   //Topo: 00000000000000000000000000000001
   _conf.hw.header.topo = 0x1; // [31:0] Output Destination of each run, 0 = UBUF, 1 = EXTMEM
 
   //Input Configuration:
-  _conf.hw.input.w = 10; // Input Width
+  _conf.hw.input.w = 16; // Input Width
   _conf.hw.input.h = 10; // Input Height
   _conf.hw.input.z = 1; // Input Depth
   _conf.hw.input.c = 512; // Input Channels
-  _conf.hw.input.input_base_addr = 0x0000C800; // Input byte address
+  _conf.hw.input.input_base_addr = 0x000A0000; // Input byte address
   _conf.hw.input.tiles = 1; // Number of horizontal tiles (supported with restrictions)
 
   //Output Configuration:
-  _conf.sw.output.w = 10; // Output Width
+  _conf.sw.output.w = 16; // Output Width
   _conf.sw.output.h = 10; // Output Height
   _conf.sw.output.z = 1; // Output Depth
   _conf.sw.output.m = 1024; // Output Channels
-  _conf.hw.output.output_base_addr = 0x00096000; // Output byte address
+  _conf.hw.output.output_base_addr = 0x000C8000; // Output byte address
   _conf.hw.output.eltwise_base_addr = 0xDEADBEEF; // Input byte address for elementwise add (0 = UBUF Input Buffer)
   _conf.hw.output.output_mode = 0; // 0 = concat, 1 = eltwise add
 
@@ -852,10 +928,10 @@ void CYOLOv3::Layer_9() {
   //->: batch_normalization_7
   //->: batch_normalization_7
   //->: leaky_re_lu_7
-  _conf.sw.run[0].in_w = 10; // Optional: Input width (not used by HW - discovered on the fly)
+  _conf.sw.run[0].in_w = 16; // Optional: Input width (not used by HW - discovered on the fly)
   _conf.sw.run[0].in_h = 10; // Optional: Input height (not used by HW - discovered on the fly)
   _conf.sw.run[0].in_c = 512; // Optional: Input Channels (not used by HW - discovered on the fly)
-  _conf.sw.run[0].out_w = 10; // Optional: Output width (not used by HW - discovered on the fly)
+  _conf.sw.run[0].out_w = 16; // Optional: Output width (not used by HW - discovered on the fly)
   _conf.sw.run[0].out_h = 10; // Optional: Output height (not used by HW - discovered on the fly)
   _conf.hw.run[0].m = 1024; // Output Channels
   _conf.hw.run[0].conv_enable = 1; // 1 = Enabled, 0 = Disabled
@@ -878,47 +954,47 @@ void CYOLOv3::Layer_9() {
   _conf.hw.run[0].lrn= 0x0; // [0] : 1 = LRN enable, 0 = LRN disable, [1] : 1 = incl. power func, 0 = excl., [8:11] = x^2 scale factor log2
   _conf.hw.run[0].ALIGN_0 = 0;//Some comments needed here
 
-  struct fpga_layer& layer = layers[9];
+  struct fpga_layer& layer = layers[10];
   layer.type = LT_CONV;
   layer.hw_conf = (void*)&_conf;
   layer.addr_cpu_input = 0x0;
   layer.addr_cpu_output = 0x0;
-  layer.addr_offset_input = 0x0000C800;
-  layer.addr_offset_output = 0x00096000;
-  layer.output_size = 204800;
-  layer.input_dim[0] = 10;
+  layer.addr_offset_input = 0x000A0000;
+  layer.addr_offset_output = 0x000C8000;
+  layer.output_size = 327680;
+  layer.input_dim[0] = 16;
   layer.input_dim[1] = 10;
   layer.input_dim[2] = 512;
   layer.input_dim_size = 3;
-  layer.output_dim[0] = 10;
+  layer.output_dim[0] = 16;
   layer.output_dim[1] = 10;
   layer.output_dim[2] = 1024;
   layer.output_dim_size = 3;
   layer.is_output = false;
   layer.is_f32_output = false;
   layer.is_input_hw_layout = true;
-}//end of  Layer_9
+}//end of  Layer_10
 
-//Layer_10: Convolution Layer
+//Layer_11: Convolution Layer
 //  ->: conv2d_8
 //  ->: batch_normalization_8
 //  ->: batch_normalization_8
 //  ->: leaky_re_lu_8
-void CYOLOv3::Layer_10() {
-  struct top_conv_conf& _conf = get_conv_layer(10);
+void CYOLOv3::Layer_11() {
+  struct top_conv_conf& _conf = get_conv_layer(11);
   //Topo: 00000000000000000000000000000001
   _conf.hw.header.topo = 0x1; // [31:0] Output Destination of each run, 0 = UBUF, 1 = EXTMEM
 
   //Input Configuration:
-  _conf.hw.input.w = 10; // Input Width
+  _conf.hw.input.w = 16; // Input Width
   _conf.hw.input.h = 10; // Input Height
   _conf.hw.input.z = 1; // Input Depth
   _conf.hw.input.c = 1024; // Input Channels
-  _conf.hw.input.input_base_addr = 0x00096000; // Input byte address
+  _conf.hw.input.input_base_addr = 0x000C8000; // Input byte address
   _conf.hw.input.tiles = 1; // Number of horizontal tiles (supported with restrictions)
 
   //Output Configuration:
-  _conf.sw.output.w = 10; // Output Width
+  _conf.sw.output.w = 16; // Output Width
   _conf.sw.output.h = 10; // Output Height
   _conf.sw.output.z = 1; // Output Depth
   _conf.sw.output.m = 256; // Output Channels
@@ -935,10 +1011,10 @@ void CYOLOv3::Layer_10() {
   //->: batch_normalization_8
   //->: batch_normalization_8
   //->: leaky_re_lu_8
-  _conf.sw.run[0].in_w = 10; // Optional: Input width (not used by HW - discovered on the fly)
+  _conf.sw.run[0].in_w = 16; // Optional: Input width (not used by HW - discovered on the fly)
   _conf.sw.run[0].in_h = 10; // Optional: Input height (not used by HW - discovered on the fly)
   _conf.sw.run[0].in_c = 1024; // Optional: Input Channels (not used by HW - discovered on the fly)
-  _conf.sw.run[0].out_w = 10; // Optional: Output width (not used by HW - discovered on the fly)
+  _conf.sw.run[0].out_w = 16; // Optional: Output width (not used by HW - discovered on the fly)
   _conf.sw.run[0].out_h = 10; // Optional: Output height (not used by HW - discovered on the fly)
   _conf.hw.run[0].m = 256; // Output Channels
   _conf.hw.run[0].conv_enable = 1; // 1 = Enabled, 0 = Disabled
@@ -961,39 +1037,39 @@ void CYOLOv3::Layer_10() {
   _conf.hw.run[0].lrn= 0x0; // [0] : 1 = LRN enable, 0 = LRN disable, [1] : 1 = incl. power func, 0 = excl., [8:11] = x^2 scale factor log2
   _conf.hw.run[0].ALIGN_0 = 0;//Some comments needed here
 
-  struct fpga_layer& layer = layers[10];
+  struct fpga_layer& layer = layers[11];
   layer.type = LT_CONV;
   layer.hw_conf = (void*)&_conf;
   layer.addr_cpu_input = 0x0;
   layer.addr_cpu_output = 0x0;
-  layer.addr_offset_input = 0x00096000;
+  layer.addr_offset_input = 0x000C8000;
   layer.addr_offset_output = 0x00000000;
-  layer.output_size = 51200;
-  layer.input_dim[0] = 10;
+  layer.output_size = 81920;
+  layer.input_dim[0] = 16;
   layer.input_dim[1] = 10;
   layer.input_dim[2] = 1024;
   layer.input_dim_size = 3;
-  layer.output_dim[0] = 10;
+  layer.output_dim[0] = 16;
   layer.output_dim[1] = 10;
   layer.output_dim[2] = 256;
   layer.output_dim_size = 3;
   layer.is_output = false;
   layer.is_f32_output = false;
   layer.is_input_hw_layout = true;
-}//end of  Layer_10
+}//end of  Layer_11
 
-//Layer_11: Convolution Layer
+//Layer_12: Convolution Layer
 //  ->: conv2d_9
 //  ->: batch_normalization_9
 //  ->: batch_normalization_9
 //  ->: leaky_re_lu_9
-void CYOLOv3::Layer_11() {
-  struct top_conv_conf& _conf = get_conv_layer(11);
+void CYOLOv3::Layer_12() {
+  struct top_conv_conf& _conf = get_conv_layer(12);
   //Topo: 00000000000000000000000000000001
   _conf.hw.header.topo = 0x1; // [31:0] Output Destination of each run, 0 = UBUF, 1 = EXTMEM
 
   //Input Configuration:
-  _conf.hw.input.w = 10; // Input Width
+  _conf.hw.input.w = 16; // Input Width
   _conf.hw.input.h = 10; // Input Height
   _conf.hw.input.z = 1; // Input Depth
   _conf.hw.input.c = 256; // Input Channels
@@ -1001,11 +1077,11 @@ void CYOLOv3::Layer_11() {
   _conf.hw.input.tiles = 1; // Number of horizontal tiles (supported with restrictions)
 
   //Output Configuration:
-  _conf.sw.output.w = 10; // Output Width
+  _conf.sw.output.w = 16; // Output Width
   _conf.sw.output.h = 10; // Output Height
   _conf.sw.output.z = 1; // Output Depth
   _conf.sw.output.m = 512; // Output Channels
-  _conf.hw.output.output_base_addr = 0x0000C800; // Output byte address
+  _conf.hw.output.output_base_addr = 0x000A0000; // Output byte address
   _conf.hw.output.eltwise_base_addr = 0xDEADBEEF; // Input byte address for elementwise add (0 = UBUF Input Buffer)
   _conf.hw.output.output_mode = 0; // 0 = concat, 1 = eltwise add
 
@@ -1018,10 +1094,10 @@ void CYOLOv3::Layer_11() {
   //->: batch_normalization_9
   //->: batch_normalization_9
   //->: leaky_re_lu_9
-  _conf.sw.run[0].in_w = 10; // Optional: Input width (not used by HW - discovered on the fly)
+  _conf.sw.run[0].in_w = 16; // Optional: Input width (not used by HW - discovered on the fly)
   _conf.sw.run[0].in_h = 10; // Optional: Input height (not used by HW - discovered on the fly)
   _conf.sw.run[0].in_c = 256; // Optional: Input Channels (not used by HW - discovered on the fly)
-  _conf.sw.run[0].out_w = 10; // Optional: Output width (not used by HW - discovered on the fly)
+  _conf.sw.run[0].out_w = 16; // Optional: Output width (not used by HW - discovered on the fly)
   _conf.sw.run[0].out_h = 10; // Optional: Output height (not used by HW - discovered on the fly)
   _conf.hw.run[0].m = 512; // Output Channels
   _conf.hw.run[0].conv_enable = 1; // 1 = Enabled, 0 = Disabled
@@ -1044,48 +1120,48 @@ void CYOLOv3::Layer_11() {
   _conf.hw.run[0].lrn= 0x0; // [0] : 1 = LRN enable, 0 = LRN disable, [1] : 1 = incl. power func, 0 = excl., [8:11] = x^2 scale factor log2
   _conf.hw.run[0].ALIGN_0 = 0;//Some comments needed here
 
-  struct fpga_layer& layer = layers[11];
+  struct fpga_layer& layer = layers[12];
   layer.type = LT_CONV;
   layer.hw_conf = (void*)&_conf;
   layer.addr_cpu_input = 0x0;
   layer.addr_cpu_output = 0x0;
   layer.addr_offset_input = 0x00000000;
-  layer.addr_offset_output = 0x0000C800;
-  layer.output_size = 102400;
-  layer.input_dim[0] = 10;
+  layer.addr_offset_output = 0x000A0000;
+  layer.output_size = 163840;
+  layer.input_dim[0] = 16;
   layer.input_dim[1] = 10;
   layer.input_dim[2] = 256;
   layer.input_dim_size = 3;
-  layer.output_dim[0] = 10;
+  layer.output_dim[0] = 16;
   layer.output_dim[1] = 10;
   layer.output_dim[2] = 512;
   layer.output_dim_size = 3;
   layer.is_output = false;
   layer.is_f32_output = false;
   layer.is_input_hw_layout = true;
-}//end of  Layer_11
+}//end of  Layer_12
 
-//Layer_12: Convolution Layer
+//Layer_13: Convolution Layer
 //  ->: conv2d_10
-void CYOLOv3::Layer_12() {
-  struct top_conv_conf& _conf = get_conv_layer(12);
+void CYOLOv3::Layer_13() {
+  struct top_conv_conf& _conf = get_conv_layer(13);
   //Topo: 00000000000000000000000000000001
   _conf.hw.header.topo = 0x1; // [31:0] Output Destination of each run, 0 = UBUF, 1 = EXTMEM
 
   //Input Configuration:
-  _conf.hw.input.w = 10; // Input Width
+  _conf.hw.input.w = 16; // Input Width
   _conf.hw.input.h = 10; // Input Height
   _conf.hw.input.z = 1; // Input Depth
   _conf.hw.input.c = 512; // Input Channels
-  _conf.hw.input.input_base_addr = 0x0000C800; // Input byte address
+  _conf.hw.input.input_base_addr = 0x000A0000; // Input byte address
   _conf.hw.input.tiles = 1; // Number of horizontal tiles (supported with restrictions)
 
   //Output Configuration:
-  _conf.sw.output.w = 10; // Output Width
+  _conf.sw.output.w = 16; // Output Width
   _conf.sw.output.h = 10; // Output Height
   _conf.sw.output.z = 1; // Output Depth
   _conf.sw.output.m = 255; // Output Channels
-  _conf.hw.output.output_base_addr = 0x00025800; // Output byte address
+  _conf.hw.output.output_base_addr = 0x00014000; // Output byte address
   _conf.hw.output.eltwise_base_addr = 0xDEADBEEF; // Input byte address for elementwise add (0 = UBUF Input Buffer)
   _conf.hw.output.output_mode = 0; // 0 = concat, 1 = eltwise add
 
@@ -1095,10 +1171,10 @@ void CYOLOv3::Layer_12() {
   //RUN : 0
   //--------------------------------------------------
   //->: conv2d_10
-  _conf.sw.run[0].in_w = 10; // Optional: Input width (not used by HW - discovered on the fly)
+  _conf.sw.run[0].in_w = 16; // Optional: Input width (not used by HW - discovered on the fly)
   _conf.sw.run[0].in_h = 10; // Optional: Input height (not used by HW - discovered on the fly)
   _conf.sw.run[0].in_c = 512; // Optional: Input Channels (not used by HW - discovered on the fly)
-  _conf.sw.run[0].out_w = 10; // Optional: Output width (not used by HW - discovered on the fly)
+  _conf.sw.run[0].out_w = 16; // Optional: Output width (not used by HW - discovered on the fly)
   _conf.sw.run[0].out_h = 10; // Optional: Output height (not used by HW - discovered on the fly)
   _conf.hw.run[0].m = 255; // Output Channels
   _conf.hw.run[0].conv_enable = 1; // 1 = Enabled, 0 = Disabled
@@ -1121,61 +1197,61 @@ void CYOLOv3::Layer_12() {
   _conf.hw.run[0].lrn= 0x0; // [0] : 1 = LRN enable, 0 = LRN disable, [1] : 1 = incl. power func, 0 = excl., [8:11] = x^2 scale factor log2
   _conf.hw.run[0].ALIGN_0 = 0;//Some comments needed here
 
-  struct fpga_layer& layer = layers[12];
+  struct fpga_layer& layer = layers[13];
   layer.type = LT_CONV;
   layer.hw_conf = (void*)&_conf;
   layer.addr_cpu_input = 0x0;
   layer.addr_cpu_output = 0x0;
-  layer.addr_offset_input = 0x0000C800;
-  layer.addr_offset_output = 0x00025800;
-  layer.output_size = 51000;
-  layer.input_dim[0] = 10;
+  layer.addr_offset_input = 0x000A0000;
+  layer.addr_offset_output = 0x00014000;
+  layer.output_size = 81600;
+  layer.input_dim[0] = 16;
   layer.input_dim[1] = 10;
   layer.input_dim[2] = 512;
   layer.input_dim_size = 3;
-  layer.output_dim[0] = 10;
+  layer.output_dim[0] = 16;
   layer.output_dim[1] = 10;
   layer.output_dim[2] = 255;
   layer.output_dim_size = 3;
   layer.is_output = false;
   layer.is_f32_output = false;
   layer.is_input_hw_layout = true;
-}//end of  Layer_12
+}//end of  Layer_13
 
-//Layer_13: Flatten Layer
+//Layer_14: Flatten Layer
 //	->: flatten_1
-void CYOLOv3::Layer_13() {
-  struct fpga_layer& layer = layers[13];
+void CYOLOv3::Layer_14() {
+  struct fpga_layer& layer = layers[14];
   layer.type = LT_FLATTEN;
   layer.hw_conf = (void*)0;
   layer.addr_cpu_input = 0x0;
   layer.addr_cpu_output = 0x0;
-  layer.addr_offset_input = 0x00025800;
-  layer.addr_offset_output = 0x00096000;
-  layer.output_size = 51000;
-  layer.input_dim[0] = 10;
+  layer.addr_offset_input = 0x00014000;
+  layer.addr_offset_output = 0x000A0000;
+  layer.output_size = 81600;
+  layer.input_dim[0] = 16;
   layer.input_dim[1] = 10;
   layer.input_dim[2] = 255;
   layer.input_dim_size = 3;
-  layer.output_dim[0] = 25500;
+  layer.output_dim[0] = 40800;
   layer.output_dim_size = 1;
   layer.is_output = false;
   layer.is_f32_output = false;
   layer.is_input_hw_layout = true;
-}//end of  Layer_13
+}//end of  Layer_14
 
-//Layer_14: Convolution Layer
+//Layer_15: Convolution Layer
 //  ->: conv2d_11
 //  ->: batch_normalization_10
 //  ->: batch_normalization_10
 //  ->: leaky_re_lu_10
-void CYOLOv3::Layer_14() {
-  struct top_conv_conf& _conf = get_conv_layer(13);
+void CYOLOv3::Layer_15() {
+  struct top_conv_conf& _conf = get_conv_layer(14);
   //Topo: 00000000000000000000000000000001
   _conf.hw.header.topo = 0x1; // [31:0] Output Destination of each run, 0 = UBUF, 1 = EXTMEM
 
   //Input Configuration:
-  _conf.hw.input.w = 10; // Input Width
+  _conf.hw.input.w = 16; // Input Width
   _conf.hw.input.h = 10; // Input Height
   _conf.hw.input.z = 1; // Input Depth
   _conf.hw.input.c = 256; // Input Channels
@@ -1183,11 +1259,11 @@ void CYOLOv3::Layer_14() {
   _conf.hw.input.tiles = 1; // Number of horizontal tiles (supported with restrictions)
 
   //Output Configuration:
-  _conf.sw.output.w = 10; // Output Width
+  _conf.sw.output.w = 16; // Output Width
   _conf.sw.output.h = 10; // Output Height
   _conf.sw.output.z = 1; // Output Depth
   _conf.sw.output.m = 128; // Output Channels
-  _conf.hw.output.output_base_addr = 0x0000C800; // Output byte address
+  _conf.hw.output.output_base_addr = 0x00014000; // Output byte address
   _conf.hw.output.eltwise_base_addr = 0xDEADBEEF; // Input byte address for elementwise add (0 = UBUF Input Buffer)
   _conf.hw.output.output_mode = 0; // 0 = concat, 1 = eltwise add
 
@@ -1200,10 +1276,10 @@ void CYOLOv3::Layer_14() {
   //->: batch_normalization_10
   //->: batch_normalization_10
   //->: leaky_re_lu_10
-  _conf.sw.run[0].in_w = 10; // Optional: Input width (not used by HW - discovered on the fly)
+  _conf.sw.run[0].in_w = 16; // Optional: Input width (not used by HW - discovered on the fly)
   _conf.sw.run[0].in_h = 10; // Optional: Input height (not used by HW - discovered on the fly)
   _conf.sw.run[0].in_c = 256; // Optional: Input Channels (not used by HW - discovered on the fly)
-  _conf.sw.run[0].out_w = 10; // Optional: Output width (not used by HW - discovered on the fly)
+  _conf.sw.run[0].out_w = 16; // Optional: Output width (not used by HW - discovered on the fly)
   _conf.sw.run[0].out_h = 10; // Optional: Output height (not used by HW - discovered on the fly)
   _conf.hw.run[0].m = 128; // Output Channels
   _conf.hw.run[0].conv_enable = 1; // 1 = Enabled, 0 = Disabled
@@ -1226,48 +1302,48 @@ void CYOLOv3::Layer_14() {
   _conf.hw.run[0].lrn= 0x0; // [0] : 1 = LRN enable, 0 = LRN disable, [1] : 1 = incl. power func, 0 = excl., [8:11] = x^2 scale factor log2
   _conf.hw.run[0].ALIGN_0 = 0;//Some comments needed here
 
-  struct fpga_layer& layer = layers[14];
+  struct fpga_layer& layer = layers[15];
   layer.type = LT_CONV;
   layer.hw_conf = (void*)&_conf;
   layer.addr_cpu_input = 0x0;
   layer.addr_cpu_output = 0x0;
   layer.addr_offset_input = 0x00000000;
-  layer.addr_offset_output = 0x0000C800;
-  layer.output_size = 25600;
-  layer.input_dim[0] = 10;
+  layer.addr_offset_output = 0x00014000;
+  layer.output_size = 40960;
+  layer.input_dim[0] = 16;
   layer.input_dim[1] = 10;
   layer.input_dim[2] = 256;
   layer.input_dim_size = 3;
-  layer.output_dim[0] = 10;
+  layer.output_dim[0] = 16;
   layer.output_dim[1] = 10;
   layer.output_dim[2] = 128;
   layer.output_dim_size = 3;
   layer.is_output = false;
   layer.is_f32_output = false;
   layer.is_input_hw_layout = true;
-}//end of  Layer_14
+}//end of  Layer_15
 
-//Layer_15: Convolution Layer
+//Layer_16: Convolution Layer
 //  ->: up_sampling2d_1
-void CYOLOv3::Layer_15() {
-  struct top_conv_conf& _conf = get_conv_layer(14);
+void CYOLOv3::Layer_16() {
+  struct top_conv_conf& _conf = get_conv_layer(15);
   //Topo: 00000000000000000000000000000001
   _conf.hw.header.topo = 0x1; // [31:0] Output Destination of each run, 0 = UBUF, 1 = EXTMEM
 
   //Input Configuration:
-  _conf.hw.input.w = 10; // Input Width
+  _conf.hw.input.w = 16; // Input Width
   _conf.hw.input.h = 10; // Input Height
   _conf.hw.input.z = 1; // Input Depth
   _conf.hw.input.c = 128; // Input Channels
-  _conf.hw.input.input_base_addr = 0x0000C800; // Input byte address
+  _conf.hw.input.input_base_addr = 0x00014000; // Input byte address
   _conf.hw.input.tiles = 1; // Number of horizontal tiles (supported with restrictions)
 
   //Output Configuration:
-  _conf.sw.output.w = 20; // Output Width
+  _conf.sw.output.w = 32; // Output Width
   _conf.sw.output.h = 20; // Output Height
   _conf.sw.output.z = 1; // Output Depth
   _conf.sw.output.m = 128; // Output Channels
-  _conf.hw.output.output_base_addr = 0x0004B000; // Output byte address
+  _conf.hw.output.output_base_addr = 0x00028000; // Output byte address
   _conf.hw.output.eltwise_base_addr = 0xDEADBEEF; // Input byte address for elementwise add (0 = UBUF Input Buffer)
   _conf.hw.output.output_mode = 0; // 0 = concat, 1 = eltwise add
 
@@ -1277,10 +1353,10 @@ void CYOLOv3::Layer_15() {
   //RUN : 0
   //--------------------------------------------------
   //->: up_sampling2d_1
-  _conf.sw.run[0].in_w = 10; // Optional: Input width (not used by HW - discovered on the fly)
+  _conf.sw.run[0].in_w = 16; // Optional: Input width (not used by HW - discovered on the fly)
   _conf.sw.run[0].in_h = 10; // Optional: Input height (not used by HW - discovered on the fly)
   _conf.sw.run[0].in_c = 128; // Optional: Input Channels (not used by HW - discovered on the fly)
-  _conf.sw.run[0].out_w = 20; // Optional: Output width (not used by HW - discovered on the fly)
+  _conf.sw.run[0].out_w = 32; // Optional: Output width (not used by HW - discovered on the fly)
   _conf.sw.run[0].out_h = 20; // Optional: Output height (not used by HW - discovered on the fly)
   _conf.hw.run[0].m = 128; // Output Channels
   _conf.hw.run[0].conv_enable = 0; // 1 = Enabled, 0 = Disabled
@@ -1303,75 +1379,75 @@ void CYOLOv3::Layer_15() {
   _conf.hw.run[0].lrn= 0x0; // [0] : 1 = LRN enable, 0 = LRN disable, [1] : 1 = incl. power func, 0 = excl., [8:11] = x^2 scale factor log2
   _conf.hw.run[0].ALIGN_0 = 0;//Some comments needed here
 
-  struct fpga_layer& layer = layers[15];
+  struct fpga_layer& layer = layers[16];
   layer.type = LT_CONV;
   layer.hw_conf = (void*)&_conf;
   layer.addr_cpu_input = 0x0;
   layer.addr_cpu_output = 0x0;
-  layer.addr_offset_input = 0x0000C800;
-  layer.addr_offset_output = 0x0004B000;
-  layer.output_size = 102400;
-  layer.input_dim[0] = 10;
+  layer.addr_offset_input = 0x00014000;
+  layer.addr_offset_output = 0x00028000;
+  layer.output_size = 163840;
+  layer.input_dim[0] = 16;
   layer.input_dim[1] = 10;
   layer.input_dim[2] = 128;
   layer.input_dim_size = 3;
-  layer.output_dim[0] = 20;
+  layer.output_dim[0] = 32;
   layer.output_dim[1] = 20;
   layer.output_dim[2] = 128;
   layer.output_dim_size = 3;
   layer.is_output = false;
   layer.is_f32_output = false;
   layer.is_input_hw_layout = true;
-}//end of  Layer_15
+}//end of  Layer_16
 
-//Layer_16: Concatenate Layer
+//Layer_17: Concatenate Layer
 //	->: concatenate_1
-void CYOLOv3::Layer_16() {
-  struct fpga_layer& layer = layers[16];
+void CYOLOv3::Layer_17() {
+  struct fpga_layer& layer = layers[17];
   layer.type = LT_CONCAT;
   layer.hw_conf = (void*)0;
   layer.addr_cpu_input = 0x0;
   layer.addr_cpu_output = 0x0;
-  layer.addr_offset_input = 0x0004B000;
-  layer.addr_offset_output = 0x0004B000;
-  layer.output_size = 307200;
-  layer.input_dim[0] = 20;
+  layer.addr_offset_input = 0x00028000;
+  layer.addr_offset_output = 0x00028000;
+  layer.output_size = 491520;
+  layer.input_dim[0] = 32;
   layer.input_dim[1] = 20;
   layer.input_dim[2] = 384;
   layer.input_dim_size = 3;
-  layer.output_dim[0] = 20;
+  layer.output_dim[0] = 32;
   layer.output_dim[1] = 20;
   layer.output_dim[2] = 384;
   layer.output_dim_size = 3;
   layer.is_output = false;
   layer.is_f32_output = false;
   layer.is_input_hw_layout = true;
-}//end of  Layer_16
+}//end of  Layer_17
 
-//Layer_17: Convolution Layer
+//Layer_18: Convolution Layer
 //  ->: conv2d_12
 //  ->: batch_normalization_11
 //  ->: batch_normalization_11
 //  ->: leaky_re_lu_11
-void CYOLOv3::Layer_17() {
-  struct top_conv_conf& _conf = get_conv_layer(15);
+void CYOLOv3::Layer_18() {
+  struct top_conv_conf& _conf = get_conv_layer(16);
   //Topo: 00000000000000000000000000000001
   _conf.hw.header.topo = 0x1; // [31:0] Output Destination of each run, 0 = UBUF, 1 = EXTMEM
 
   //Input Configuration:
-  _conf.hw.input.w = 20; // Input Width
+  _conf.hw.input.w = 32; // Input Width
   _conf.hw.input.h = 20; // Input Height
   _conf.hw.input.z = 1; // Input Depth
   _conf.hw.input.c = 384; // Input Channels
-  _conf.hw.input.input_base_addr = 0x0004B000; // Input byte address
+  _conf.hw.input.input_base_addr = 0x00028000; // Input byte address
   _conf.hw.input.tiles = 1; // Number of horizontal tiles (supported with restrictions)
 
   //Output Configuration:
-  _conf.sw.output.w = 20; // Output Width
+  _conf.sw.output.w = 32; // Output Width
   _conf.sw.output.h = 20; // Output Height
   _conf.sw.output.z = 1; // Output Depth
   _conf.sw.output.m = 256; // Output Channels
-  _conf.hw.output.output_base_addr = 0x00000000; // Output byte address
+  _conf.hw.output.output_base_addr = 0x001039C0; // Output byte address
   _conf.hw.output.eltwise_base_addr = 0xDEADBEEF; // Input byte address for elementwise add (0 = UBUF Input Buffer)
   _conf.hw.output.output_mode = 0; // 0 = concat, 1 = eltwise add
 
@@ -1384,10 +1460,10 @@ void CYOLOv3::Layer_17() {
   //->: batch_normalization_11
   //->: batch_normalization_11
   //->: leaky_re_lu_11
-  _conf.sw.run[0].in_w = 20; // Optional: Input width (not used by HW - discovered on the fly)
+  _conf.sw.run[0].in_w = 32; // Optional: Input width (not used by HW - discovered on the fly)
   _conf.sw.run[0].in_h = 20; // Optional: Input height (not used by HW - discovered on the fly)
   _conf.sw.run[0].in_c = 384; // Optional: Input Channels (not used by HW - discovered on the fly)
-  _conf.sw.run[0].out_w = 20; // Optional: Output width (not used by HW - discovered on the fly)
+  _conf.sw.run[0].out_w = 32; // Optional: Output width (not used by HW - discovered on the fly)
   _conf.sw.run[0].out_h = 20; // Optional: Output height (not used by HW - discovered on the fly)
   _conf.hw.run[0].m = 256; // Output Channels
   _conf.hw.run[0].conv_enable = 1; // 1 = Enabled, 0 = Disabled
@@ -1410,48 +1486,48 @@ void CYOLOv3::Layer_17() {
   _conf.hw.run[0].lrn= 0x0; // [0] : 1 = LRN enable, 0 = LRN disable, [1] : 1 = incl. power func, 0 = excl., [8:11] = x^2 scale factor log2
   _conf.hw.run[0].ALIGN_0 = 0;//Some comments needed here
 
-  struct fpga_layer& layer = layers[17];
+  struct fpga_layer& layer = layers[18];
   layer.type = LT_CONV;
   layer.hw_conf = (void*)&_conf;
   layer.addr_cpu_input = 0x0;
   layer.addr_cpu_output = 0x0;
-  layer.addr_offset_input = 0x0004B000;
-  layer.addr_offset_output = 0x00000000;
-  layer.output_size = 204800;
-  layer.input_dim[0] = 20;
+  layer.addr_offset_input = 0x00028000;
+  layer.addr_offset_output = 0x001039C0;
+  layer.output_size = 327680;
+  layer.input_dim[0] = 32;
   layer.input_dim[1] = 20;
   layer.input_dim[2] = 384;
   layer.input_dim_size = 3;
-  layer.output_dim[0] = 20;
+  layer.output_dim[0] = 32;
   layer.output_dim[1] = 20;
   layer.output_dim[2] = 256;
   layer.output_dim_size = 3;
   layer.is_output = false;
   layer.is_f32_output = false;
   layer.is_input_hw_layout = false;
-}//end of  Layer_17
+}//end of  Layer_18
 
-//Layer_18: Convolution Layer
+//Layer_19: Convolution Layer
 //  ->: conv2d_13
-void CYOLOv3::Layer_18() {
-  struct top_conv_conf& _conf = get_conv_layer(16);
+void CYOLOv3::Layer_19() {
+  struct top_conv_conf& _conf = get_conv_layer(17);
   //Topo: 00000000000000000000000000000001
   _conf.hw.header.topo = 0x1; // [31:0] Output Destination of each run, 0 = UBUF, 1 = EXTMEM
 
   //Input Configuration:
-  _conf.hw.input.w = 20; // Input Width
+  _conf.hw.input.w = 32; // Input Width
   _conf.hw.input.h = 20; // Input Height
   _conf.hw.input.z = 1; // Input Depth
   _conf.hw.input.c = 256; // Input Channels
-  _conf.hw.input.input_base_addr = 0x00000000; // Input byte address
+  _conf.hw.input.input_base_addr = 0x001039C0; // Input byte address
   _conf.hw.input.tiles = 1; // Number of horizontal tiles (supported with restrictions)
 
   //Output Configuration:
-  _conf.sw.output.w = 20; // Output Width
+  _conf.sw.output.w = 32; // Output Width
   _conf.sw.output.h = 20; // Output Height
   _conf.sw.output.z = 1; // Output Depth
   _conf.sw.output.m = 255; // Output Channels
-  _conf.hw.output.output_base_addr = 0x00032000; // Output byte address
+  _conf.hw.output.output_base_addr = 0x00000000; // Output byte address
   _conf.hw.output.eltwise_base_addr = 0xDEADBEEF; // Input byte address for elementwise add (0 = UBUF Input Buffer)
   _conf.hw.output.output_mode = 0; // 0 = concat, 1 = eltwise add
 
@@ -1461,10 +1537,10 @@ void CYOLOv3::Layer_18() {
   //RUN : 0
   //--------------------------------------------------
   //->: conv2d_13
-  _conf.sw.run[0].in_w = 20; // Optional: Input width (not used by HW - discovered on the fly)
+  _conf.sw.run[0].in_w = 32; // Optional: Input width (not used by HW - discovered on the fly)
   _conf.sw.run[0].in_h = 20; // Optional: Input height (not used by HW - discovered on the fly)
   _conf.sw.run[0].in_c = 256; // Optional: Input Channels (not used by HW - discovered on the fly)
-  _conf.sw.run[0].out_w = 20; // Optional: Output width (not used by HW - discovered on the fly)
+  _conf.sw.run[0].out_w = 32; // Optional: Output width (not used by HW - discovered on the fly)
   _conf.sw.run[0].out_h = 20; // Optional: Output height (not used by HW - discovered on the fly)
   _conf.hw.run[0].m = 255; // Output Channels
   _conf.hw.run[0].conv_enable = 1; // 1 = Enabled, 0 = Disabled
@@ -1487,67 +1563,67 @@ void CYOLOv3::Layer_18() {
   _conf.hw.run[0].lrn= 0x0; // [0] : 1 = LRN enable, 0 = LRN disable, [1] : 1 = incl. power func, 0 = excl., [8:11] = x^2 scale factor log2
   _conf.hw.run[0].ALIGN_0 = 0;//Some comments needed here
 
-  struct fpga_layer& layer = layers[18];
+  struct fpga_layer& layer = layers[19];
   layer.type = LT_CONV;
   layer.hw_conf = (void*)&_conf;
   layer.addr_cpu_input = 0x0;
   layer.addr_cpu_output = 0x0;
-  layer.addr_offset_input = 0x00000000;
-  layer.addr_offset_output = 0x00032000;
-  layer.output_size = 204000;
-  layer.input_dim[0] = 20;
+  layer.addr_offset_input = 0x001039C0;
+  layer.addr_offset_output = 0x00000000;
+  layer.output_size = 326400;
+  layer.input_dim[0] = 32;
   layer.input_dim[1] = 20;
   layer.input_dim[2] = 256;
   layer.input_dim_size = 3;
-  layer.output_dim[0] = 20;
+  layer.output_dim[0] = 32;
   layer.output_dim[1] = 20;
   layer.output_dim[2] = 255;
   layer.output_dim_size = 3;
   layer.is_output = false;
   layer.is_f32_output = false;
   layer.is_input_hw_layout = true;
-}//end of  Layer_18
+}//end of  Layer_19
 
-//Layer_19: Flatten Layer
+//Layer_20: Flatten Layer
 //	->: flatten_2
-void CYOLOv3::Layer_19() {
-  struct fpga_layer& layer = layers[19];
+void CYOLOv3::Layer_20() {
+  struct fpga_layer& layer = layers[20];
   layer.type = LT_FLATTEN;
   layer.hw_conf = (void*)0;
   layer.addr_cpu_input = 0x0;
   layer.addr_cpu_output = 0x0;
-  layer.addr_offset_input = 0x00032000;
-  layer.addr_offset_output = 0x000A2738;
-  layer.output_size = 204000;
-  layer.input_dim[0] = 20;
+  layer.addr_offset_input = 0x00000000;
+  layer.addr_offset_output = 0x000B3EC0;
+  layer.output_size = 326400;
+  layer.input_dim[0] = 32;
   layer.input_dim[1] = 20;
   layer.input_dim[2] = 255;
   layer.input_dim_size = 3;
-  layer.output_dim[0] = 102000;
+  layer.output_dim[0] = 163200;
   layer.output_dim_size = 1;
   layer.is_output = false;
   layer.is_f32_output = false;
   layer.is_input_hw_layout = true;
-}//end of  Layer_19
+}//end of  Layer_20
 
-//Layer_20: Concatenate Layer
+//Layer_21: Concatenate Layer
 //	->: concatenate_2
-void CYOLOv3::Layer_20() {
-  struct fpga_layer& layer = layers[20];
+void CYOLOv3::Layer_21() {
+  struct fpga_layer& layer = layers[21];
   layer.type = LT_CONCAT;
   layer.hw_conf = (void*)0;
   layer.addr_cpu_input = 0x0;
   layer.addr_cpu_output = 0x0;
-  layer.addr_offset_input = 0x00096000;
-  layer.addr_offset_output = 0x00096000;
-  layer.output_size = 255000;
-  layer.input_dim[0] = 127500;
+  layer.addr_offset_input = 0x000A0000;
+  layer.addr_offset_output = 0x000A0000;
+  layer.output_size = 408000;
+  layer.input_dim[0] = 204000;
   layer.input_dim_size = 1;
-  layer.output_dim[0] = 127500;
+  layer.output_dim[0] = 204000;
   layer.output_dim_size = 1;
   layer.is_output = true;
   layer.is_f32_output = false;
   layer.is_input_hw_layout = false;
   output_layers[0] = &layer;
-}//end of  Layer_20
+}//end of  Layer_21
 
