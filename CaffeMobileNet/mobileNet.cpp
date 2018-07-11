@@ -60,63 +60,6 @@ using namespace std;
 unsigned int fc = 0;
 
 std::vector<std::string> catstr_vec(categories, categories + 1000);
-std::string centered(std::string const& original, int targetSize) {
-  int padding = targetSize - original.size();
-  return padding > 0
-             ? std::string(padding / 2, ' ') + original +
-                   std::string(padding - (padding / 2), ' ')
-             : original;
-}
-
-void print_result(int x, int y, vector<pair<float, int> > f, unsigned int wcol,
-                  unsigned int fcol, unsigned int bcol) {
-  vector<pair<string, float> > result;
-  result.push_back(make_pair(catstr_vec[f[0].second], f[0].first));
-  result.push_back(make_pair(catstr_vec[f[1].second], f[1].first));
-  result.push_back(make_pair(catstr_vec[f[2].second], f[2].first));
-  result.push_back(make_pair(catstr_vec[f[3].second], f[3].first));
-  result.push_back(make_pair(catstr_vec[f[4].second], f[4].first));
-
-  stringstream ss;
-  string s;
-  for (unsigned int i = 0; i < result.size(); i++) {
-    pair<string, float> p = result[i];
-    ss.str("");
-    ss << fixed << setprecision(3) << p.second << "  " << p.first;
-    s = ss.str();
-    if (s.size() > 45) s = s.substr(0, 45 - 3) + "...";
-    s.resize(45, ' ');
-    if (i == 0)
-      dmp::util::print16x16_toDisplay(x, y + i, s, wcol, bcol);
-    else
-      dmp::util::print16x16_toDisplay(x, y + 2 * i + 1, s, fcol, bcol);
-    if (i == 0) {
-      std::string all_words = p.first;
-      std::string word = all_words.substr(0, all_words.find(","));
-      if (word.size() > 32) word = word.substr(0, 32 - 3) + "...";
-      word = centered(word, 32);
-      // print16x24(16, 18, word,  0xf17f1f00, 0x00000001);
-      // print16x24(((1280/2)/(2*8)-16), 18, word,  0xf17f1f00, 0x00000001);
-      dmp::util::print24x48_toDisplay(((1280 / 2) / 8 - 3 * 16), 54, word,
-                                      0xf17f1f00, 0x00000001);
-    }
-  }
-}
-
-vector<pair<float, int> > catrank(float* softmax) {
-  vector<pair<float, int> > v;
-  for (int i = 0; i < 1000; i++) {
-    pair<float, int> p;
-    p.first = softmax[i];
-    p.second = i;
-    v.push_back(p);
-  }
-  sort(v.begin(), v.end());
-  reverse(v.begin(), v.end());
-
-  vector<pair<float, int> > r(v.begin(), v.begin() + 5);
-  return r;
-}
 
 unsigned int imgView[IMAGE_W * IMAGE_H];
 unsigned short imgProc[IMAGE_W * IMAGE_H * 3];
@@ -248,8 +191,8 @@ int main(int argc, char** argv) {
 
         dmp::util::print_image_toDisplay((SCREEN_W - IMAGE_W) / 2,
                                          (293 - 128) + 20, imgView);
-        print_result(TEXT_XOFS, TEXT_YOFS - 8 - 5,
-                     catrank(&networkOutput.front()), 0x88ff8800, 0x00ff0000,
+        dmp::util::print_result(catstr_vec, TEXT_XOFS, TEXT_YOFS - 8 - 5,
+            dmp::util::catrank(&networkOutput.front()), 0x88ff8800, 0x00ff0000,
                      0x00000001);
 
         dmp::modules::swap_buffer();

@@ -266,7 +266,10 @@ int main(int argc, char **argv) {
 
       if (!pause) {
         fseek(fimg, IMAGE_W * IMAGE_H * 6 * image_nr, SEEK_SET);
-        fread(imgProc, 2, IMAGE_W * IMAGE_H * 3, fimg);
+        if (fread(imgProc, 2, IMAGE_W * IMAGE_H * 3, fimg) != IMAGE_W * IMAGE_H * 3) {
+          fprintf(stderr, "WARNING: Incomplete fread() at line %d of file %s\n", __LINE__, __FILE__);
+          fflush(stderr);
+        }
         if (image_nr == IMAGE_NUM - 1) {
           image_nr = 0;
         } else {
