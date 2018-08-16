@@ -345,6 +345,10 @@ bool CDMP_Network::RunNetwork(bool sync_io_mem) {
               it->name.c_str(), dmp_dv_get_last_error_message());
           return false;
         }
+        if (iprint_ > 1) {
+          LOG("Executed command list for \"%s\", cmdlist_pos=%d cmdlist_size=%d, exec_id=%lld\n",
+              it->name.c_str(), it->cmdlist_pos, it->cmdlist_size, (long long)exec_id);
+        }
         cmdlist = it->cmdlist;  // remember last executed command list
       }
 
@@ -372,6 +376,10 @@ bool CDMP_Network::RunNetwork(bool sync_io_mem) {
             ERR("Possible implementation error on line %d of file %s: layer name=%s cmdlist_pos=%d cmdlist_size=%d\n",
                 __LINE__, __FILE__, it->name.c_str(), it->cmdlist_pos, it->cmdlist_size);
             return false;
+        }
+        if (iprint_ > 1) {
+          LOG("Waited on command list for \"%s\", cmdlist_pos=%d cmdlist_size=%d, exec_id=%lld, usec=%d\n",
+              it->name.c_str(), it->cmdlist_pos, it->cmdlist_size, (long long)exec_id, usec);
         }
         exec_id = -1;
         cmdlist = NULL;
@@ -511,7 +519,7 @@ void put_layer_output(fpga_layer& layer, std::vector<float>& layer_output, uint8
 
 
 bool CDMP_Network::GenerateCommandLists() {
-  if (cmd_lists_.size()) {
+  if (cmdlists_.size()) {
     ERR("Double call of GenerateCommandLists() detected\n");
     return false;
   }
@@ -521,38 +529,38 @@ bool CDMP_Network::GenerateCommandLists() {
   for (auto it = layers_.begin(); it != layers_.end(); ++it) {
     switch (it->type) {
       case LT_CONV:
-        if (last_type == LT_CONV) {
-          dmp_dv_cmdlist_add_raw(cmd_lists_.back(), (dmp_dv_cmdraw*)&it->conv_conf);
-        }
-        else {
+        if (last_type != LT_CONV) {
           dmp_dv_cmdlist *obj = dmp_dv_cmdlist_create(ctx_);
           if (!obj) {
             ERR("dmp_dv_cmdlist_create() failed: %s\n", dmp_dv_get_last_error_message());
             return false;
           }
-          cmd_lists_.push_back(obj);
+          cmdlists_.push_back(obj);
         }
-        it->cmdlist = cmd_lists_.back();
+        it->cmdlist = cmdlists_.back();
+        dmp_dv_cmdlist_add_raw(it->cmdlist, (dmp_dv_cmdraw*)&it->conv_conf);
         break;
       case LT_FC:
-        if (last_type == LT_FC) {
-          dmp_dv_cmdlist_add_raw(cmd_lists_.back(), (dmp_dv_cmdraw*)&it->fc_conf);
-        }
-        else {
+        if (last_type != LT_FC) {
           dmp_dv_cmdlist *obj = dmp_dv_cmdlist_create(ctx_);
           if (!obj) {
             ERR("dmp_dv_cmdlist_create() failed: %s\n", dmp_dv_get_last_error_message());
             return false;
           }
-          cmd_lists_.push_back(obj);
+          cmdlists_.push_back(obj);
         }
-        it->cmdlist = cmd_lists_.back();
+        it->cmdlist = cmdlists_.back();
+        dmp_dv_cmdlist_add_raw(it->cmdlist, (dmp_dv_cmdraw*)&it->fc_conf);
         break;
       default:
         // Empty by design
         break;
     }
     last_type = it->type;
+  }
+
+  if (iprint_ > 1) {
+    LOG("Generated %d command lists\n", (int)cmdlists_.size());
   }
 
   // Assign cmdlist_pos and cmdlist_size
@@ -563,10 +571,10 @@ bool CDMP_Network::GenerateCommandLists() {
     fpga_layer& layer = layers_[i];
     if (layer.cmdlist == last_cmdlist) {
       if (last_cmdlist) {
-        layer.cmdlist_pos = ++last_pos;
+        layer.cmdlist_pos = last_pos++;
       }
     }
-    else if (last_cmdlist) {
+    if (((layer.cmdlist != last_cmdlist) || (i == n_layers - 1)) && (last_cmdlist)) {
       for (int j = i - 1; j >= 0; --j) {
         if (layers_[j].cmdlist != last_cmdlist) {
           break;
@@ -575,10 +583,23 @@ bool CDMP_Network::GenerateCommandLists() {
       }
       last_pos = 0;
       if (layer.cmdlist) {
-        layer.cmdlist_pos = last_pos;
+        layer.cmdlist_pos = last_pos++;
       }
+    }
+    else if ((!last_cmdlist) && (layer.cmdlist)) {
+      last_pos = 0;
+      layer.cmdlist_pos = last_pos++;
     }
     last_cmdlist = layer.cmdlist;
   }
+
+  // Commit command lists
+  for (auto it = cmdlists_.begin(); it != cmdlists_.end(); ++it) {
+    if (dmp_dv_cmdlist_commit(*it)) {
+      ERR("Could not commit command list: %s\n", dmp_dv_get_last_error_message());
+      return false;
+    }
+  }
+
   return true;
 }

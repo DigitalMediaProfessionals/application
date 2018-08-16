@@ -238,7 +238,7 @@ class CDMP_Network {
   uint8_t *io_ptr_;
 
   /// @brief Command lists for executing different sets of layers.
-  std::vector<dmp_dv_cmdlist*> cmd_lists_;
+  std::vector<dmp_dv_cmdlist*> cmdlists_;
 
   /// @brief Last time spent on all convolutional layers in microseconds.
   int last_conv_usec_;
@@ -252,10 +252,10 @@ class CDMP_Network {
  private:
   /// @brief Releases held resources.
   void ReleaseResources() {
-    for (auto it = cmd_lists_.rbegin(); it != cmd_lists_.rend(); ++it) {
+    for (auto it = cmdlists_.rbegin(); it != cmdlists_.rend(); ++it) {
       dmp_dv_cmdlist_release(*it);
     }
-    cmd_lists_.clear();
+    cmdlists_.clear();
     dmp_dv_mem_release(io_mem_);
     dmp_dv_mem_release(weights_mem_);
     dmp_dv_context_release(ctx_);
@@ -285,7 +285,7 @@ class CDMP_Network {
   size_t io_size_;
 
   /// @brief Verbosity level.
-  bool iprint_;
+  int iprint_;
 
   /// @brief Dummy layer to return on error.
   static fpga_layer err_layer_;

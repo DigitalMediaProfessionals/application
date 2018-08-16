@@ -140,7 +140,7 @@ int main(int argc, char** argv) {
   conv_freq = std::to_string(network.get_dv_info().conv_freq);
   fc_freq = std::to_string(network.get_dv_info().fc_freq);
 
-  network.Verbose(0);
+  network.Verbose(2);
   if (!network.Initialize()) {
     return -1;
   }
