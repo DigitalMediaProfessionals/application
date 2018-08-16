@@ -68,7 +68,7 @@ volatile uint64_t sync_cnn_in = 0;
 volatile uint64_t sync_cnn_out = 0;
 
 volatile int conv_time_tot = 0;
-volatile int ip_time_tot = 0;
+volatile int fc_time_tot = 0;
 
 void* hwacc_thread_func(void* targ) {
   while (true) {
@@ -76,11 +76,10 @@ void* hwacc_thread_func(void* targ) {
       usleep(1000);  // sleep 1 ms
     }
 
-    network.run_network();
+    network.RunNetwork();
 
-    conv_time_tot =
-        network.get_convolution_performance();  // time_diff(&t1, &t2);
-    ip_time_tot = network.get_innerproduct_performance();
+    conv_time_tot = network.get_conv_usec();
+    fc_time_tot = network.get_fc_usec();
 
     sync_cnn_out++;
   }
@@ -135,23 +134,21 @@ int main(int argc, char** argv) {
 
   if (!dmp::util::load_background_image("fpgatitle_googleNet.ppm")) return 1;
 
-  dmp::modules::initialize();
+  //dmp::modules::initialize();
 
   string conv_freq, fc_freq;
-  unsigned int conv_freq_int, fc_freq_int;
-  dmp::modules::get_info(dmp::modules::FREQ_CONV, &conv_freq_int);
-  dmp::modules::get_info(dmp::modules::FREQ_FC, &fc_freq_int);
-  conv_freq = std::to_string(conv_freq_int);
-  fc_freq = std::to_string(fc_freq_int);
+  conv_freq = std::to_string(network.get_dv_info().conv_freq);
+  fc_freq = std::to_string(network.get_dv_info().fc_freq);
 
   network.Verbose(0);
-  network.Initialize();
-  network.reserve_memory();
-  network.load_weights(FILENAME_WEIGHTS);
+  if (!network.Initialize()) {
+    return -1;
+  }
+  network.LoadWeights(FILENAME_WEIGHTS);
 
   void* ddr_buf_a_cpu = network.get_network_input_addr_cpu();
 
-  dmp::modules::reset_button_state();
+  //dmp::modules::reset_button_state();
 
   int exit_code = -1;
 
@@ -165,25 +162,25 @@ int main(int argc, char** argv) {
   while (exit_code == -1) {
     // Static Images
     if (fc < 2) {
-      dmp::util::print_background_image_toDisplay();
-      dmp::modules::swap_buffer();
+      //dmp::util::print_background_image_toDisplay();
+      //dmp::modules::swap_buffer();
       fc++;  // Frame Counter
       continue;
     }
 
     // HW processing times
-    if (conv_time_tot != 0 && ip_time_tot != 0) {
+    if (conv_time_tot != 0 && fc_time_tot != 0) {
       dmp::util::print_time_toDisplay(
           TEXT_XOFS, TEXT_YOFS + 0,
           "Convolution (" + conv_freq + " MHz HW ACC)     : ", conv_time_tot,
           9999, 0xff00ff00, 0x00000001);
       dmp::util::print_time_toDisplay(
           TEXT_XOFS, TEXT_YOFS + 2,
-          "Fully Connected (" + fc_freq + " MHz HW ACC) : ", ip_time_tot, 9999,
+          "Fully Connected (" + fc_freq + " MHz HW ACC) : ", fc_time_tot, 9999,
           0xff00ff00, 0x00000001);
       dmp::util::print_time_toDisplay(
           TEXT_XOFS, TEXT_YOFS + 4,
-          "Total Processing Time           : ", conv_time_tot + ip_time_tot,
+          "Total Processing Time           : ", conv_time_tot + fc_time_tot,
           9999, 0xffff0000, 0x00000001);
     }
 
@@ -197,10 +194,10 @@ int main(int argc, char** argv) {
             dmp::util::catrank(&networkOutput.front()), 0x88ff8800, 0x00ff0000,
                      0x00000001);
 
-        dmp::modules::swap_buffer();
+        //dmp::modules::swap_buffer();
         fc++;
 
-        unsigned int button = dmp::modules::get_button_state();
+        unsigned int button = 0;//dmp::modules::get_button_state();
         if (button & 4) {  // exit demo with exit code of selected next demo
           if (has_democonf) {
             int sel_num = democonf[democonf_sel].first;
@@ -250,7 +247,7 @@ int main(int argc, char** argv) {
     }
   }
 
-  dmp::modules::shutdown();
+  //dmp::modules::shutdown();
 
   return exit_code;
 }

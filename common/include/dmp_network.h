@@ -114,6 +114,7 @@ class CDMP_Network {
     io_size_ = 0;
 
     ctx_ = NULL;
+    memset(&dv_info_, 0, sizeof(dv_info_));
     weights_mem_ = NULL;
     io_mem_ = NULL;
     io_ptr_ = NULL;
@@ -163,12 +164,12 @@ class CDMP_Network {
   void get_final_output(std::vector<float>& output, int i_output = 0);
 
   /// @brief Returns last time spent for executing convolutional layers in microseconds.
-  inline int get_last_conv_usec() const {
+  inline int get_conv_usec() const {
     return last_conv_usec_;
   }
 
   /// @brief Returns last time spent for fully connected layers in microseconds.
-  inline int get_last_fc_usec() const {
+  inline int get_fc_usec() const {
     return last_fc_usec_;
   }
 
@@ -185,6 +186,11 @@ class CDMP_Network {
   /// @brief Returns pointer to the base of input/output buffer.
   inline uint8_t *get_io_ptr() const {
     return io_ptr_;
+  }
+
+  /// @brief Returns reference to information about DV context.
+  inline const dmp_dv_info_v0& get_dv_info() const {
+    return dv_info_;
   }
 
  protected:
@@ -218,6 +224,9 @@ class CDMP_Network {
 
   /// @brief Context.
   dmp_dv_context *ctx_;
+
+  /// @brief Information about device.
+  dmp_dv_info_v0 dv_info_;
 
   /// @brief Memory allocation for weights.
   dmp_dv_mem *weights_mem_;

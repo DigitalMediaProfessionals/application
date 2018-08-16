@@ -19,14 +19,7 @@
 
 #include "dmp_network.h"
 
-
 class CCaffeGoogLeNet : public CDMP_Network {
- public:
-  virtual bool Initialize();
-
-  CCaffeGoogLeNet();
-  virtual ~CCaffeGoogLeNet();
-
  private:
   /*!
 
@@ -287,4 +280,9 @@ class CCaffeGoogLeNet : public CDMP_Network {
 
   */
   void Layer_17();
+
+ public:
+  virtual bool Initialize();
+  CCaffeGoogLeNet();
+  virtual ~CCaffeGoogLeNet();
 };

@@ -20,8 +20,8 @@
 #include "../include/font/font8x8_basic.h"
 #include "../include/font/font8x8_ext_latin.h"
 #include "../include/font/hallfetica_normal.h"
-#include "hw_module_manager.h"
 
+#include <stdio.h>
 #include <math.h>
 
 using namespace dmp;
@@ -241,44 +241,47 @@ int string2bitmap16x16(std::string s, unsigned int* b, unsigned int fcol,
 
 void print16x16_toDisplay(int x, int y, std::string s, unsigned int fcol,
                           unsigned int bcol) {
-  unsigned int addr = dmp::modules::get_iomap_ddr() + dmp::modules::get_fbA();
+  /*unsigned int addr = dmp::modules::get_iomap_ddr() + dmp::modules::get_fbA();
   int n = string2bitmap16x16(s, textbuf16, fcol, bcol, x, y);
   for (int i = 0; i < 16; i++)
     memcpy((void*)(addr + x * 8 * 4 + (y * 8 + i) * SCREEN_W * 4),
-           (void*)(textbuf16 + i * SCREEN_W), 2 * n * 8 * 4);
+           (void*)(textbuf16 + i * SCREEN_W), 2 * n * 8 * 4);*/
 }
 
 void print16x24_toDisplay(int x, int y, std::string s, unsigned int fcol,
                           unsigned int bcol) {
-  unsigned int addr = dmp::modules::get_iomap_ddr() + dmp::modules::get_fbA();
+  /*unsigned int addr = dmp::modules::get_iomap_ddr() + dmp::modules::get_fbA();
   unsigned int textbuf[SCREEN_W * 24];
 
   int n = string2bitmap16x24(s, textbuf, fcol, bcol, x, y);
 
   for (int i = 0; i < 24; i++)
     memcpy((void*)(addr + 2 * x * 8 * 4 + (3 * y * 8 + i) * SCREEN_W * 4),
-           (void*)(textbuf + i * SCREEN_W), 2 * n * 8 * 4);
+           (void*)(textbuf + i * SCREEN_W), 2 * n * 8 * 4);*/
 }
 
 void print8x8_toDisplay(int x, int y, std::string s, unsigned int fcol,
                         unsigned int bcol) {
-  unsigned int addr = dmp::modules::get_iomap_ddr() + dmp::modules::get_fbA();
+  /*unsigned int addr = dmp::modules::get_iomap_ddr() + dmp::modules::get_fbA();
   int n = string2bitmap(s, textbuf8, fcol, bcol, x, y);
   for (int i = 0; i < 8; i++)
     memcpy((void*)(addr + x * 8 * 4 + (y * 8 + i) * SCREEN_W * 4),
-           (void*)(textbuf8 + i * 8 * (SCREEN_W / 8)), n * 8 * 4);
+           (void*)(textbuf8 + i * 8 * (SCREEN_W / 8)), n * 8 * 4);*/
 }
 
 void print24x48_toDisplay(int x, int y, std::string s, unsigned int fcol,
                           unsigned int bcol) {
-  unsigned int addr = dmp::modules::get_iomap_ddr() + dmp::modules::get_fbA();
+  /*unsigned int addr = dmp::modules::get_iomap_ddr() + dmp::modules::get_fbA();
   unsigned int textbuf[SCREEN_W * 48];
 
   int n = string2bitmap24x48(s, textbuf, fcol, bcol, x, y);
 
   for (int i = 0; i < 48; i++)
     memcpy((void*)(addr + x * 8 * 4 + (y * 8 + i) * SCREEN_W * 4),
-           (void*)(textbuf + i * SCREEN_W), 3 * n * 8 * 4);
+           (void*)(textbuf + i * SCREEN_W), 3 * n * 8 * 4);*/
+  fprintf(stdout, "%s\n", s.c_str());
+  fflush(stdout);
+  return;
 }
 
 void print_time_toDisplay(int x, int y, std::string label, long int t,
@@ -296,15 +299,15 @@ void print_time_toDisplay(int x, int y, std::string label, long int t,
 }
 
 void print_background_image_toDisplay() {
-  unsigned int addr = dmp::modules::get_iomap_ddr() + dmp::modules::get_fbA();
+  /*unsigned int addr = dmp::modules::get_iomap_ddr() + dmp::modules::get_fbA();
   for (unsigned int i = 0; i < SCREEN_H; i++) {  // height
     memcpy((void*)(addr + i * SCREEN_W * 4),
            (void*)(background_image + i * SCREEN_W), SCREEN_W * 4);
-  }
+  }*/
 }
 
 void print_image_toDisplay(int x, int y, unsigned int* img, int crop_left) {
-  unsigned int addr = dmp::modules::get_iomap_ddr() + dmp::modules::get_fbA();
+  //unsigned int addr = dmp::modules::get_iomap_ddr() + dmp::modules::get_fbA();
 
   /*
   for (int i = 0; i < IMAGE_W * IMAGE_H; i++) {
@@ -322,10 +325,10 @@ void print_image_toDisplay(int x, int y, unsigned int* img, int crop_left) {
   }
   */
 
-  for (unsigned int i = 0; i < IMAGE_H; i++) {
-    memcpy((void*)(addr + x * 4 + (y + i) * SCREEN_W * 4),
-           (void*)(img + i * IMAGE_W + crop_left), (IMAGE_W - crop_left) * 4);
-  }
+  //for (unsigned int i = 0; i < IMAGE_H; i++) {
+  //  memcpy((void*)(addr + x * 4 + (y + i) * SCREEN_W * 4),
+  //         (void*)(img + i * IMAGE_W + crop_left), (IMAGE_W - crop_left) * 4);
+  //}
 }
 
 void draw_box(int x, int y, int w, int h, unsigned int fcol,
@@ -478,8 +481,8 @@ int string2bitmap24x48(std::string s, unsigned int* b, unsigned int fcol,
 
 void capture_screen(std::string filename) {
   FILE* file = fopen(filename.c_str(), "wb");
-  void* addr = (void*)(dmp::modules::get_iomap_ddr() + dmp::modules::get_fbA());
-  fwrite(addr, 1, SCREEN_W * SCREEN_H * 4, file);
+  //void* addr = (void*)(dmp::modules::get_iomap_ddr() + dmp::modules::get_fbA());
+  //fwrite(addr, 1, SCREEN_W * SCREEN_H * 4, file);
   fclose(file);
 }
 

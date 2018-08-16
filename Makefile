@@ -1,6 +1,7 @@
 SUBDIRS = common/src \
-	CaffeGoogLeNet \
-	CaffeGoogLeNetCam \
+	CaffeGoogLeNet
+	
+MOREDIRS = CaffeGoogLeNetCam \
 	CaffeMobileNet \
 	CaffeSqueezeNet \
 	KerasGoogLeNet \

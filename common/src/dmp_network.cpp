@@ -53,12 +53,22 @@ fpga_layer& CDMP_Network::get_layer(int i) {
 
 
 bool CDMP_Network::ReserveMemory(size_t weights_size, size_t io_size) {
-  if (!ctx_) {
-    ERR("Context is NULL, Initialize() must be called and succeed first\n");
+  if ((ctx_) || (weights_mem_) || (io_mem_)) {
+    ERR("Double call of ReserveMemory()\n");
     return false;
   }
-  if ((weights_mem_) || (io_mem_)) {
-    ERR("Double call of ReserveMemory()\n");
+
+  ctx_ = dmp_dv_context_create();
+  if (!ctx_) {
+    ERR("Unable to create DV context: %s\n", dmp_dv_get_last_error_message());
+    return false;
+  }
+
+  memset(&dv_info_, 0, sizeof(dv_info_));
+  dv_info_.size = sizeof(dv_info_);
+  dv_info_.version = 0;
+  if (dmp_dv_context_get_info(ctx_, (dmp_dv_info*)&dv_info_)) {
+    ERR("Unable to get information about DV context: %s\n", dmp_dv_get_last_error_message());
     return false;
   }
 
@@ -324,7 +334,7 @@ bool CDMP_Network::RunNetwork(bool sync_io_mem) {
       // Execute command list on first command
       if (it->cmdlist_pos == 0) {
         if (exec_id >= 0) {
-          ERR("Incorrect layers order detected: layer name=%d cmdlist_pos=%d cmdlist_size=%d, but exec_id is already set\n",
+          ERR("Incorrect layers order detected: layer name=%s cmdlist_pos=%d cmdlist_size=%d, but exec_id is already set\n",
               it->name.c_str(), it->cmdlist_pos, it->cmdlist_size);
           return false;
         }
@@ -341,12 +351,12 @@ bool CDMP_Network::RunNetwork(bool sync_io_mem) {
       // Wait for command list completion on last command
       if (it->cmdlist_pos == it->cmdlist_size - 1) {
         if (exec_id < 0) {
-          ERR("Incorrect layers order detected: layer name=%d cmdlist_pos=%d cmdlist_size=%d, but exec_id is not set\n",
+          ERR("Incorrect layers order detected: layer name=%s cmdlist_pos=%d cmdlist_size=%d, but exec_id is not set\n",
               it->name.c_str(), it->cmdlist_pos, it->cmdlist_size);
           return false;
         }
         if (dmp_dv_cmdlist_wait(cmdlist, exec_id)) {
-          ERR("Wait for command completion failed, issued on layer name=%d: %s\n",
+          ERR("Wait for command completion failed, issued on layer name=%s: %s\n",
               it->name.c_str(), dmp_dv_get_last_error_message());
           return false;
         }
@@ -359,7 +369,7 @@ bool CDMP_Network::RunNetwork(bool sync_io_mem) {
             fc_usec += usec;
             break;
           default:
-            ERR("Possible implementation error on line %d of file %s: layer name=%d cmdlist_pos=%d cmdlist_size=%d\n",
+            ERR("Possible implementation error on line %d of file %s: layer name=%s cmdlist_pos=%d cmdlist_size=%d\n",
                 __LINE__, __FILE__, it->name.c_str(), it->cmdlist_pos, it->cmdlist_size);
             return false;
         }
@@ -367,13 +377,13 @@ bool CDMP_Network::RunNetwork(bool sync_io_mem) {
         cmdlist = NULL;
       }
       if (it->cmdlist_pos >= it->cmdlist_size) {
-        ERR("Possible implementation error on line %d of file %s: layer name=%d cmdlist_pos=%d cmdlist_size=%d\n",
+        ERR("Possible implementation error on line %d of file %s: layer name=%s cmdlist_pos=%d cmdlist_size=%d\n",
             __LINE__, __FILE__, it->name.c_str(), it->cmdlist_pos, it->cmdlist_size);
         return false;
       }
     }
     else if (exec_id >= 0) {
-      ERR("Incorrect layers order detected: layer name=%d cmdlist_pos=%d cmdlist_size=%d, but exec_id is already set\n",
+      ERR("Incorrect layers order detected: layer name=%s cmdlist_pos=%d cmdlist_size=%d, but exec_id is already set\n",
           it->name.c_str(), it->cmdlist_pos, it->cmdlist_size);
       return false;
     }
@@ -458,7 +468,7 @@ void get_layer_input(fpga_layer &layer, std::vector<float> &layer_input, uint8_t
       input_size *= layer.input_dim[i];
     }
 
-    if(layer_input.size() != input_size) {
+    if((int)layer_input.size() != input_size) {
       layer_input.resize(input_size);
     }
 
@@ -495,7 +505,7 @@ void put_layer_output(fpga_layer& layer, std::vector<float>& layer_output, uint8
     int channel_size = layer.output_dim[2];
     dst += output_size;
     float_to_fp16(dst + output_size, src, output_size);
-    remap_hw(dst + output_size, dst, x_size, y_size, channel_size);
+    remap_hw((uint16_t*)dst + output_size, (uint16_t*)dst, x_size, y_size, channel_size);
   }
 }
 

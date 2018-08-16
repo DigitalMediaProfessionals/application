@@ -3,7 +3,7 @@ include ../../../env.mk
 INC = -I../include
 
 # source files.
-SRC =  	util_draw.cpp util_input.cpp nanojpeg.cpp v4l2-cam.cpp
+SRC =  	dmp_network.cpp util_draw.cpp util_input.cpp nanojpeg.cpp v4l2-cam.cpp
  
 OBJ = $(SRC:.cpp=.o)
 	
