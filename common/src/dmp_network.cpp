@@ -87,6 +87,13 @@ bool CDMP_Network::ReserveMemory(size_t weights_size, size_t io_size) {
         dmp_dv_mem_get_size(io_mem_), io_size_);
   }
 
+  io_ptr_ = dmp_dv_mem_map(io_mem_);
+  if (!io_ptr_) {
+    ERR("Failed to map %zu bytes of input/output buffer into application's virtual memory: %s\n",
+        dmp_dv_mem_get_size(io_mem_), dmp_dv_get_last_error_message());
+    return false;
+  }
+
   return true;
 }
 
@@ -105,7 +112,7 @@ bool CDMP_Network::LoadWeights(const std::string& filename) {
 
   uint8_t *buf = dmp_dv_mem_map(weights_mem_);
   if (!buf) {
-    ERR("Failed to map %zu bytes of weights memory into application's virtual memory: %s\n",
+    ERR("Failed to map %zu bytes of weights buffer into application's virtual memory: %s\n",
         dmp_dv_mem_get_size(weights_mem_), dmp_dv_get_last_error_message());
     fclose(fin);
     return false;
@@ -189,9 +196,9 @@ static void float_to_fp16(__fp16* __restrict dst, const float* __restrict src, i
 
 
 /// @brief Runs softmax operation on CPU.
-static void run_softmax(fpga_layer& layer, int softmax_axis) {
-  void *src_buffer = layer.addr_cpu_input;
-  void *dst_buffer = layer.addr_cpu_output;
+static void run_softmax(fpga_layer& layer, int softmax_axis, uint8_t *io_ptr) {
+  void *src_buffer = io_ptr + layer.input_offs;
+  void *dst_buffer = io_ptr + layer.output_offs;
 
   if (layer.is_input_hw_layout) {
     uint16_t *src = (uint16_t*)src_buffer;
@@ -248,12 +255,12 @@ static void run_softmax(fpga_layer& layer, int softmax_axis) {
 
 
 /// @brief Executes flatten operation.
-static void run_flatten(fpga_layer &layer) {
+static void run_flatten(fpga_layer &layer, uint8_t *io_ptr) {
   if (!layer.is_input_hw_layout) {
     return;
   }
-  uint16_t *src = (uint16_t*)layer.addr_cpu_input;
-  uint16_t *dst = (uint16_t*)layer.addr_cpu_output;
+  uint16_t *src = (uint16_t*)(io_ptr + layer.input_offs);
+  uint16_t *dst = (uint16_t*)(io_ptr + layer.output_offs);
   int x_size = layer.input_dim[0];
   int y_size = layer.input_dim[1];
   int channel_size = layer.input_dim[2];
@@ -262,16 +269,16 @@ static void run_flatten(fpga_layer &layer) {
 
 
 /// @brief Executes concatenation via memory copy.
-static void run_copy_concat(fpga_layer& layer, int input_layer_num, fpga_layer **input_layers) {
+static void run_copy_concat(fpga_layer& layer, int input_layer_num, fpga_layer **input_layers, uint8_t *io_ptr) {
   const int chunk_size = 8;
-  uint16_t *dst = (uint16_t*)layer.addr_cpu_output;
+  uint16_t *dst = (uint16_t*)(io_ptr + layer.output_offs);
   const int x_size = layer.output_dim[0];
   const int y_size = layer.output_dim[1];
   const int dst_channel_size = layer.output_dim[2];
   const int chunk_stride = x_size * y_size * chunk_size;
   int dst_copied_size = 0;
   for (int i = 0; i < input_layer_num; ++i) {
-    uint16_t *src = (uint16_t*)input_layers[i]->addr_cpu_output;
+    uint16_t *src = (uint16_t*)(io_ptr + input_layers[i]->output_offs);
     const int src_channel_size = input_layers[i]->output_dim[2];
     int src_copied_size = 0;
     while (src_copied_size < src_channel_size) {
@@ -381,22 +388,22 @@ bool CDMP_Network::RunNetwork(bool sync_io_mem) {
         break;
       case LT_SOFTMAX:
         dt.reset();
-        run_softmax(*it, it->softmax_axis);
+        run_softmax(*it, it->softmax_axis, io_ptr_);
         cpu_usec += dt.get_us();
         break;
       case LT_FLATTEN:
         dt.reset();
-        run_flatten(*it);
+        run_flatten(*it, io_ptr_);
         cpu_usec += dt.get_us();
         break;
       case LT_COPY_CONCAT:
         dt.reset();
-        run_copy_concat(*it, it->input_layer_num, it->input_layers);
+        run_copy_concat(*it, it->input_layer_num, it->input_layers, io_ptr_);
         cpu_usec += dt.get_us();
         break;
       case LT_CUSTOM:
         dt.reset();
-        (*(it->custom_proc_ptr))(*it, it->custom_param);
+        (*(it->custom_proc_ptr))(*it, it->custom_param, io_ptr_);
         cpu_usec += dt.get_us();
         break;
       case LT_INPUT:
@@ -419,7 +426,7 @@ bool CDMP_Network::RunNetwork(bool sync_io_mem) {
 
 
 void* CDMP_Network::get_network_input_addr_cpu() {
-  return layers_[0].addr_cpu_input;
+  return io_ptr_ + layers_[0].input_offs;
 }
 
 
@@ -437,15 +444,15 @@ void CDMP_Network::get_final_output(std::vector<float>& out, int i_output) {
   }
 
   if (output_layers_[i_output]->is_f32_output) {
-    memcpy(out.data(), output_layers_[i_output]->addr_cpu_output, output_size << 2);
+    memcpy(out.data(), io_ptr_ + output_layers_[i_output]->output_offs, output_size << 2);
   }
   else {
-    fp16_to_float(out.data(), (__fp16*)output_layers_[i_output]->addr_cpu_output, output_size);
+    fp16_to_float(out.data(), (__fp16*)(io_ptr_ + output_layers_[i_output]->output_offs), output_size);
   }
 }
 
 
-void get_layer_input(fpga_layer &layer, std::vector<float> &layer_input) {
+void get_layer_input(fpga_layer &layer, std::vector<float> &layer_input, uint8_t *io_ptr) {
     int input_size = 1;
     for (int i = 0; i < layer.input_dim_size; ++i) {
       input_size *= layer.input_dim[i];
@@ -456,33 +463,33 @@ void get_layer_input(fpga_layer &layer, std::vector<float> &layer_input) {
     }
 
     if (layer.is_input_hw_layout) {
-      uint16_t *src = (uint16_t*)layer.addr_cpu_input;
+      uint16_t *src = (uint16_t*)(io_ptr + layer.input_offs);
       uint16_t *dst = (uint16_t*)&layer_input.front();
       int x_size = layer.input_dim[0];
       int y_size = layer.input_dim[1];
       int channel_size = layer.input_dim[2];
       dst += input_size;
       remap(src, dst, x_size, y_size, channel_size);
-      fp16_to_float((float*)&layer_input.front(), (__fp16*)dst, input_size);
+      fp16_to_float((float*)layer_input.data(), (__fp16*)dst, input_size);
     }
     else {
-      fp16_to_float((float*)&layer_input.front(), (__fp16*)layer.addr_cpu_input, input_size);
+      fp16_to_float((float*)layer_input.data(), (__fp16*)(io_ptr + layer.input_offs), input_size);
     }
 }
 
 
-void put_layer_output(fpga_layer& layer, std::vector<float>& layer_output, bool is_output_hw_layout) {
+void put_layer_output(fpga_layer& layer, std::vector<float>& layer_output, uint8_t *io_ptr, bool is_output_hw_layout) {
   int output_size = 1;
   for (int i = 0; i < layer.output_dim_size; ++i) {
     output_size *= layer.output_dim[i];
   }
 
   if (!is_output_hw_layout) {
-    memcpy(layer.addr_cpu_output, (void*)(&layer_output.front()), layer.output_size);
+    memcpy(io_ptr + layer.output_offs, (void*)(&layer_output.front()), layer.output_size);
   }
   else {
     float *src = (float*)&layer_output.front();
-    __fp16 *dst = (__fp16*)layer.addr_cpu_output;
+    __fp16 *dst = (__fp16*)(io_ptr + layer.output_offs);
     int x_size = layer.output_dim[0];
     int y_size = layer.output_dim[1];
     int channel_size = layer.output_dim[2];

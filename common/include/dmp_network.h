@@ -61,13 +61,16 @@ struct fpga_layer;
 
 
 /// @brief Callback.
-typedef void (*run_custom_callback_proc)(fpga_layer &layer, void *custom_param);
+/// @param layer Reference to layer specification.
+/// @param custom_param User-specified parameter.
+/// @param io_ptr Pointer to the base of input/output buffer.
+typedef void (*run_custom_callback_proc)(fpga_layer& layer, void *custom_param, uint8_t *io_ptr);
 
 
 /// @brief Layer specification.
 struct fpga_layer {
-  layer_type    type;       // layer type
-  std::string name;         // layer name
+  layer_type type;   // layer type
+  std::string name;  // layer name
   union {
     dmp_dv_cmdraw_conv_v0 conv_conf;  // convolutional configuration
     dmp_dv_cmdraw_fc_v0 fc_conf;      // fully connected configuration
@@ -81,16 +84,17 @@ struct fpga_layer {
       void *custom_param;
     };  // generic CPU layer configuration
   };
-  void *addr_cpu_input;     // input address
-  void *addr_cpu_output;    // output address
-  size_t output_size;       // size of the output in bytes
-  int input_dim[3];         // input dimensions: HWC
-  int input_dim_size;       // number of input dimensions
-  int output_dim[3];        // output dimensions: HWC
-  int output_dim_size;      // number of output dimensions
-  bool is_output;           //
-  bool is_f32_output;
-  bool is_input_hw_layout;
+  size_t input_offs;     // offset for an input from the base of the input/output buffer
+  size_t output_offs;    // offset for an output from the base of the input/output buffer
+  size_t output_size;    // size of the output in bytes
+  int input_dim[3];      // input dimensions: HWC
+  int input_dim_size;    // number of input dimensions
+  int output_dim[3];     // output dimensions: HWC
+  int output_dim_size;   // number of output dimensions
+
+  bool is_output;           // is the layer output
+  bool is_f32_output;       // is the output in 32-bit float format
+  bool is_input_hw_layout;  // is the input in WHC8 format
 
   dmp_dv_cmdlist *cmdlist;  // command list containing this layer, can be NULL
   int cmdlist_pos;          // position of this layer in the command list
@@ -112,6 +116,7 @@ class CDMP_Network {
     ctx_ = NULL;
     weights_mem_ = NULL;
     io_mem_ = NULL;
+    io_ptr_ = NULL;
 
     last_conv_usec_ = 0;
     last_fc_usec_ = 0;
@@ -177,6 +182,11 @@ class CDMP_Network {
     iprint_ = level;
   }
 
+  /// @brief Returns pointer to the base of input/output buffer.
+  inline uint8_t *get_io_ptr() const {
+    return io_ptr_;
+  }
+
  protected:
   /// @brief Reserves memory for weights and input/output.
   /// @details Must be called at the beginning of Initialize() in the derived class.
@@ -215,6 +225,9 @@ class CDMP_Network {
   /// @brief Memory allocation for input/output.
   dmp_dv_mem *io_mem_;
 
+  /// @brief Memory pointer to the beginning of input/output buffer.
+  uint8_t *io_ptr_;
+
   /// @brief Command lists for executing different sets of layers.
   std::vector<dmp_dv_cmdlist*> cmd_lists_;
 
@@ -249,6 +262,7 @@ class CDMP_Network {
     ctx_ = NULL;
     weights_mem_ = NULL;
     io_mem_ = NULL;
+    io_ptr_ = NULL;
 
     last_conv_usec_ = 0;
     last_fc_usec_ = 0;
@@ -270,11 +284,11 @@ class CDMP_Network {
 
 
 /// @brief Fills provided vector with the input data for the specified layer.
-void get_layer_input(fpga_layer& layer, std::vector<float>& layer_input);
+void get_layer_input(fpga_layer& layer, std::vector<float>& layer_input, uint8_t *io_ptr);
 
 
 /// @brief Fills provided vector with the output data for the specified layer.
 /// @param layer Layer to retrieve output from.
 /// @param layer_output Vector to put requested data into.
 /// @param is_output_hw_layout Whether data should be put in HW-specific layout (WHC8) or in Caffe-style CHW.
-void put_layer_output(fpga_layer& layer, std::vector<float>& layer_output, bool is_output_hw_layout = false);
+void put_layer_output(fpga_layer& layer, std::vector<float>& layer_output, uint8_t *io_ptr, bool is_output_hw_layout = false);
