@@ -501,6 +501,74 @@ void put_layer_output(fpga_layer& layer, std::vector<float>& layer_output, uint8
 
 
 bool CDMP_Network::GenerateCommandLists() {
-  ERR("TODO: implement at line %d of file %s\n", __LINE__, __FILE__);
-  return false;
+  if (cmd_lists_.size()) {
+    ERR("Double call of GenerateCommandLists() detected\n");
+    return false;
+  }
+
+  // Create command lists
+  layer_type last_type = LT_INPUT;
+  for (auto it = layers_.begin(); it != layers_.end(); ++it) {
+    switch (it->type) {
+      case LT_CONV:
+        if (last_type == LT_CONV) {
+          dmp_dv_cmdlist_add_raw(cmd_lists_.back(), (dmp_dv_cmdraw*)&it->conv_conf);
+        }
+        else {
+          dmp_dv_cmdlist *obj = dmp_dv_cmdlist_create(ctx_);
+          if (!obj) {
+            ERR("dmp_dv_cmdlist_create() failed: %s\n", dmp_dv_get_last_error_message());
+            return false;
+          }
+          cmd_lists_.push_back(obj);
+        }
+        it->cmdlist = cmd_lists_.back();
+        break;
+      case LT_FC:
+        if (last_type == LT_FC) {
+          dmp_dv_cmdlist_add_raw(cmd_lists_.back(), (dmp_dv_cmdraw*)&it->fc_conf);
+        }
+        else {
+          dmp_dv_cmdlist *obj = dmp_dv_cmdlist_create(ctx_);
+          if (!obj) {
+            ERR("dmp_dv_cmdlist_create() failed: %s\n", dmp_dv_get_last_error_message());
+            return false;
+          }
+          cmd_lists_.push_back(obj);
+        }
+        it->cmdlist = cmd_lists_.back();
+        break;
+      default:
+        // Empty by design
+        break;
+    }
+    last_type = it->type;
+  }
+
+  // Assign cmdlist_pos and cmdlist_size
+  dmp_dv_cmdlist *last_cmdlist = NULL;
+  int last_pos = 0;
+  const int n_layers = (int)layers_.size();
+  for (int i = 0; i < n_layers; ++i) {
+    fpga_layer& layer = layers_[i];
+    if (layer.cmdlist == last_cmdlist) {
+      if (last_cmdlist) {
+        layer.cmdlist_pos = ++last_pos;
+      }
+    }
+    else if (last_cmdlist) {
+      for (int j = i - 1; j >= 0; --j) {
+        if (layers_[j].cmdlist != last_cmdlist) {
+          break;
+        }
+        layers_[j].cmdlist_size = last_pos;
+      }
+      last_pos = 0;
+      if (layer.cmdlist) {
+        layer.cmdlist_pos = last_pos;
+      }
+    }
+    last_cmdlist = layer.cmdlist;
+  }
+  return true;
 }
