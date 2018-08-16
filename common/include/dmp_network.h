@@ -65,35 +65,33 @@ typedef void (*run_custom_callback_proc)(fpga_layer &layer, void *custom_param);
 
 
 /// @brief Layer specification.
-struct fpga_layer {  // TODO: refactor it.
-  layer_type    type;
-  void *        hw_conf;
-  void *        addr_cpu_input;
-  void *        addr_cpu_output;
-  unsigned long addr_offset_input;
-  unsigned long addr_offset_output;
-  unsigned long output_size;
-  int           input_dim[3];
-  int           input_dim_size;
-  int           output_dim[3];
-  int           output_dim_size;
-  bool          is_output;
-  bool          is_f32_output;
-  bool          is_input_hw_layout;
+struct fpga_layer {
+  layer_type    type;       // layer type
+  std::string name;         // layer name
   union {
-    struct {
-      int   softmax_axis;
-    };
+    dmp_dv_cmdraw_conv_v0 conv_conf;  // convolutional configuration
+    dmp_dv_cmdraw_fc_v0 fc_conf;      // fully connected configuration
+    int softmax_axis;                 // softmax configuration
     struct {
       int input_layer_num;
       fpga_layer **input_layers;
-    };
+    };  // copy concat configuration
     struct {
       run_custom_callback_proc custom_proc_ptr;
       void *custom_param;
-    };
+    };  // generic CPU layer configuration
   };
-  std::string name;         // layer name
+  void *addr_cpu_input;     // input address
+  void *addr_cpu_output;    // output address
+  size_t output_size;       // size of the output in bytes
+  int input_dim[3];         // input dimensions: HWC
+  int input_dim_size;       // number of input dimensions
+  int output_dim[3];        // output dimensions: HWC
+  int output_dim_size;      // number of output dimensions
+  bool is_output;           //
+  bool is_f32_output;
+  bool is_input_hw_layout;
+
   dmp_dv_cmdlist *cmdlist;  // command list containing this layer, can be NULL
   int cmdlist_pos;          // position of this layer in the command list
   int cmdlist_size;         // size of the command list
@@ -108,8 +106,6 @@ class CDMP_Network {
     iprint_ = 0;
     num_layers_ = 0;
     num_output_layers_ = 0;
-    num_conv_layers_ = 0;
-    num_fc_layers_ = 0;
     weights_size_ = 0;
     io_size_ = 0;
 
@@ -145,21 +141,8 @@ class CDMP_Network {
     return num_output_layers_;
   }
 
-  /// @brief Returns number of convolutional layers.
-  inline int get_convolution_layer_count() const {
-    return num_conv_layers_;
-  }
-
-  /// @brief Returns number of fully connected layers.
-  inline int get_fc_layer_count() const {
-    return num_fc_layers_;
-  }
-
   /// @brief Initializes the network.
   virtual bool Initialize() = 0;
-
-  /// @brief Reserves memory for weights and input/output.
-  bool ReserveMemory();
 
   /// @brief Loads packed weights from file.
   bool LoadWeights(const std::string& filename);
@@ -190,32 +173,32 @@ class CDMP_Network {
   }
 
   /// @brief Sets verbosity level.
-  inline void verbose(int level) {
+  inline void Verbose(int level) {
     iprint_ = level;
   }
 
  protected:
+  /// @brief Reserves memory for weights and input/output.
+  /// @details Must be called at the beginning of Initialize() in the derived class.
+  bool ReserveMemory(size_t weights_size, size_t io_size);
+
   /// @brief Creates required number of command lists and assigns "cmdlist*" fileds in layers_.
-  /// @details Must be called at the end of Initialize() in derived classes.
+  /// @details Must be called at the end of Initialize() in the derived class.
   bool GenerateCommandLists();
+
+  /// @brief Sets total number of layers.
+  /// @details Must be called once in Initialize() in the derived class.
+  void set_num_layers(int n);
+
+  /// @brief Sets number of output layers.
+  /// @details Must be called once in Initialize() in the derived class.
+  void set_num_output_layers(int n);
 
   /// @brief Number of layers.
   int num_layers_;
 
   /// @brief Number of output layers.
   int num_output_layers_;
-
-  /// @brief Number of convolutional layers.
-  int num_conv_layers_;
-
-  /// @brief Number of fully connected layers.
-  int num_fc_layers_;
-
-  /// @brief Size of weights buffer in bytes.
-  size_t weights_size_;
-
-  /// @brief Size of input/output buffer in bytes.
-  size_t io_size_;
 
   /// @brief Layers description in order of execution.
   std::vector<fpga_layer> layers_;
@@ -260,8 +243,6 @@ class CDMP_Network {
 
     num_layers_ = 0;
     num_output_layers_ = 0;
-    num_conv_layers_ = 0;
-    num_fc_layers_ = 0;
     weights_size_ = 0;
     io_size_ = 0;
 
@@ -273,6 +254,12 @@ class CDMP_Network {
     last_fc_usec_ = 0;
     last_cpu_usec_ = 0;
   }
+
+  /// @brief Size of weights buffer in bytes.
+  size_t weights_size_;
+
+  /// @brief Size of input/output buffer in bytes.
+  size_t io_size_;
 
   /// @brief Verbosity level.
   bool iprint_;

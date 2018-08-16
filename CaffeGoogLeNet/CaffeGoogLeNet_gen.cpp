@@ -18,40 +18,25 @@
 
 #include "CaffeGoogLeNet_gen.h"
 
-CCaffeGoogLeNet::CCaffeGoogLeNet() {}
 
-CCaffeGoogLeNet::~CCaffeGoogLeNet() {}
-
-unsigned int CCaffeGoogLeNet::get_total_layer_count() {
-  return num_layers;
+CCaffeGoogLeNet::CCaffeGoogLeNet() {
+  // Empty by design
 }
 
-unsigned int CCaffeGoogLeNet::get_output_layer_count() {
-  return num_output_layers;
+
+CCaffeGoogLeNet::~CCaffeGoogLeNet() {
+  // Empty by design
 }
 
-unsigned int CCaffeGoogLeNet::get_convolution_layer_count() {
-  return num_conv_layers;
-}
 
-unsigned int CCaffeGoogLeNet::get_innerproduct_layer_count() {
-  return num_fc_layers;
-}
+bool CCaffeGoogLeNet::Initialize() {
+  if (!ReserveMemory(7629744, 2809856)) {
+    return false;
+  }
 
-int CCaffeGoogLeNet::initialize() {
-  num_layers = 18;
-  num_output_layers = 1;
-  num_conv_layers = 16;
-  num_fc_layers = 1;
-  weight_size = 7629744;
-  buffer_size = 2809856;
-  layers.resize(num_layers);
-  output_layers.resize(num_output_layers);
-  conv_layers.resize(num_conv_layers);
-  fc_layers.resize(num_fc_layers);
-  memory_size_request.resize(2);
+  set_num_layers(18);
+  set_num_output_layers(1);
 
-  //set_default_convolution_layers_parameters();
   Layer_0();
   Layer_1();
   Layer_2();
@@ -71,38 +56,37 @@ int CCaffeGoogLeNet::initialize() {
   Layer_16();
   Layer_17();
 
-  //Add 2 memory size requests. One for weights, the other for io buffers
-  memory_size_request[0] = weight_size;
-  memory_size_request[1] = buffer_size;
+  if (!GenerateCommandLists()) {
+    return false;
+  }
 
-  return 0;
+  return true;
 }
+
 
 //Layer_0: Convolution Layer
 //  ->: conv1/7x7_s2
 //  ->: conv1/relu_7x7
 //  ->: pool1/3x3_s2
 void CCaffeGoogLeNet::Layer_0() {
-  struct top_conv_conf& _conf = get_conv_layer(0);
-  //Topo: 00000000000000000000000000000001
-  _conf.hw.header.topo = 0x1; // [31:0] Output Destination of each run, 0 = UBUF, 1 = EXTMEM
+  dmp_dv_cmdraw_conv_v0& conf = get_layer(0).conv_conf;
+  // Topo: 00000000000000000000000000000001
+  conf.topo = 0x1; // [31:0] Output Destination of each run, 0 = UBUF, 1 = EXTMEM
 
-  //Input Configuration:
-  _conf.hw.input.w = 224; // Input Width
-  _conf.hw.input.h = 224; // Input Height
-  _conf.hw.input.z = 1; // Input Depth
-  _conf.hw.input.c = 3; // Input Channels
-  _conf.hw.input.input_base_addr = 0x00000000; // Input byte address
-  _conf.hw.input.tiles = 1; // Number of horizontal tiles (supported with restrictions)
+  // Input Configuration:
+  conf.w = 224;  // Input Width
+  conf.h = 224;  // Input Height
+  conf.z = 1;    // Input Depth
+  conf.c = 3;    // Input Channels
+  conf.input_buf.mem = io_mem_;
+  conf.input_buf.offs = 0; // Input byte address
 
-  //Output Configuration:
-  _conf.sw.output.w = 56; // Output Width
-  _conf.sw.output.h = 56; // Output Height
-  _conf.sw.output.z = 1; // Output Depth
-  _conf.sw.output.m = 64; // Output Channels
-  _conf.hw.output.output_base_addr = 0x00049800; // Output byte address
-  _conf.hw.output.eltwise_base_addr = 0xDEADBEEF; // Input byte address for elementwise add (0 = UBUF Input Buffer)
-  _conf.hw.output.output_mode = 0; // 0 = concat, 1 = eltwise add
+  conf.output_buf.mem = io_mem_;
+  conf.output_buf.offs = 0x00049800; // Output byte address
+
+  conf.eltwise_buf.mem = NULL;
+  conf.eltwise_buf.offs = 0;
+  conf.output_mode = 0; // 0 = concat, 1 = eltwise add
 
   //Runs Configuration:
   //->1 run(s)
@@ -138,7 +122,7 @@ void CCaffeGoogLeNet::Layer_0() {
   _conf.hw.run[0].lrn= 0x0; // [0] : 1 = LRN enable, 0 = LRN disable, [1] : 1 = incl. power func, 0 = excl., [8:11] = x^2 scale factor log2
   _conf.hw.run[0].ALIGN_0 = 0;//Some comments needed here
 
-  struct fpga_layer& layer = layers[0];
+  struct fpga_layer& layer = layers_[0];
   layer.type = LT_CONV;
   layer.hw_conf = (void*)&_conf;
   layer.addr_cpu_input = 0x0;

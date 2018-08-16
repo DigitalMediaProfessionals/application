@@ -21,6 +21,28 @@ fpga_layer CDMP_Network::err_layer_;
 #define ERR(...) fprintf(stderr, __VA_ARGS__); fflush(stderr);
 
 
+void CDMP_Network::set_num_layers(int n) {
+  if (num_layers_) {
+    ERR("Double call of set_num_layers() detected\n");
+    return;
+  }
+  num_layers_ = n;
+  layers_.resize(num_layers_);
+  memset(layers_.data(), 0, sizeof(layers_[0]) * layers_.size());
+}
+
+
+void CDMP_Network::set_num_output_layers(int n) {
+  if (num_output_layers_) {
+    ERR("Double call of set_num_output_layers() detected\n");
+    return;
+  }
+  num_output_layers_ = n;
+  output_layers_.resize(num_output_layers_);
+  memset(output_layers_.data(), 0, sizeof(output_layers_[0]) * output_layers_.size());
+}
+
+
 fpga_layer& CDMP_Network::get_layer(int i) {
   if ((i < 0) || (i >= (int)layers_.size())) {
     LOG("Requested layer index is out of bounds: %d\n", i);
@@ -30,7 +52,7 @@ fpga_layer& CDMP_Network::get_layer(int i) {
 }
 
 
-bool CDMP_Network::ReserveMemory() {
+bool CDMP_Network::ReserveMemory(size_t weights_size, size_t io_size) {
   if (!ctx_) {
     ERR("Context is NULL, Initialize() must be called and succeed first\n");
     return false;
@@ -39,6 +61,9 @@ bool CDMP_Network::ReserveMemory() {
     ERR("Double call of ReserveMemory()\n");
     return false;
   }
+
+  weights_size_ = weights_size;
+  io_size_ = io_size;
 
   weights_mem_ = dmp_dv_mem_alloc(ctx_, weights_size_);
   if (!weights_mem_) {
@@ -117,12 +142,12 @@ bool CDMP_Network::LoadWeights(const std::string& filename) {
 }
 
 
-/// @brief Reorders channels.
+/// @brief Reorders channels from WHC8 to HWC.
 static void remap(uint16_t* __restrict src, uint16_t* __restrict dst, int x_size, int y_size, int channel_size) {
   for (int y = 0; y < y_size; ++y) {
     for (int x = 0; x < x_size; ++x) {
       for (int i = 0; i < channel_size; i += 8) {
-        const int copy_size = channel_size - i > 8 ? 8 : channel_size - i;
+        const int copy_size = std::min(channel_size - i, 8);
         memcpy(dst + (y * x_size + x) * channel_size + i,
                src + i * (x_size * y_size) + (x * y_size + y) * copy_size,
                copy_size * sizeof(uint16_t));
@@ -132,12 +157,12 @@ static void remap(uint16_t* __restrict src, uint16_t* __restrict dst, int x_size
 }
 
 
-/// @brief Reorders channels.
+/// @brief Reorders channels from HWC to WHC8.
 static void remap_hw(uint16_t* __restrict src, uint16_t* __restrict dst, int x_size, int y_size, int channel_size) {
   for (int y = 0; y < y_size; ++y) {
     for (int x = 0; x < x_size; ++x) {
       for (int i = 0; i < channel_size; i += 8) {
-        const int copy_size = (channel_size - i > 8 ? 8 : channel_size - i);
+        const int copy_size = std::min(channel_size - i, 8);
         memcpy(dst + i * (x_size * y_size) + (x * y_size + y) * copy_size,
                src + (y * x_size + x) * channel_size + i,
                copy_size * sizeof(uint16_t));
@@ -469,6 +494,6 @@ void put_layer_output(fpga_layer& layer, std::vector<float>& layer_output, bool 
 
 
 bool CDMP_Network::GenerateCommandLists() {
-  // TODO: implement.
-  return true;
+  ERR("TODO: implement at line %d of file %s\n", __LINE__, __FILE__);
+  return false;
 }

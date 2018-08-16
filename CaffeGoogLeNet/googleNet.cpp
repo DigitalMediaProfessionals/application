@@ -144,8 +144,8 @@ int main(int argc, char** argv) {
   conv_freq = std::to_string(conv_freq_int);
   fc_freq = std::to_string(fc_freq_int);
 
-  network.verbose(false);
-  network.initialize();
+  network.Verbose(0);
+  network.Initialize();
   network.reserve_memory();
   network.load_weights(FILENAME_WEIGHTS);
 
