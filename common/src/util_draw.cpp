@@ -246,6 +246,8 @@ void print16x16_toDisplay(int x, int y, std::string s, unsigned int fcol,
   for (int i = 0; i < 16; i++)
     memcpy((void*)(addr + x * 8 * 4 + (y * 8 + i) * SCREEN_W * 4),
            (void*)(textbuf16 + i * SCREEN_W), 2 * n * 8 * 4);*/
+  fprintf(stdout, "%s\n", s.c_str());
+  fflush(stdout);
 }
 
 void print16x24_toDisplay(int x, int y, std::string s, unsigned int fcol,
@@ -281,7 +283,6 @@ void print24x48_toDisplay(int x, int y, std::string s, unsigned int fcol,
            (void*)(textbuf + i * SCREEN_W), 3 * n * 8 * 4);*/
   fprintf(stdout, "%s\n", s.c_str());
   fflush(stdout);
-  return;
 }
 
 void print_time_toDisplay(int x, int y, std::string label, long int t,

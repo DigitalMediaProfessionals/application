@@ -91,6 +91,7 @@ struct fpga_layer {
   int input_dim_size;    // number of input dimensions
   int output_dim[3];     // output dimensions: HWC
   int output_dim_size;   // number of output dimensions
+  std::vector<__fp16> output;  // raw layer output if WantLayerOutput() was ever called
 
   bool is_output;           // is the layer output
   bool is_f32_output;       // is the output in 32-bit float format
@@ -124,6 +125,7 @@ class CDMP_Network {
     last_cpu_usec_ = 0;
 
     weights_loaded_ = false;
+    want_layer_outputs_ = false;
   };
 
   /// @brief Destructor.
@@ -192,6 +194,14 @@ class CDMP_Network {
   /// @brief Returns reference to information about DV context.
   inline const dmp_dv_info_v0& get_dv_info() const {
     return dv_info_;
+  }
+
+  /// @brief Output of all layers will be copied.
+  /// @details Make every layer to be executed separately and it's output to be copied to fpga_layer.output.
+  ///          Considerably slows down the execution, mainly for debugging purposes.
+  ///          Should be called before Initialize().
+  inline void WantLayerOutputs() {
+    want_layer_outputs_ = true;
   }
 
  protected:
@@ -293,6 +303,9 @@ class CDMP_Network {
 
   /// @brief Flag that LoadWeights was called.
   bool weights_loaded_;
+
+  /// @brief Save a copy of output of each layer.
+  bool want_layer_outputs_;
 };
 
 

@@ -108,6 +108,7 @@ bool CDMP_Network::ReserveMemory(size_t weights_size, size_t io_size) {
     ERR("Failed to start synchronization on memory for input/output: %s", dmp_dv_get_last_error_message());
     return false;
   }
+  memset(io_ptr_, 0, dmp_dv_mem_get_size(io_mem_));
 
   return true;
 }
@@ -459,6 +460,15 @@ bool CDMP_Network::RunNetwork() {
         // Layer does nothing by design
         break;
     }
+
+    if (want_layer_outputs_) {
+      if (dmp_dv_mem_sync_start(io_mem_, 1, 1)) {
+        ERR("Failed to start synchronization on memory for input/output: %s", dmp_dv_get_last_error_message());
+        return false;
+      }
+      layer.output.resize(layer.output_size >> 1);
+      memcpy(layer.output.data(), io_ptr_ + layer.output_offs, (layer.output_size >> 1) << 1);
+    }
   }
 
   last_conv_usec_ = conv_usec;
@@ -555,12 +565,16 @@ bool CDMP_Network::GenerateCommandLists() {
     return false;
   }
 
+  uint8_t *weights = dmp_dv_mem_map(weights_mem_);
+  dmp_dv_mem_sync_start(weights_mem_, 1, 0);
+
   // Create command lists
   layer_type last_type = LT_INPUT;
-  for (auto it = layers_.begin(); it != layers_.end(); ++it) {
+  int i_layer = 0;
+  for (auto it = layers_.begin(); it != layers_.end(); ++it, ++i_layer) {
     switch (it->type) {
       case LT_CONV:
-        if (last_type != LT_CONV) {
+        if ((want_layer_outputs_) || (last_type != LT_CONV)) {
           dmp_dv_cmdlist *obj = dmp_dv_cmdlist_create(ctx_);
           if (!obj) {
             ERR("dmp_dv_cmdlist_create() failed: %s\n", dmp_dv_get_last_error_message());
@@ -569,10 +583,26 @@ bool CDMP_Network::GenerateCommandLists() {
           cmdlists_.push_back(obj);
         }
         it->cmdlist = cmdlists_.back();
-        dmp_dv_cmdlist_add_raw(it->cmdlist, (dmp_dv_cmdraw*)&it->conv_conf);
+        if (dmp_dv_cmdlist_add_raw(it->cmdlist, (dmp_dv_cmdraw*)&it->conv_conf)) {
+          ERR("dmp_dv_cmdlist_add_raw() failed: %s\n", dmp_dv_get_last_error_message());
+          return false;
+        }
+        // TODO: remove it when debugging will be completed. -->
+        LOG("%s: weight_offs=%llu\n",
+            it->name.c_str(), (unsigned long long)it->conv_conf.run[0].weight_buf.offs);
+        {
+          char fnme[256];
+          snprintf(fnme, sizeof(fnme), "w.%02d.bin", i_layer);
+          FILE *fout = fopen(fnme, "wb");
+          if (fout) {
+            fwrite(weights + it->conv_conf.run[0].weight_buf.offs, 2, 256 + 8, fout);
+          }
+          fclose(fout);
+        }
+        // <--
         break;
       case LT_FC:
-        if (last_type != LT_FC) {
+        if ((want_layer_outputs_) || (last_type != LT_FC)) {
           dmp_dv_cmdlist *obj = dmp_dv_cmdlist_create(ctx_);
           if (!obj) {
             ERR("dmp_dv_cmdlist_create() failed: %s\n", dmp_dv_get_last_error_message());
@@ -581,7 +611,10 @@ bool CDMP_Network::GenerateCommandLists() {
           cmdlists_.push_back(obj);
         }
         it->cmdlist = cmdlists_.back();
-        dmp_dv_cmdlist_add_raw(it->cmdlist, (dmp_dv_cmdraw*)&it->fc_conf);
+        if (dmp_dv_cmdlist_add_raw(it->cmdlist, (dmp_dv_cmdraw*)&it->fc_conf)) {
+          ERR("dmp_dv_cmdlist_add_raw() failed: %s\n", dmp_dv_get_last_error_message());
+          return false;
+        }
         break;
       default:
         // Empty by design
@@ -625,11 +658,13 @@ bool CDMP_Network::GenerateCommandLists() {
   }
 
   // Commit command lists
+  int n_commited = 0;
   for (auto it = cmdlists_.begin(); it != cmdlists_.end(); ++it) {
     if (dmp_dv_cmdlist_commit(*it)) {
       ERR("Could not commit command list: %s\n", dmp_dv_get_last_error_message());
       return false;
     }
+    n_commited += 1;
   }
 
   return true;

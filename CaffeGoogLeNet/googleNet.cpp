@@ -136,17 +136,18 @@ int main(int argc, char** argv) {
 
   //dmp::modules::initialize();
 
-  string conv_freq, fc_freq;
-  conv_freq = std::to_string(network.get_dv_info().conv_freq);
-  fc_freq = std::to_string(network.get_dv_info().fc_freq);
-
-  network.Verbose(2);
+  network.Verbose(1);
+  network.WantLayerOutputs();
   if (!network.Initialize()) {
     return -1;
   }
   if (!network.LoadWeights(FILENAME_WEIGHTS)) {
     return -1;
   }
+
+  string conv_freq, fc_freq;
+  conv_freq = std::to_string(network.get_dv_info().conv_freq);
+  fc_freq = std::to_string(network.get_dv_info().fc_freq);
 
   void* ddr_buf_a_cpu = network.get_network_input_addr_cpu();
 
@@ -170,24 +171,24 @@ int main(int argc, char** argv) {
       continue;
     }
 
-    // HW processing times
-    if (conv_time_tot != 0 && fc_time_tot != 0) {
-      dmp::util::print_time_toDisplay(
-          TEXT_XOFS, TEXT_YOFS + 0,
-          "Convolution (" + conv_freq + " MHz HW ACC)     : ", conv_time_tot,
-          9999, 0xff00ff00, 0x00000001);
-      dmp::util::print_time_toDisplay(
-          TEXT_XOFS, TEXT_YOFS + 2,
-          "Fully Connected (" + fc_freq + " MHz HW ACC) : ", fc_time_tot, 9999,
-          0xff00ff00, 0x00000001);
-      dmp::util::print_time_toDisplay(
-          TEXT_XOFS, TEXT_YOFS + 4,
-          "Total Processing Time           : ", conv_time_tot + fc_time_tot,
-          9999, 0xffff0000, 0x00000001);
-    }
-
     if (sync_cnn_out == sync_cnn_in) {
       if (sync_cnn_out != 0) {
+        // HW processing times
+        if (conv_time_tot != 0 && fc_time_tot != 0) {
+          dmp::util::print_time_toDisplay(
+              TEXT_XOFS, TEXT_YOFS + 0,
+              "Convolution (" + conv_freq + " MHz HW ACC)     : ", conv_time_tot,
+              9999, 0xff00ff00, 0x00000001);
+          dmp::util::print_time_toDisplay(
+              TEXT_XOFS, TEXT_YOFS + 2,
+              "Fully Connected (" + fc_freq + " MHz HW ACC) : ", fc_time_tot, 9999,
+              0xff00ff00, 0x00000001);
+          dmp::util::print_time_toDisplay(
+              TEXT_XOFS, TEXT_YOFS + 4,
+              "Total Processing Time           : ", conv_time_tot + fc_time_tot,
+              9999, 0xffff0000, 0x00000001);
+        }
+
         network.get_final_output(networkOutput);
 
         dmp::util::print_image_toDisplay((SCREEN_W - IMAGE_W) / 2,
@@ -195,6 +196,27 @@ int main(int argc, char** argv) {
         dmp::util::print_result(catstr_vec, TEXT_XOFS, TEXT_YOFS - 8 - 5,
             dmp::util::catrank(&networkOutput.front()), 0x88ff8800, 0x00ff0000,
                      0x00000001);
+
+        {
+          const int n_layers = network.get_total_layer_count();
+          for (int i_layer = 0; i_layer < n_layers; ++i_layer) {
+            fpga_layer& layer = network.get_layer(i_layer);
+            char fnme[256];
+            snprintf(fnme, sizeof(fnme), "%02d.%dx%dx%d.bin", i_layer,
+                     layer.output_dim[0], layer.output_dim[1], layer.output_dim[2]);
+            FILE *fout = fopen(fnme, "wb");
+            if (!fout) {
+              fprintf(stderr, "fopen() failed for %s\n", fnme);
+              fflush(stderr);
+              return -1;
+            }
+            fwrite(layer.output.data(), sizeof(layer.output[0]), layer.output.size(), fout);
+            fclose(fout);
+            fprintf(stdout, "Saved %s\n", fnme);
+            fflush(stdout);
+          }
+          _exit(0);
+        }
 
         //dmp::modules::swap_buffer();
         fc++;
@@ -235,6 +257,16 @@ int main(int argc, char** argv) {
 
       // Copy image to FPGA memory
       memcpy(ddr_buf_a_cpu, imgProc, IMAGE_W * IMAGE_H * 3 * 2);
+      {
+        FILE *fout = fopen("input.bin", "wb");
+        if (fout) {
+          fwrite(ddr_buf_a_cpu, 2, IMAGE_W * IMAGE_H * 3, fout);
+          fclose(fout);
+          fprintf(stdout, "Saved input.bin\n");
+          fflush(stdout);
+          usleep(500000);
+        }
+      }
 
       if (exit_code == -1)  // do not start new HW ACC runs if about to exit...
         sync_cnn_in++;
