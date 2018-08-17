@@ -122,6 +122,8 @@ class CDMP_Network {
     last_conv_usec_ = 0;
     last_fc_usec_ = 0;
     last_cpu_usec_ = 0;
+
+    weights_loaded_ = false;
   };
 
   /// @brief Destructor.
@@ -154,8 +156,7 @@ class CDMP_Network {
   bool LoadWeights(const std::string& filename);
 
   /// @brief Runs the network.
-  /// @param sync_io_mem If true, do Device<->CPU input/output memory synchronization at the beginning and at the end of this function.
-  bool RunNetwork(bool sync_io_mem=true);
+  bool RunNetwork();
 
   /// @brief Returns address of the input buffer of the first layer.
   void *get_network_input_addr_cpu();
@@ -289,6 +290,9 @@ class CDMP_Network {
 
   /// @brief Dummy layer to return on error.
   static fpga_layer err_layer_;
+
+  /// @brief Flag that LoadWeights was called.
+  bool weights_loaded_;
 };
 
 

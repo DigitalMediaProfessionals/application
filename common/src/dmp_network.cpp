@@ -104,6 +104,11 @@ bool CDMP_Network::ReserveMemory(size_t weights_size, size_t io_size) {
     return false;
   }
 
+  if (dmp_dv_mem_sync_start(io_mem_, 1, 1)) {
+    ERR("Failed to start synchronization on memory for input/output: %s", dmp_dv_get_last_error_message());
+    return false;
+  }
+
   return true;
 }
 
@@ -149,6 +154,8 @@ bool CDMP_Network::LoadWeights(const std::string& filename) {
   }
   fclose(fin);
   dmp_dv_mem_unmap(weights_mem_);
+
+  weights_loaded_ = true;
 
   if (iprint_ > 0) {
     LOG("Loaded %zu bytes for weights from %s\n",
@@ -317,7 +324,12 @@ static void run_copy_concat(fpga_layer& layer, int input_layer_num, fpga_layer *
 }
 
 
-bool CDMP_Network::RunNetwork(bool sync_io_mem) {
+bool CDMP_Network::RunNetwork() {
+  if ((!weights_loaded_) && (weights_size_)) {
+    ERR("LoadWeights() must be called first");
+    return false;
+  }
+
   TimeInterval dt;
   int64_t exec_id = -1;
   dmp_dv_cmdlist *cmdlist = NULL;
@@ -325,47 +337,49 @@ bool CDMP_Network::RunNetwork(bool sync_io_mem) {
   int fc_usec = 0;
   int cpu_usec = 0;
 
-  if (sync_io_mem) {
-    dmp_dv_mem_sync_end(io_mem_);
-  }
-
-  for (auto it = layers_.begin(); it != layers_.end(); ++it) {
-    if (it->cmdlist) {
+  const int n_layers = (int)layers_.size();
+  for (int i_layer = 0; i_layer < n_layers; ++i_layer) {
+    fpga_layer& layer = layers_[i_layer];
+    if (layer.cmdlist) {
       // Execute command list on first command
-      if (it->cmdlist_pos == 0) {
+      if (layer.cmdlist_pos == 0) {
         if (exec_id >= 0) {
-          ERR("Incorrect layers order detected: layer name=%s cmdlist_pos=%d cmdlist_size=%d, but exec_id is already set\n",
-              it->name.c_str(), it->cmdlist_pos, it->cmdlist_size);
+          ERR("Incorrect layers order detected: layer %d, name=%s cmdlist_pos=%d cmdlist_size=%d, but exec_id is already set\n",
+              i_layer, layer.name.c_str(), layer.cmdlist_pos, layer.cmdlist_size);
+          return false;
+        }
+        if (dmp_dv_mem_sync_end(io_mem_)) {
+          ERR("Failed to end synchronization on memory for input/output: %s", dmp_dv_get_last_error_message());
           return false;
         }
         dt.reset();  // start time measurement
-        exec_id = dmp_dv_cmdlist_exec(it->cmdlist);
+        exec_id = dmp_dv_cmdlist_exec(layer.cmdlist);
         if (exec_id < 0) {
-          ERR("Could not execute command list for layer %s: %s\n",
-              it->name.c_str(), dmp_dv_get_last_error_message());
+          ERR("Could not execute command list for layer %d, name=%s: %s\n",
+              i_layer, layer.name.c_str(), dmp_dv_get_last_error_message());
           return false;
         }
         if (iprint_ > 1) {
-          LOG("Executed command list for \"%s\", cmdlist_pos=%d cmdlist_size=%d, exec_id=%lld\n",
-              it->name.c_str(), it->cmdlist_pos, it->cmdlist_size, (long long)exec_id);
+          LOG("Executed command list for layer %d, name=%s cmdlist_pos=%d cmdlist_size=%d, exec_id=%lld\n",
+              i_layer, layer.name.c_str(), layer.cmdlist_pos, layer.cmdlist_size, (long long)exec_id);
         }
-        cmdlist = it->cmdlist;  // remember last executed command list
+        cmdlist = layer.cmdlist;  // remember last executed command list
       }
 
       // Wait for command list completion on last command
-      if (it->cmdlist_pos == it->cmdlist_size - 1) {
+      if (layer.cmdlist_pos == layer.cmdlist_size - 1) {
         if (exec_id < 0) {
-          ERR("Incorrect layers order detected: layer name=%s cmdlist_pos=%d cmdlist_size=%d, but exec_id is not set\n",
-              it->name.c_str(), it->cmdlist_pos, it->cmdlist_size);
+          ERR("Incorrect layers order detected: layer %d, name=%s cmdlist_pos=%d cmdlist_size=%d, but exec_id is not set\n",
+              i_layer, layer.name.c_str(), layer.cmdlist_pos, layer.cmdlist_size);
           return false;
         }
         if (dmp_dv_cmdlist_wait(cmdlist, exec_id)) {
-          ERR("Wait for command completion failed, issued on layer name=%s: %s\n",
-              it->name.c_str(), dmp_dv_get_last_error_message());
+          ERR("Wait for command completion failed, issued on layer %d, name=%s: %s\n",
+              i_layer, layer.name.c_str(), dmp_dv_get_last_error_message());
           return false;
         }
         const int usec = dt.get_us();
-        switch (it->type) {
+        switch (layer.type) {
           case LT_CONV:
             conv_usec += usec;
             break;
@@ -373,55 +387,71 @@ bool CDMP_Network::RunNetwork(bool sync_io_mem) {
             fc_usec += usec;
             break;
           default:
-            ERR("Possible implementation error on line %d of file %s: layer name=%s cmdlist_pos=%d cmdlist_size=%d\n",
-                __LINE__, __FILE__, it->name.c_str(), it->cmdlist_pos, it->cmdlist_size);
+            ERR("Possible implementation error on line %d of file %s: layer %d, name=%s cmdlist_pos=%d cmdlist_size=%d\n",
+                __LINE__, __FILE__, i_layer, layer.name.c_str(), layer.cmdlist_pos, layer.cmdlist_size);
             return false;
         }
         if (iprint_ > 1) {
-          LOG("Waited on command list for \"%s\", cmdlist_pos=%d cmdlist_size=%d, exec_id=%lld, usec=%d\n",
-              it->name.c_str(), it->cmdlist_pos, it->cmdlist_size, (long long)exec_id, usec);
+          LOG("Waited on command list for layer %d, name=%s cmdlist_pos=%d cmdlist_size=%d, exec_id=%lld, usec=%d\n",
+              i_layer, layer.name.c_str(), layer.cmdlist_pos, layer.cmdlist_size, (long long)exec_id, usec);
         }
         exec_id = -1;
         cmdlist = NULL;
       }
-      if (it->cmdlist_pos >= it->cmdlist_size) {
-        ERR("Possible implementation error on line %d of file %s: layer name=%s cmdlist_pos=%d cmdlist_size=%d\n",
-            __LINE__, __FILE__, it->name.c_str(), it->cmdlist_pos, it->cmdlist_size);
+      if (layer.cmdlist_pos >= layer.cmdlist_size) {
+        ERR("Possible implementation error on line %d of file %s: layer %d, name=%s cmdlist_pos=%d cmdlist_size=%d\n",
+            __LINE__, __FILE__, i_layer, layer.name.c_str(), layer.cmdlist_pos, layer.cmdlist_size);
         return false;
       }
     }
     else if (exec_id >= 0) {
-      ERR("Incorrect layers order detected: layer name=%s cmdlist_pos=%d cmdlist_size=%d, but exec_id is already set\n",
-          it->name.c_str(), it->cmdlist_pos, it->cmdlist_size);
+      ERR("Incorrect layers order detected: layer %d, name=%s cmdlist_pos=%d cmdlist_size=%d, but exec_id is already set\n",
+          i_layer, layer.name.c_str(), layer.cmdlist_pos, layer.cmdlist_size);
       return false;
     }
-    switch (it->type) {
+    switch (layer.type) {
       case LT_CONV:
       case LT_FC:
-        if (!it->cmdlist) {
-          ERR("Command list for layer %s is NULL, Initialize() must be called and succeed first\n",
-              it->name.c_str());
+        if (!layer.cmdlist) {
+          ERR("Command list for layer %d, name=%s is NULL, Initialize() must be called and succeed first\n",
+              i_layer, layer.name.c_str());
           return false;
         }
         break;
       case LT_SOFTMAX:
+        if (dmp_dv_mem_sync_start(io_mem_, 1, 1)) {
+          ERR("Failed to start synchronization on memory for input/output: %s", dmp_dv_get_last_error_message());
+          return false;
+        }
         dt.reset();
-        run_softmax(*it, it->softmax_axis, io_ptr_);
+        run_softmax(layer, layer.softmax_axis, io_ptr_);
         cpu_usec += dt.get_us();
         break;
       case LT_FLATTEN:
+        if (dmp_dv_mem_sync_start(io_mem_, 1, 1)) {
+          ERR("Failed to start synchronization on memory for input/output: %s", dmp_dv_get_last_error_message());
+          return false;
+        }
         dt.reset();
-        run_flatten(*it, io_ptr_);
+        run_flatten(layer, io_ptr_);
         cpu_usec += dt.get_us();
         break;
       case LT_COPY_CONCAT:
+        if (dmp_dv_mem_sync_start(io_mem_, 1, 1)) {
+          ERR("Failed to start synchronization on memory for input/output: %s", dmp_dv_get_last_error_message());
+          return false;
+        }
         dt.reset();
-        run_copy_concat(*it, it->input_layer_num, it->input_layers, io_ptr_);
+        run_copy_concat(layer, layer.input_layer_num, layer.input_layers, io_ptr_);
         cpu_usec += dt.get_us();
         break;
       case LT_CUSTOM:
+        if (dmp_dv_mem_sync_start(io_mem_, 1, 1)) {
+          ERR("Failed to start synchronization on memory for input/output: %s", dmp_dv_get_last_error_message());
+          return false;
+        }
         dt.reset();
-        (*(it->custom_proc_ptr))(*it, it->custom_param, io_ptr_);
+        (*(layer.custom_proc_ptr))(layer, layer.custom_param, io_ptr_);
         cpu_usec += dt.get_us();
         break;
       case LT_INPUT:
@@ -435,8 +465,9 @@ bool CDMP_Network::RunNetwork(bool sync_io_mem) {
   last_fc_usec_ = fc_usec;
   last_cpu_usec_ = cpu_usec;
 
-  if (sync_io_mem) {
-    dmp_dv_mem_sync_start(io_mem_, 1, 1);
+  if (dmp_dv_mem_sync_start(io_mem_, 1, 1)) {
+    ERR("Failed to start synchronization on memory for input/output: %s", dmp_dv_get_last_error_message());
+    return false;
   }
 
   return true;
