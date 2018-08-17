@@ -60,7 +60,7 @@ std::vector<std::string> catstr_vec(categories, categories + 1000);
 unsigned int fc = 0;
 
 unsigned int imgView[IMAGE_W * IMAGE_H];
-unsigned short imgProc[IMAGE_W * IMAGE_H * 3];
+__fp16 imgProc[IMAGE_W * IMAGE_H * 3];
 
 // 2ND THREAD FOR HW CONTROL
 
@@ -144,7 +144,9 @@ int main(int argc, char** argv) {
   if (!network.Initialize()) {
     return -1;
   }
-  network.LoadWeights(FILENAME_WEIGHTS);
+  if (!network.LoadWeights(FILENAME_WEIGHTS)) {
+    return -1;
+  }
 
   void* ddr_buf_a_cpu = network.get_network_input_addr_cpu();
 
@@ -232,7 +234,7 @@ int main(int argc, char** argv) {
       }
 
       // Copy image to FPGA memory
-      memcpy(ddr_buf_a_cpu, (void*)imgProc, IMAGE_W * IMAGE_H * 3 * 2);
+      memcpy(ddr_buf_a_cpu, imgProc, IMAGE_W * IMAGE_H * 3 * 2);
 
       if (exit_code == -1)  // do not start new HW ACC runs if about to exit...
         sync_cnn_in++;

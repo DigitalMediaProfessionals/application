@@ -31,7 +31,7 @@ void close_cam() {
   v4l2_cam_deinit();
 }
 
-void capture_cam(unsigned int *__restrict vImg, int capture_w, int capture_h,
+void capture_cam(uint32_t *vImg, int capture_w, int capture_h,
                  int crop_xoffs, int crop_yoffs, int crop_w, int crop_h) {
   v4l2_cam_get(vImg, capture_w, capture_h, crop_xoffs, crop_yoffs, crop_w,
                crop_h);
@@ -67,7 +67,7 @@ std::vector<std::string> get_input_image_names(
   return image_names;
 }
 
-int decode_jpg_file(const std::string &imgFileName, unsigned int *imgView,
+int decode_jpg_file(const std::string &imgFileName, uint32_t *imgView,
                     int img_width, int img_height) {
   int size;
   char *buf;
@@ -127,55 +127,32 @@ int decode_jpg_file(const std::string &imgFileName, unsigned int *imgView,
   return 0;
 }
 
-inline unsigned int sp2hpU(unsigned int fu) {
-  int eSP = (fu >> 23) & 0xff;
-  int ef16 = (eSP == 0xff) ? 0x1f : ((eSP == 0) ? 0 : (eSP - 0x7f + 0xf));
-  if (ef16 <= 0)
-    return 0;
-  else if (ef16 >= 0x1f)
-    return ((fu >> 16) & 0x8000) | 0x7c00;
-  else {
-    unsigned int u = ((fu >> 16) & 0x8000) | (ef16 << 10);
-    u |= ((fu >> 13) & 0x3ff);
-    if (fu & 0x1000) u++;
-    return u;
-  }
-}
 
-inline unsigned short sp2hp(float sp) {
-  union {
-    unsigned int uu;
-    float ff;
-  } j;
-  j.ff = sp;
-  return sp2hpU(j.uu);
-}
-
-void preproc_image(unsigned int *imgView, unsigned short *imgProc,
+void preproc_image(uint32_t *__restrict imgView, __fp16 *__restrict imgProc,
                    int img_width, int img_height, float r_offs, float g_offs,
                    float b_offs, float sf, bool transpose, bool is_bgr) {
   int i = 0, j = 0;
   for (int y = 0; y < img_height; y++) {
     if (transpose) j = 3 * y;
     for (int x = 0; x < img_width; x++) {
-      unsigned int rgba = imgView[i];
+      uint32_t rgba = imgView[i];
       i++;
       unsigned char r = (rgba >> 24);
       unsigned char g = (rgba >> 16) & 0xFF;
       unsigned char b = (rgba >> 8) & 0xFF;
       if (is_bgr) {
-        imgProc[j] = sp2hp(sf * (1.0 * b + b_offs));
+        imgProc[j] = (__fp16)(sf * (b_offs + b));
         j++;
-        imgProc[j] = sp2hp(sf * (1.0 * g + g_offs));
+        imgProc[j] = (__fp16)(sf * (g_offs + g));
         j++;
-        imgProc[j] = sp2hp(sf * (1.0 * r + r_offs));
+        imgProc[j] = (__fp16)(sf * (r_offs + r));
         j++;
       } else {
-        imgProc[j] = sp2hp(sf * (1.0 * r + r_offs));
+        imgProc[j] = (__fp16)(sf * (r_offs + r));
         j++;
-        imgProc[j] = sp2hp(sf * (1.0 * g + g_offs));
+        imgProc[j] = (__fp16)(sf * (g_offs + g));
         j++;
-        imgProc[j] = sp2hp(sf * (1.0 * b + b_offs));
+        imgProc[j] = (__fp16)(sf * (b_offs + b));
         j++;
       }
       if (transpose) j += 3 * (img_height - 1);
@@ -183,19 +160,20 @@ void preproc_image(unsigned int *imgView, unsigned short *imgProc,
   }
 }
 
-void preproc_image(unsigned int *imgView, unsigned short *imgProc,
+
+void preproc_image(uint32_t *__restrict imgView, __fp16 *__restrict imgProc,
                    int inimg_width, int inimg_height, int outimg_width,
                    int outimg_height, float r_offs, float g_offs, float b_offs,
                    float sf, bool transpose, bool is_bgr) {
-  unsigned int *imgIn = imgView, *imgOut = nullptr;
+  uint32_t *imgIn = imgView, *imgOut = nullptr;
 
   while (inimg_width >= outimg_width * 2 && inimg_height >= outimg_height * 2) {
     int nw = inimg_width / 2;
     int nh = inimg_height / 2;
-    imgOut = new unsigned int[nw * nh];
+    imgOut = new uint32_t[nw * nh];
     for (int y = 0; y < nh; y++) {
       for (int x = 0; x < nw; x++) {
-        unsigned int p, pr = 0, pg = 0, pb = 0;
+        uint32_t p, pr = 0, pg = 0, pb = 0;
         p = imgIn[(y * 2 + 0) * inimg_width + (x * 2 + 0)];
         pr += (p >> 24);
         pg += (p >> 16) & 0xFF;
@@ -227,10 +205,10 @@ void preproc_image(unsigned int *imgView, unsigned short *imgProc,
   while (inimg_width >= outimg_width * 2) {
     int nw = inimg_width / 2;
     int nh = inimg_height;
-    imgOut = new unsigned int[nw * nh];
+    imgOut = new uint32_t[nw * nh];
     for (int y = 0; y < nh; y++) {
       for (int x = 0; x < nw; x++) {
-        unsigned int p, pr = 0, pg = 0, pb = 0;
+        uint32_t p, pr = 0, pg = 0, pb = 0;
         p = imgIn[y * inimg_width + (x * 2 + 0)];
         pr += (p >> 24);
         pg += (p >> 16) & 0xFF;
@@ -253,10 +231,10 @@ void preproc_image(unsigned int *imgView, unsigned short *imgProc,
   while (inimg_height >= outimg_height * 2) {
     int nw = inimg_width;
     int nh = inimg_height / 2;
-    imgOut = new unsigned int[nw * nh];
+    imgOut = new uint32_t[nw * nh];
     for (int y = 0; y < nh; y++) {
       for (int x = 0; x < nw; x++) {
-        unsigned int p, pr = 0, pg = 0, pb = 0;
+        uint32_t p, pr = 0, pg = 0, pb = 0;
         p = imgIn[(y * 2 + 0) * inimg_width + x];
         pr += (p >> 24);
         pg += (p >> 16) & 0xFF;
@@ -281,7 +259,7 @@ void preproc_image(unsigned int *imgView, unsigned short *imgProc,
     int nh = outimg_height;
     float sx = float(inimg_width) / float(outimg_width);
     float sy = float(inimg_height) / float(outimg_height);
-    imgOut = new unsigned int[nw * nh];
+    imgOut = new uint32_t[nw * nh];
     for (int y = 0; y < nh; y++) {
       float ty = y * sy;
       int iy = int(ty);
@@ -291,7 +269,7 @@ void preproc_image(unsigned int *imgView, unsigned short *imgProc,
         int ix = int(tx);
         float rx = tx - ix;
         float r = 0.f, g = 0.f, b = 0.f;
-        unsigned int p;
+        uint32_t p;
         p = imgIn[(iy + 0) * inimg_width + (ix + 0)];
         r += (p >> 24) * rx * ry;
         g += ((p >> 16) & 0xFF) * rx * ry;
