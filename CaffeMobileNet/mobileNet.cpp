@@ -57,12 +57,12 @@ using namespace std;
 #define BARS_YOFS (512 + 48)  // pixels
 
 // Frame counter
-unsigned int fc = 0;
+uint32_t fc = 0;
 
 std::vector<std::string> catstr_vec(categories, categories + 1000);
 
-unsigned int imgView[IMAGE_W * IMAGE_H];
-unsigned short imgProc[IMAGE_W * IMAGE_H * 3];
+uint32_t imgView[IMAGE_W * IMAGE_H];
+__fp16 imgProc[IMAGE_W * IMAGE_H * 3];
 
 // 2ND THREAD FOR HW CONTROL
 
@@ -77,10 +77,9 @@ void* hwacc_thread_func(void* targ) {
       usleep(1000);  // sleep 1 ms
     }
 
-    network.run_network();
+    network.RunNetwork();
 
-    conv_time_tot =
-        network.get_convolution_performance();  // time_diff(&t1, &t2);
+    conv_time_tot = network.get_conv_usec();  // time_diff(&t1, &t2);
 
     sync_cnn_out++;
   }
@@ -135,25 +134,27 @@ int main(int argc, char** argv) {
 
   if (!dmp::util::load_background_image("fpgatitle_mobileNet.ppm")) return 1;
 
-  dmp::modules::initialize();
+  //dmp::modules::initialize();
+
+  network.Verbose(1);
+  //network.WantLayerOutputs();
+  if (!network.Initialize()) {
+    return -1;
+  }
+  if (!network.LoadWeights(FILENAME_WEIGHTS)) {
+    return -1;
+  }
 
   string conv_freq, fc_freq;
-  unsigned int conv_freq_int, fc_freq_int;
-  dmp::modules::get_info(dmp::modules::FREQ_CONV, &conv_freq_int);
-  dmp::modules::get_info(dmp::modules::FREQ_FC, &fc_freq_int);
-  conv_freq = std::to_string(conv_freq_int);
-  fc_freq = std::to_string(fc_freq_int);
-
-  network.initialize();
-  network.reserve_memory();
-  network.load_weights(FILENAME_WEIGHTS);
+  conv_freq = std::to_string(network.get_dv_info().conv_freq);
+  fc_freq = std::to_string(network.get_dv_info().fc_freq);
 
   void* ddr_buf_a_cpu = network.get_network_input_addr_cpu();
   // std::cout<<std::hex<<"ddr_buf_a_cpu="<<ddr_buf_a_cpu<<std::endl;
 
   // dmp::modules::get_hw_info();
 
-  dmp::modules::reset_button_state();
+  //dmp::modules::reset_button_state();
 
   int exit_code = -1;
 
@@ -167,26 +168,26 @@ int main(int argc, char** argv) {
   while (exit_code == -1) {
     // Static Images
     if (fc < 2) {
-      dmp::util::print_background_image_toDisplay();
-      dmp::modules::swap_buffer();
+      //dmp::util::print_background_image_toDisplay();
+      //dmp::modules::swap_buffer();
       fc++;  // Frame Counter
       continue;
     }
 
-    // HW processing times
-    if (conv_time_tot != 0) {
-      dmp::util::print_time_toDisplay(
-          TEXT_XOFS, TEXT_YOFS + 0,
-          "Convolution (" + conv_freq + " MHz HW ACC)     : ", conv_time_tot,
-          9999, 0xff00ff00, 0x00000001);
-      dmp::util::print_time_toDisplay(
-          TEXT_XOFS, TEXT_YOFS + 4,
-          "Total Processing Time           : ", conv_time_tot, 9999, 0xffff0000,
-          0x00000001);
-    }
-
     if (sync_cnn_out == sync_cnn_in) {
       if (sync_cnn_out != 0) {
+        // HW processing times
+        if (conv_time_tot != 0) {
+          dmp::util::print_time_toDisplay(
+              TEXT_XOFS, TEXT_YOFS + 0,
+              "Convolution (" + conv_freq + " MHz HW ACC)     : ", conv_time_tot,
+              9999, 0xff00ff00, 0x00000001);
+          dmp::util::print_time_toDisplay(
+              TEXT_XOFS, TEXT_YOFS + 4,
+              "Total Processing Time           : ", conv_time_tot, 9999, 0xffff0000,
+              0x00000001);
+        }
+
         network.get_final_output(networkOutput);
 
         dmp::util::print_image_toDisplay((SCREEN_W - IMAGE_W) / 2,
@@ -195,10 +196,10 @@ int main(int argc, char** argv) {
             dmp::util::catrank(&networkOutput.front()), 0x88ff8800, 0x00ff0000,
                      0x00000001);
 
-        dmp::modules::swap_buffer();
+        //dmp::modules::swap_buffer();
         fc++;
 
-        unsigned int button = dmp::modules::get_button_state();
+        uint32_t button = 0;//dmp::modules::get_button_state();
         if (button & 4) {  // exit demo with exit code of selected next demo
           if (has_democonf) {
             int sel_num = democonf[democonf_sel].first;
@@ -247,7 +248,7 @@ int main(int argc, char** argv) {
     }
   }
 
-  dmp::modules::shutdown();
+  //dmp::modules::shutdown();
 
   return exit_code;
 }

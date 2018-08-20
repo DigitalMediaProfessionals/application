@@ -57,9 +57,9 @@ using namespace std;
 
 std::vector<std::string> catstr_vec(categories, categories + 1000);
 
-unsigned int fc = 0;
+uint32_t fc = 0;
 
-unsigned int imgView[IMAGE_W * IMAGE_H];
+uint32_t imgView[IMAGE_W * IMAGE_H];
 __fp16 imgProc[IMAGE_W * IMAGE_H * 3];
 
 // 2ND THREAD FOR HW CONTROL
@@ -221,7 +221,7 @@ int main(int argc, char** argv) {
         //dmp::modules::swap_buffer();
         fc++;
 
-        unsigned int button = 0;//dmp::modules::get_button_state();
+        uint32_t button = 0;//dmp::modules::get_button_state();
         if (button & 4) {  // exit demo with exit code of selected next demo
           if (has_democonf) {
             int sel_num = democonf[democonf_sel].first;
