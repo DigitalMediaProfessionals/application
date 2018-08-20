@@ -137,7 +137,10 @@ int main(int argc, char** argv) {
   //dmp::modules::initialize();
 
   network.Verbose(1);
-  network.WantLayerOutputs();
+  const bool dump_outputs = false;
+  if (dump_outputs) {
+    network.WantLayerOutputs();
+  }
   if (!network.Initialize()) {
     return -1;
   }
@@ -197,7 +200,7 @@ int main(int argc, char** argv) {
             dmp::util::catrank(&networkOutput.front()), 0x88ff8800, 0x00ff0000,
                      0x00000001);
 
-        {
+        if (dump_outputs) {
           const int n_layers = network.get_total_layer_count();
           for (int i_layer = 0; i_layer < n_layers; ++i_layer) {
             fpga_layer& layer = network.get_layer(i_layer);
@@ -215,6 +218,7 @@ int main(int argc, char** argv) {
             fprintf(stdout, "Saved %s\n", fnme);
             fflush(stdout);
           }
+          fflush(stderr);
           _exit(0);
         }
 
@@ -257,14 +261,14 @@ int main(int argc, char** argv) {
 
       // Copy image to FPGA memory
       memcpy(ddr_buf_a_cpu, imgProc, IMAGE_W * IMAGE_H * 3 * 2);
-      {
+
+      if (dump_outputs) {
         FILE *fout = fopen("input.bin", "wb");
         if (fout) {
           fwrite(ddr_buf_a_cpu, 2, IMAGE_W * IMAGE_H * 3, fout);
           fclose(fout);
           fprintf(stdout, "Saved input.bin\n");
           fflush(stdout);
-          usleep(500000);
         }
       }
 
