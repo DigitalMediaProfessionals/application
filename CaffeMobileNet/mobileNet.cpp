@@ -44,8 +44,8 @@ CCaffeMobileNet network;
 
 using namespace std;
 
-#define SCREEN_W 1280
-#define SCREEN_H 720
+#define SCREEN_W (dmp::util::get_screen_width())
+#define SCREEN_H (dmp::util::get_screen_height())
 
 #define IMAGE_W 224
 #define IMAGE_H 224
@@ -66,13 +66,17 @@ __fp16 imgProc[IMAGE_W * IMAGE_H * 3];
 
 // 2ND THREAD FOR HW CONTROL
 
-volatile uint64_t sync_cnn_in = 0;
-volatile uint64_t sync_cnn_out = 0;
+uint64_t sync_cnn_in = 0;
+uint64_t sync_cnn_out = 0;
 
-volatile int conv_time_tot = 0;
+int conv_time_tot = 0;
 
+bool g_should_stop = false;
+
+
+/// @brief Thread for running network inference and waiting for the result.
 void* hwacc_thread_func(void* targ) {
-  while (true) {
+  while (!g_should_stop) {
     while (sync_cnn_in == sync_cnn_out) {
       usleep(1000);  // sleep 1 ms
     }
@@ -81,13 +85,20 @@ void* hwacc_thread_func(void* targ) {
 
     conv_time_tot = network.get_conv_usec();  // time_diff(&t1, &t2);
 
-    sync_cnn_out++;
+    ++sync_cnn_out;
   }
 
-  return NULL;  // will never reach here but this removes compiler warning...
+  return NULL;
 }
 
+
+/// @brief Entry point.
 int main(int argc, char** argv) {
+  if (!dmp::util::init_fb()) {
+    fprintf(stderr, "dmp::util::init_fb() failed\n");
+    return 1;
+  }
+
   const std::string input_image_path = "./images/";
   const std::vector<std::string> input_image_suffix = {".jpg", ".jpeg", ".JPG",
                                                        ".JPEG"};
@@ -96,7 +107,7 @@ int main(int argc, char** argv) {
       dmp::util::get_input_image_names(input_image_path, input_image_suffix);
   int num_images = image_names.size();
   if (num_images == 0) {
-    cout << "No input images." << endl;
+    fprintf(stderr, "No input images found in: %s\n", input_image_path.c_str());
     return 1;
   }
 
@@ -132,12 +143,12 @@ int main(int argc, char** argv) {
   dmp::util::set_inputImageSize(IMAGE_W, IMAGE_H);
   dmp::util::createBackgroundImage(SCREEN_W, SCREEN_H);
 
-  if (!dmp::util::load_background_image("fpgatitle_mobileNet.ppm")) return 1;
-
-  //dmp::modules::initialize();
+  if (!dmp::util::load_background_image("fpgatitle_mobileNet.ppm")) {
+    fprintf(stderr, "dmp::util::load_background_image() failed\n");
+    return 1;
+  }
 
   network.Verbose(1);
-  //network.WantLayerOutputs();
   if (!network.Initialize()) {
     return -1;
   }
@@ -150,11 +161,8 @@ int main(int argc, char** argv) {
   fc_freq = std::to_string(network.get_dv_info().fc_freq);
 
   void* ddr_buf_a_cpu = network.get_network_input_addr_cpu();
-  // std::cout<<std::hex<<"ddr_buf_a_cpu="<<ddr_buf_a_cpu<<std::endl;
 
-  // dmp::modules::get_hw_info();
-
-  //dmp::modules::reset_button_state();
+  dmp::util::reset_button_state();
 
   int exit_code = -1;
 
@@ -168,8 +176,8 @@ int main(int argc, char** argv) {
   while (exit_code == -1) {
     // Static Images
     if (fc < 2) {
-      //dmp::util::print_background_image_toDisplay();
-      //dmp::modules::swap_buffer();
+      dmp::util::print_background_image_toDisplay();
+      dmp::util::swap_buffer();
       fc++;  // Frame Counter
       continue;
     }
@@ -196,10 +204,10 @@ int main(int argc, char** argv) {
             dmp::util::catrank(&networkOutput.front()), 0x88ff8800, 0x00ff0000,
                      0x00000001);
 
-        //dmp::modules::swap_buffer();
+        dmp::util::swap_buffer();
         fc++;
 
-        uint32_t button = 0;//dmp::modules::get_button_state();
+        uint32_t button = dmp::util::get_button_state();
         if (button & 4) {  // exit demo with exit code of selected next demo
           if (has_democonf) {
             int sel_num = democonf[democonf_sel].first;
@@ -248,7 +256,10 @@ int main(int argc, char** argv) {
     }
   }
 
-  //dmp::modules::shutdown();
+  g_should_stop = true;
+  pthread_join(hwacc_thread, NULL);
+
+  dmp::util::shutdown();
 
   return exit_code;
 }

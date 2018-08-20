@@ -24,24 +24,225 @@
 #include <stdio.h>
 #include <math.h>
 
+#include <linux/fb.h>
+#include <linux/videodev2.h>
+#include <linux/kd.h>
+
 using namespace dmp;
 using namespace util;
 
 namespace dmp {
 namespace util {
 
-unsigned int* background_image = NULL;
-unsigned int* textbuf8 = NULL;   //[SCREEN_W*8];
-unsigned int* textbuf16 = NULL;  //[SCREEN_W*16];
-unsigned int* barbuf = NULL;
+static uint32_t* background_image = NULL;
+static uint32_t* textbuf8 = NULL;   //[SCREEN_W*8];
+static uint32_t* textbuf16 = NULL;  //[SCREEN_W*16];
+static uint32_t* barbuf = NULL;
 
-unsigned int* imgTmp;
+static uint32_t* imgTmp;
 
-static unsigned int SCREEN_W = 0;
-static unsigned int SCREEN_H = 0;
+static uint32_t IMAGE_W = 0;
+static uint32_t IMAGE_H = 0;
 
-static unsigned int IMAGE_W = 0;
-static unsigned int IMAGE_H = 0;
+static int g_fb_file = -1;
+static struct fb_fix_screeninfo g_fb_fix_info;
+static struct fb_var_screeninfo g_fb_var_info;
+static uint32_t g_fb_pixfmt = 0;
+static uint8_t *g_fb_mem = NULL;
+static uint8_t *g_frame_ptr = NULL;
+static int g_console = -1;
+
+#define SCREEN_W (g_fb_var_info.xres)
+#define SCREEN_H (g_fb_var_info.yres)
+
+#define ERR(...) fprintf(stderr, __VA_ARGS__); fflush(stderr)
+
+static void update_frame_ptr() {
+  g_frame_ptr = g_fb_mem + (g_fb_var_info.yoffset * g_fb_var_info.xres + g_fb_var_info.xoffset) * (g_fb_var_info.bits_per_pixel >> 3);
+}
+
+static bool set_pan(uint32_t pan_x, uint32_t pan_y) {
+  struct fb_var_screeninfo var_info;
+  memset(&var_info, 0, sizeof var_info);
+  var_info.xoffset = pan_x;
+  var_info.yoffset = pan_y;
+
+  int res = ioctl(g_fb_file, FBIOPAN_DISPLAY, &var_info);
+  if (res < 0) {
+    ERR("ioctl(FBIOPAN_DISPLAY) failed for /dev/fb0\n");
+    return false;
+  }
+
+  g_fb_var_info.xoffset = var_info.xoffset;
+  g_fb_var_info.yoffset = var_info.yoffset;
+
+  update_frame_ptr();
+
+  return true;
+}
+
+static inline uint8_t* get_frame_ptr() {
+  return g_frame_ptr;
+}
+
+uint32_t get_screen_width() {
+  return g_fb_var_info.xres;
+}
+
+uint32_t get_screen_height() {
+  return g_fb_var_info.yres;
+}
+
+static void release_fb() {
+  if (g_console != -1) {
+    ioctl(g_console, KDSETMODE, KD_TEXT);
+    close(g_console);
+    g_console = -1;
+  }
+  if (g_fb_mem) {
+    munmap(g_fb_mem, g_fb_fix_info.smem_len);
+    g_fb_mem = NULL;
+  }
+  if (g_fb_file != -1) {
+    close(g_fb_file);
+    g_fb_file = -1;
+  }
+}
+
+bool init_fb() {
+  if (g_fb_file != -1) {
+    ERR("Framebuffer is already opened\n");
+    return false;
+  }
+  g_fb_file = open("/dev/fb0", O_RDWR | O_CLOEXEC);
+  if (g_fb_file == -1) {
+    ERR("open() failed for /dev/fb0\n");
+    return false;
+  }
+
+  int res = ioctl(g_fb_file, FBIOGET_FSCREENINFO, &g_fb_fix_info);
+  if (res < 0) {
+    ERR("ioctl(FBIOGET_FSCREENINFO) failed for /dev/fb0\n");
+    release_fb();
+    return false;
+  }
+  res = ioctl(g_fb_file, FBIOGET_VSCREENINFO, &g_fb_var_info);
+  if (res < 0) {
+    ERR("ioctl(FBIOGET_FSCREENINFO) failed for /dev/fb0\n");
+    release_fb();
+    return false;
+  }
+  if ((!g_fb_var_info.xres) || (!g_fb_var_info.yres)) {
+    ERR("Could not determine framebuffer dimensions: xres=%u yres=%u\n",
+        g_fb_var_info.xres, g_fb_var_info.yres);
+    release_fb();
+    return false;
+  }
+
+  switch (g_fb_var_info.bits_per_pixel) {
+    case 16:
+      g_fb_pixfmt = V4L2_PIX_FMT_RGB565;
+      break;
+    case 24:
+      if (g_fb_var_info.red.offset == 0) {
+        g_fb_pixfmt = V4L2_PIX_FMT_RGB24;
+      }
+      else {
+        g_fb_pixfmt = V4L2_PIX_FMT_BGR24;
+      }
+      break;
+     case 32:
+      if (g_fb_var_info.red.offset == 0) {
+        g_fb_pixfmt = V4L2_PIX_FMT_RGB32;
+      }
+      else {
+        g_fb_pixfmt = V4L2_PIX_FMT_BGR32;
+      }
+      break;
+      default: {
+        g_fb_pixfmt = 0;
+      }
+  }
+  if (g_fb_pixfmt != V4L2_PIX_FMT_BGR24) {
+    ERR("Unsupported pixel format: bpp=%d red.offset=%d\n",
+        g_fb_var_info.bits_per_pixel, g_fb_var_info.red.offset);
+    release_fb();
+    return false;
+  }
+
+  if (g_fb_fix_info.smem_len < g_fb_var_info.xres * g_fb_var_info.yres * (g_fb_var_info.bits_per_pixel >> 2)) {
+    ERR("Framebuffer doesn't support double buffering\n");
+    release_fb();
+    return false;
+  }
+
+  if (g_fb_fix_info.line_length != g_fb_var_info.xres * (g_fb_var_info.bits_per_pixel >> 3)) {
+    ERR("Support for framebuffer with bigger than visible width %d line length %d is not implemented\n",
+        g_fb_var_info.xres * (g_fb_var_info.bits_per_pixel >> 3), g_fb_fix_info.line_length);
+    release_fb();
+    return false;
+  }
+
+  g_fb_mem = (uint8_t*)mmap(
+      NULL, g_fb_fix_info.smem_len, PROT_READ | PROT_WRITE,
+      MAP_SHARED, g_fb_file, 0);
+  if (!g_fb_mem) {
+    ERR("mmap() failed for /dev/fb0\n");
+    release_fb();
+    return false;
+  }
+
+  // Set graphics mode on the console
+  static const char *console_fnmes[2] = {"/dev/tty", "/dev/tty0"};
+  for (int i = 0; i < 2; ++i) {
+    g_console = open(console_fnmes[i], O_RDWR | O_CLOEXEC);
+    if (g_console != -1) {
+      if (ioctl(g_console, KDSETMODE, KD_GRAPHICS)) {
+        close(g_console);
+        g_console = -1;
+      }
+      else {
+        break;
+      }
+    }
+  }
+
+  set_pan(g_fb_var_info.xoffset, 0);
+
+  return true;
+}
+
+void shutdown() {
+  deleteBackgroundImage();
+  release_fb();
+}
+
+bool swap_buffer() {
+  int res = ioctl(g_fb_file, FBIOBLANK, FB_BLANK_UNBLANK);
+  if (res < 0) {
+    ERR("ioctl(FB_BLANK_UNBLANK) failed for /dev/fb0\n");
+    return false;
+  }
+
+  unsigned int screen = 0;
+  res = ioctl(g_fb_file, FBIO_WAITFORVSYNC, &screen);
+  if (res < 0) {
+    ERR("ioctl(FBIO_WAITFORVSYNC) failed for /dev/fb0\n");
+    return false;
+  }
+
+  return set_pan(g_fb_var_info.xoffset, g_fb_var_info.yoffset ? 0 : g_fb_var_info.yres);
+}
+
+/// @brief Resets button state.
+void reset_button_state() {
+  // TODO: implement.
+}
+
+uint32_t get_button_state() {
+  // TODO: implement.
+  return 0;
+}
 
 std::string centered(const std::string& original, int targetSize) {
   std::string res;
@@ -66,8 +267,8 @@ std::string centered(const std::string& original, int targetSize) {
 }
 
 void print_result(const std::vector<std::string>& catstr_vec,
-                  int x, int y, const std::vector<std::pair<float, int> >& f, unsigned int wcol,
-                  unsigned int fcol, unsigned int bcol) {
+                  int x, int y, const std::vector<std::pair<float, int> >& f, uint32_t wcol,
+                  uint32_t fcol, uint32_t bcol) {
   std::vector<std::pair<std::string, float> > result;
   result.push_back(std::make_pair(catstr_vec[f[0].second], f[0].first));
   result.push_back(std::make_pair(catstr_vec[f[1].second], f[1].first));
@@ -77,7 +278,7 @@ void print_result(const std::vector<std::string>& catstr_vec,
 
   std::stringstream ss;
   std::string s;
-  for (unsigned int i = 0; i < result.size(); i++) {
+  for (uint32_t i = 0; i < result.size(); i++) {
     std::pair<std::string, float> p = result[i];
     ss.str("");
     ss << std::fixed << std::setprecision(3) << p.second << "  " << p.first;
@@ -116,21 +317,21 @@ std::vector<std::pair<float, int> > catrank(float* softmax, int count) {
   return r;
 }
 
-void set_inputImageSize(unsigned w, unsigned int h) {
+void set_inputImageSize(unsigned w, uint32_t h) {
   IMAGE_W = w;
   IMAGE_H = h;
 }
 
 void createBackgroundImage(int screen_w, int screen_h) {
-  background_image = new unsigned int[screen_w * screen_h];
+  background_image = new uint32_t[screen_w * screen_h];
   SCREEN_W = screen_w;
   SCREEN_H = screen_h;
 
-  textbuf8 = new unsigned int[SCREEN_W * 8];
-  textbuf16 = new unsigned int[SCREEN_W * 16];
-  barbuf = new unsigned int[SCREEN_W];
+  textbuf8 = new uint32_t[SCREEN_W * 8];
+  textbuf16 = new uint32_t[SCREEN_W * 16];
+  barbuf = new uint32_t[SCREEN_W];
 
-  imgTmp = new unsigned int[IMAGE_W * IMAGE_H];
+  imgTmp = new uint32_t[IMAGE_W * IMAGE_H];
 }
 
 bool load_background_image(std::string filename) {
@@ -141,9 +342,9 @@ bool load_background_image(std::string filename) {
     std::cout << "Failed to open backgound image file." << std::endl;
     return false;
   } else {
-    for (unsigned int i = 0; i < 54 - 15; i++) dfs.read((char*)px, 1);
-    for (unsigned int j = 0; j < SCREEN_H; j++) {
-      for (unsigned int i = 0; i < SCREEN_W; i++) {
+    for (uint32_t i = 0; i < 54 - 15; i++) dfs.read((char*)px, 1);
+    for (uint32_t j = 0; j < SCREEN_H; j++) {
+      for (uint32_t i = 0; i < SCREEN_W; i++) {
         dfs.read((char*)px, 3);
         background_image[j * SCREEN_W + i] =
             (px[0] << 24) | (px[1] << 16) | (px[2] << 8);
@@ -155,19 +356,34 @@ bool load_background_image(std::string filename) {
 }
 
 void deleteBackgroundImage() {
-  if (background_image) delete background_image;
-  if (textbuf8) delete textbuf8;
-  if (textbuf16) delete textbuf16;
-  if (barbuf) delete barbuf;
-  if (imgTmp) delete imgTmp;
+  if (background_image) {
+    delete background_image;
+    background_image = NULL;
+  }
+  if (textbuf8) {
+    delete textbuf8;
+    textbuf8 = NULL;
+  }
+  if (textbuf16) {
+    delete textbuf16;
+    textbuf16 = NULL;
+  }
+  if (barbuf) {
+    delete barbuf;
+    barbuf = NULL;
+  }
+  if (imgTmp) {
+    delete imgTmp;
+    imgTmp = NULL;
+  }
 }
 
-int string2bitmap(std::string s, unsigned int* b, unsigned int fcol,
-                  unsigned int bcol, int x, int y) {
+int string2bitmap(std::string s, uint32_t* b, uint32_t fcol,
+                  uint32_t bcol, int x, int y) {
   int n = 0;
   while (s[n]) {
     char c = s[n];
-    unsigned int* a = b;
+    uint32_t* a = b;
     for (int i = 0; i < 8; i++) {
       char bits = c < 0xA0 ? font8x8_basic[short(c)][i]
                            : font8x8_ext_latin[short(c - 0xA0)][i];
@@ -188,12 +404,12 @@ int string2bitmap(std::string s, unsigned int* b, unsigned int fcol,
   return n;
 }
 
-int string2bitmap_xy(std::string s, unsigned int* b, unsigned int fcol,
-                     unsigned int bcol, int x, int y) {
+int string2bitmap_xy(std::string s, uint32_t* b, uint32_t fcol,
+                     uint32_t bcol, int x, int y) {
   int n = 0;
   while (s[n]) {
     char c = s[n];
-    unsigned int* a = b;
+    uint32_t* a = b;
     for (int i = 0; i < 8; i++) {
       char bits = c < 0xA0 ? font8x8_basic[short(c)][i]
                            : font8x8_ext_latin[short(c - 0xA0)][i];
@@ -213,14 +429,14 @@ int string2bitmap_xy(std::string s, unsigned int* b, unsigned int fcol,
   return n;
 }
 
-int string2bitmap16x16(std::string s, unsigned int* b, unsigned int fcol,
-                       unsigned int bcol, int x, int y) {
+int string2bitmap16x16(std::string s, uint32_t* b, uint32_t fcol,
+                       uint32_t bcol, int x, int y) {
   int n = 0;
   while (s[n]) {
-    unsigned short c = (unsigned short)(s[n]) - 0x20;
-    unsigned int* a = b;
+    uint16_t c = (uint16_t)(s[n]) - 0x20;
+    uint32_t* a = b;
     for (int i = 0; i < 16; i++) {
-      unsigned short bits = font16x16[16 * 2 * c + 2 * i] << 8;
+      uint16_t bits = font16x16[16 * 2 * c + 2 * i] << 8;
       bits = bits | font16x16[16 * 2 * c + 2 * i + 1];
       for (int j = 0; j < 16; j++) {
         *a = (bits & 0x8000)
@@ -239,9 +455,9 @@ int string2bitmap16x16(std::string s, unsigned int* b, unsigned int fcol,
   return n;
 }
 
-void print16x16_toDisplay(int x, int y, std::string s, unsigned int fcol,
-                          unsigned int bcol) {
-  /*unsigned int addr = dmp::modules::get_iomap_ddr() + dmp::modules::get_fbA();
+void print16x16_toDisplay(int x, int y, std::string s, uint32_t fcol,
+                          uint32_t bcol) {
+  /*uint32_t addr = dmp::modules::get_iomap_ddr() + dmp::modules::get_fbA();
   int n = string2bitmap16x16(s, textbuf16, fcol, bcol, x, y);
   for (int i = 0; i < 16; i++)
     memcpy((void*)(addr + x * 8 * 4 + (y * 8 + i) * SCREEN_W * 4),
@@ -250,10 +466,10 @@ void print16x16_toDisplay(int x, int y, std::string s, unsigned int fcol,
   fflush(stdout);
 }
 
-void print16x24_toDisplay(int x, int y, std::string s, unsigned int fcol,
-                          unsigned int bcol) {
-  /*unsigned int addr = dmp::modules::get_iomap_ddr() + dmp::modules::get_fbA();
-  unsigned int textbuf[SCREEN_W * 24];
+void print16x24_toDisplay(int x, int y, std::string s, uint32_t fcol,
+                          uint32_t bcol) {
+  /*uint32_t addr = dmp::modules::get_iomap_ddr() + dmp::modules::get_fbA();
+  uint32_t textbuf[SCREEN_W * 24];
 
   int n = string2bitmap16x24(s, textbuf, fcol, bcol, x, y);
 
@@ -262,19 +478,19 @@ void print16x24_toDisplay(int x, int y, std::string s, unsigned int fcol,
            (void*)(textbuf + i * SCREEN_W), 2 * n * 8 * 4);*/
 }
 
-void print8x8_toDisplay(int x, int y, std::string s, unsigned int fcol,
-                        unsigned int bcol) {
-  /*unsigned int addr = dmp::modules::get_iomap_ddr() + dmp::modules::get_fbA();
+void print8x8_toDisplay(int x, int y, std::string s, uint32_t fcol,
+                        uint32_t bcol) {
+  /*uint32_t addr = dmp::modules::get_iomap_ddr() + dmp::modules::get_fbA();
   int n = string2bitmap(s, textbuf8, fcol, bcol, x, y);
   for (int i = 0; i < 8; i++)
     memcpy((void*)(addr + x * 8 * 4 + (y * 8 + i) * SCREEN_W * 4),
            (void*)(textbuf8 + i * 8 * (SCREEN_W / 8)), n * 8 * 4);*/
 }
 
-void print24x48_toDisplay(int x, int y, std::string s, unsigned int fcol,
-                          unsigned int bcol) {
-  /*unsigned int addr = dmp::modules::get_iomap_ddr() + dmp::modules::get_fbA();
-  unsigned int textbuf[SCREEN_W * 48];
+void print24x48_toDisplay(int x, int y, std::string s, uint32_t fcol,
+                          uint32_t bcol) {
+  /*uint32_t addr = dmp::modules::get_iomap_ddr() + dmp::modules::get_fbA();
+  uint32_t textbuf[SCREEN_W * 48];
 
   int n = string2bitmap24x48(s, textbuf, fcol, bcol, x, y);
 
@@ -286,8 +502,8 @@ void print24x48_toDisplay(int x, int y, std::string s, unsigned int fcol,
 }
 
 void print_time_toDisplay(int x, int y, std::string label, long int t,
-                          long int t_max, unsigned int fcol,
-                          unsigned int bcol) {
+                          long int t_max, uint32_t fcol,
+                          uint32_t bcol) {
   std::stringstream ss;
   std::string s;
   //  if ((t <= t_max) && (t >= 0)) {
@@ -300,19 +516,22 @@ void print_time_toDisplay(int x, int y, std::string label, long int t,
 }
 
 void print_background_image_toDisplay() {
-  /*unsigned int addr = dmp::modules::get_iomap_ddr() + dmp::modules::get_fbA();
-  for (unsigned int i = 0; i < SCREEN_H; i++) {  // height
-    memcpy((void*)(addr + i * SCREEN_W * 4),
-           (void*)(background_image + i * SCREEN_W), SCREEN_W * 4);
-  }*/
+  uint8_t *frame = get_frame_ptr();
+  const uint32_t n = SCREEN_H * SCREEN_W;
+  for (uint32_t i = 0, j = 0; i < n; ++i, j += 3) {
+    const uint32_t rgba = background_image[i];
+    frame[j] = (rgba >> 8) & 0xFF;
+    frame[j + 1] = (rgba >> 16) & 0xFF;
+    frame[j + 2] = (rgba >> 24) & 0xFF;
+  }
 }
 
-void print_image_toDisplay(int x, int y, unsigned int* img, int crop_left) {
-  //unsigned int addr = dmp::modules::get_iomap_ddr() + dmp::modules::get_fbA();
+void print_image_toDisplay(int x, int y, uint32_t* img, int crop_left) {
+  //uint32_t addr = dmp::modules::get_iomap_ddr() + dmp::modules::get_fbA();
 
   /*
   for (int i = 0; i < IMAGE_W * IMAGE_H; i++) {
-      unsigned int px = img[i];
+      uint32_t px = img[i];
       unsigned char r, g, b, a;
       r = px & 0xff;
       g = (px >> 8) & 0xff;
@@ -326,14 +545,14 @@ void print_image_toDisplay(int x, int y, unsigned int* img, int crop_left) {
   }
   */
 
-  //for (unsigned int i = 0; i < IMAGE_H; i++) {
+  //for (uint32_t i = 0; i < IMAGE_H; i++) {
   //  memcpy((void*)(addr + x * 4 + (y + i) * SCREEN_W * 4),
   //         (void*)(img + i * IMAGE_W + crop_left), (IMAGE_W - crop_left) * 4);
   //}
 }
 
-void draw_box(int x, int y, int w, int h, unsigned int fcol,
-              unsigned int* img) {
+void draw_box(int x, int y, int w, int h, uint32_t fcol,
+              uint32_t* img) {
   // Top
   for (int xx = x; xx < x + w; xx++) {
     img[IMAGE_W * y + xx] = fcol;
@@ -352,12 +571,12 @@ void draw_box(int x, int y, int w, int h, unsigned int fcol,
   }
 }
 
-int string2bitmap_bbox(std::string s, unsigned int* b, unsigned int fcol,
-                       unsigned int bcol, int x, int y, unsigned int* img) {
+int string2bitmap_bbox(std::string s, uint32_t* b, uint32_t fcol,
+                       uint32_t bcol, int x, int y, uint32_t* img) {
   int n = 0;
   while (s[n]) {
     char c = s[n];
-    unsigned int* a = b;
+    uint32_t* a = b;
     for (int i = 0; i < 8; i++) {
       char bits = c < 0xA0 ? font8x8_basic[short(c)][i]
                            : font8x8_ext_latin[short(c - 0xA0)][i];
@@ -376,8 +595,8 @@ int string2bitmap_bbox(std::string s, unsigned int* b, unsigned int fcol,
   return n;
 }
 
-void draw_box_text(int x, int y, std::string s, unsigned int fcol,
-                   unsigned int* img) {
+void draw_box_text(int x, int y, std::string s, uint32_t fcol,
+                   uint32_t* img) {
   int n = string2bitmap_bbox(s, textbuf8, fcol, 0, x, y, img);
 
   for (int i = 0; i < 8; i++)
@@ -386,7 +605,7 @@ void draw_box_text(int x, int y, std::string s, unsigned int fcol,
 }
 
 //-----------------------------------------------------------------
-void draw_progress_bar(unsigned int addr, int x, int y, int w, int h, int fcol,
+void draw_progress_bar(uint32_t addr, int x, int y, int w, int h, int fcol,
                        int bcol, int steps, int prog) {
   int gap = 1;
   float x_step = (1.0 * w) / (1.0 * steps);
@@ -412,9 +631,9 @@ void draw_progress_bar(unsigned int addr, int x, int y, int w, int h, int fcol,
 
 //-----------------------------------------------------------------
 
-void print_xy(int x, int y, std::string s, unsigned int fcol,
-              unsigned int bcol) {
-  unsigned int textbuf[SCREEN_W * 8];
+void print_xy(int x, int y, std::string s, uint32_t fcol,
+              uint32_t bcol) {
+  uint32_t textbuf[SCREEN_W * 8];
 
   int n = string2bitmap_xy(s, textbuf, 0x00ff0000, 0x1, x, y);
 
@@ -426,14 +645,14 @@ void print_xy(int x, int y, std::string s, unsigned int fcol,
   // + i*8*80), n*8*4);
 }
 
-int string2bitmap16x24(std::string s, unsigned int* b, unsigned int fcol,
-                       unsigned int bcol, int x, int y) {
+int string2bitmap16x24(std::string s, uint32_t* b, uint32_t fcol,
+                       uint32_t bcol, int x, int y) {
   int n = 0;
   while (s[n]) {
-    unsigned short c = (unsigned short)(s[n]) - 0x20;
-    unsigned int* a = b;
+    uint16_t c = (uint16_t)(s[n]) - 0x20;
+    uint32_t* a = b;
     for (int i = 0; i < 24; i++) {
-      unsigned short bits = Arial_round_16x24[24 * 2 * c + 2 * i] << 8;
+      uint16_t bits = Arial_round_16x24[24 * 2 * c + 2 * i] << 8;
       bits = bits | Arial_round_16x24[24 * 2 * c + 2 * i + 1];
       for (int j = 0; j < 16; j++) {
         *a =
@@ -453,12 +672,12 @@ int string2bitmap16x24(std::string s, unsigned int* b, unsigned int fcol,
   return n;
 }
 
-int string2bitmap24x48(std::string s, unsigned int* b, unsigned int fcol,
-                       unsigned int bcol, int x, int y) {
+int string2bitmap24x48(std::string s, uint32_t* b, uint32_t fcol,
+                       uint32_t bcol, int x, int y) {
   int n = 0;
   while (s[n]) {
-    unsigned short c = (unsigned short)(s[n]) - 0x20;
-    unsigned int* a = b;
+    uint16_t c = (uint16_t)(s[n]) - 0x20;
+    uint32_t* a = b;
     for (int i = 0; i < 48; i++) {
       unsigned long bits = GroteskBold24x48[48 * 3 * c + 3 * i] << 16;
       bits = bits | (GroteskBold24x48[48 * 3 * c + 3 * i + 1] << 8);
