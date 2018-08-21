@@ -77,8 +77,9 @@ bool g_should_stop = false;
 /// @brief Thread for running network inference and waiting for the result.
 void* hwacc_thread_func(void* targ) {
   while (!g_should_stop) {
-    while (sync_cnn_in == sync_cnn_out) {
+    if (sync_cnn_in == sync_cnn_out) {
       usleep(1000);  // sleep 1 ms
+      continue;
     }
 
     network.RunNetwork();
@@ -151,7 +152,7 @@ int main(int argc, char** argv) {
     return 1;
   }
 
-  network.Verbose(1);
+  network.Verbose(0);
   if (!network.Initialize()) {
     return -1;
   }
@@ -164,8 +165,6 @@ int main(int argc, char** argv) {
   fc_freq = std::to_string(network.get_dv_info().fc_freq);
 
   void* ddr_buf_a_cpu = network.get_network_input_addr_cpu();
-
-  dmp::util::reset_button_state();
 
   int exit_code = -1;
 
@@ -210,25 +209,51 @@ int main(int argc, char** argv) {
         dmp::util::swap_buffer();
         fc++;
 
-        uint32_t button = dmp::util::get_button_state();
-        if (button & 4) {  // exit demo with exit code of selected next demo
-          if (has_democonf) {
-            int sel_num = democonf[democonf_sel].first;
-            if (sel_num != my_number) exit_code = sel_num;
-          } else {
-            exit_code = my_number;
+        int key = getchar();
+        switch (key) {
+          case 27:  // ESC
+          {
+            int next_key = getchar();
+            switch (next_key) {
+              case 91:  // there are more value to read: UP/DOWN/LEFT/RIGHT pressed
+                break;
+              case 79:  // F3 pressed
+                break;
+              default:  // nothing special was pressed, will exit
+                exit_code = 0;
+                break;
+            }
+            break;
           }
+          case '3':  // exit demo with exit code of selected next demo
+            if (has_democonf) {
+              int sel_num = democonf[democonf_sel].first;
+              if (sel_num != my_number) {
+                exit_code = sel_num;
+              }
+              else {
+                exit_code = my_number;
+              }
+            }
+            break;
+
+          case '2':  // cycle through demo configuratom list
+            if (has_democonf) {
+              democonf_display = true;
+              if (democonf_sel == democonf_num - 1) {
+                democonf_sel = 0;
+              }
+              else {
+                democonf_sel++;
+              }
+            }
+            break;
+
+          case '1':
+          case 32:  // SPACE
+            pause = !pause;
+            break;
         }
-        if (button & 2) {  // cycle through demo configuratom list
-          if (has_democonf) {
-            democonf_display = true;
-            if (democonf_sel == democonf_num - 1)
-              democonf_sel = 0;
-            else
-              democonf_sel++;
-          }
-        }
-        if (button & 1) pause = !pause;
       }
 
       if (!pause) {
@@ -246,8 +271,9 @@ int main(int argc, char** argv) {
 
       memcpy(ddr_buf_a_cpu, (void*)imgProc, IMAGE_W * IMAGE_H * 3 * 2);
 
-      if (exit_code == -1)  // do not start new HW ACC runs if about to exit...
+      if (exit_code == -1) {  // do not start new HW ACC runs if about to exit...
         sync_cnn_in++;
+      }
     }
 
     if (democonf_display) {

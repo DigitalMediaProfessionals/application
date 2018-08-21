@@ -28,6 +28,7 @@
 #include <linux/videodev2.h>
 #include <linux/kd.h>
 #include <signal.h>
+#include <termios.h>
 
 namespace dmp {
 namespace util {
@@ -47,6 +48,8 @@ static uint32_t g_fb_pixfmt = 0;
 static uint8_t *g_fb_mem = NULL;
 static uint8_t *g_frame_ptr = NULL;
 static int g_console = -1;
+static struct termios g_old_term;
+static bool g_term_set = false;
 
 #define SCREEN_W (g_fb_var_info.xres)
 #define SCREEN_H (g_fb_var_info.yres)
@@ -90,6 +93,12 @@ uint32_t get_screen_height() {
 }
 
 static void release_console() {
+  if (g_term_set) {
+    while (getchar() != -1) {  // read cached characters
+    }
+    tcsetattr(0, TCSANOW, &g_old_term);
+    g_term_set = false;
+  }
   if (g_console != -1) {
     ioctl(g_console, KDSETMODE, KD_TEXT);
     close(g_console);
@@ -222,6 +231,12 @@ bool init_fb() {
     return false;
   }
 
+  // Set signal handlers for restoring console settings
+  g_prev_sigint = signal(SIGINT, on_sigint);
+  g_prev_sigquit = signal(SIGQUIT, on_sigquit);
+  g_prev_sigterm = signal(SIGTERM, on_sigterm);
+  atexit(release_console);
+
   // Set graphics mode on the console
   long mode = 0;
   g_console = open("/dev/tty0", O_RDWR | O_CLOEXEC);
@@ -232,17 +247,33 @@ bool init_fb() {
       g_console = -1;
     }
   }
-  if ((g_console != -1) && (mode == KD_TEXT)) {
-    g_prev_sigint = signal(SIGINT, on_sigint);
-    g_prev_sigquit = signal(SIGQUIT, on_sigquit);
-    g_prev_sigterm = signal(SIGTERM, on_sigterm);
-    if (ioctl(g_console, KDSETMODE, KD_GRAPHICS) < 0) {
-      ERR("Could not change console to graphics mode\n");
+  if (g_console != -1) {
+    if (mode == KD_TEXT) {  // text mode => graphics mode
+      if (ioctl(g_console, KDSETMODE, KD_GRAPHICS) < 0) {
+        ERR("Could not change console to graphics mode\n");
+        close(g_console);
+        g_console = -1;
+      }
+    }
+    else {  // already in graphics mode
       close(g_console);
       g_console = -1;
     }
   }
 
+  // Setup console to read one character at a time
+  struct termios new_term;
+  tcgetattr(0, &g_old_term);
+  memcpy(&new_term, &g_old_term, sizeof(new_term));
+  new_term.c_lflag &= ~ICANON;
+  new_term.c_lflag &= ~ECHO;
+  new_term.c_lflag &= ~ISIG;
+  new_term.c_cc[VMIN] = 0;
+  new_term.c_cc[VTIME] = 0;
+  tcsetattr(0, TCSANOW, &new_term);
+  g_term_set = true;
+
+  // reset screen pan
   set_pan(g_fb_var_info.xoffset, 0);
 
   return true;
@@ -268,16 +299,6 @@ bool swap_buffer() {
   }
 
   return set_pan(g_fb_var_info.xoffset, g_fb_var_info.yoffset ? 0 : g_fb_var_info.yres);
-}
-
-/// @brief Resets button state.
-void reset_button_state() {
-  // TODO: implement.
-}
-
-uint32_t get_button_state() {
-  // TODO: implement.
-  return 0;
 }
 
 std::string centered(const std::string& original, int targetSize) {

@@ -53,12 +53,6 @@ uint32_t get_screen_width();
 /// @brief Returns framebuffer height in pixels.
 uint32_t get_screen_height();
 
-/// @brief Resets button state.
-void reset_button_state();
-
-/// @brief Returns button state: bits 0-31 corresponds to buttons.
-uint32_t get_button_state();
-
 /// @brief Pads the string with spaces to make it centered.
 std::string centered(const std::string& original, int targetSize);
 
