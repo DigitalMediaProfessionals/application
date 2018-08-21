@@ -37,6 +37,8 @@ namespace dmp {
 namespace util {
 
 /// @brief Initializes the framebuffer (/dev/fb0).
+/// @details If the /dev/tty0 was in text mode, it will be switched to graphics mode
+///          and switched back on shutdown(), SIGINT, SIGQUIT or SIGTERM.
 bool init_fb();
 
 /// @brief Releases allocated resources if any (closes framebuffer).

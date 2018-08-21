@@ -228,8 +228,16 @@ bool init_fb() {
   }
 
   // Set graphics mode on the console
+  long mode = 0;
   g_console = open("/dev/tty0", O_RDWR | O_CLOEXEC);
   if (g_console != -1) {
+    if (ioctl(g_console, KDGETMODE, &mode) < 0) {
+      ERR("Could not determine console mode (text or graphics)\n");
+      close(g_console);
+      g_console = -1;
+    }
+  }
+  if ((g_console != -1) && (mode == KD_TEXT)) {
     g_prev_sigint = signal(SIGINT, on_sigint);
     g_prev_sigquit = signal(SIGQUIT, on_sigquit);
     g_prev_sigterm = signal(SIGTERM, on_sigterm);
