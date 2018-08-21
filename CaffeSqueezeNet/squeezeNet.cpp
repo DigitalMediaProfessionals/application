@@ -59,10 +59,10 @@ using namespace std;
 std::vector<std::string> catstr_vec(categories, categories + 1000);
 
 // Frame counter
-unsigned int fc = 0;
+uint32_t fc = 0;
 
-unsigned int imgView[IMAGE_W * IMAGE_H];
-unsigned short imgProc[IMAGE_W * IMAGE_H * 3];
+uint32_t imgView[IMAGE_W * IMAGE_H];
+__fp16 imgProc[IMAGE_W * IMAGE_H * 3];
 
 // 2ND THREAD FOR HW CONTROL
 
@@ -72,17 +72,18 @@ volatile uint64_t sync_cnn_out = 0;
 volatile int conv_time_tot = 0;
 volatile int ip_time_tot = 0;
 
+volatile bool g_should_stop = false;
+
 void* hwacc_thread_func(void* targ) {
-  while (true) {
-    while (sync_cnn_in == sync_cnn_out) {
+  while (!g_should_stop) {
+    if (sync_cnn_in == sync_cnn_out) {
       usleep(1000);  // sleep 1 ms
+      continue;
     }
 
-    network.run_network();
+    network.RunNetwork();
 
-    conv_time_tot =
-        network.get_convolution_performance();  // time_diff(&t1, &t2);
-    // ip_time_tot = network.get_innerproduct_performance();
+    conv_time_tot = network.get_conv_usec();
 
     sync_cnn_out++;
   }
@@ -91,6 +92,11 @@ void* hwacc_thread_func(void* targ) {
 }
 
 int main(int argc, char** argv) {
+  if (!dmp::util::init_fb()) {
+    fprintf(stderr, "dmp::util::init_fb() failed\n");
+    return 1;
+  }
+
   const std::string input_image_path = "./images/";
   const std::vector<std::string> input_image_suffix = {".jpg", ".jpeg", ".JPG",
                                                        ".JPEG"};
@@ -133,39 +139,23 @@ int main(int argc, char** argv) {
   }
 
   dmp::util::set_inputImageSize(IMAGE_W, IMAGE_H);
-  dmp::util::createBackgroundImage(SCREEN_W, SCREEN_H);
+  dmp::util::createBackgroundImage();
 
   if (!dmp::util::load_background_image("fpgatitle_squeezeNet.ppm")) return 1;
 
-  dmp::modules::initialize();
+  network.Verbose(0);
+  if (!network.Initialize()) {
+    return -1;
+  }
+  if (!network.LoadWeights(FILENAME_WEIGHTS)) {
+    return -1;
+  }
 
   string conv_freq, fc_freq;
-  unsigned int conv_freq_int, fc_freq_int;
-  dmp::modules::get_info(dmp::modules::FREQ_CONV, &conv_freq_int);
-  dmp::modules::get_info(dmp::modules::FREQ_FC, &fc_freq_int);
-  conv_freq = std::to_string(conv_freq_int);
-  fc_freq = std::to_string(fc_freq_int);
-
-  network.initialize();
-  network.reserve_memory();
-  network.load_weights(FILENAME_WEIGHTS);
-
-  // Struct for input size fix. Original network requires a 227x227 input, but
-  // current framework does not support resize.
-  // Simply add padding...
-  struct top_conv_conf& _conf = network.get_conv_layer(0);
-  _conf.hw.input.w = 224;  // Input Width
-  _conf.hw.input.h = 224;  // Input Height
-  _conf.hw.run[0].conv_pad =
-      0x03000300;  // cop0x0; // bits [7:0] = left padding, bits [15:8] = right
-                   // padding, bits [23:16] = top padding, bits [31:24] = bottom
-                   // padding
+  conv_freq = std::to_string(network.get_dv_info().conv_freq);
+  fc_freq = std::to_string(network.get_dv_info().fc_freq);
 
   void* ddr_buf_a_cpu = network.get_network_input_addr_cpu();
-
-  // dmp::modules::get_hw_info();
-
-  dmp::modules::reset_button_state();
 
   int exit_code = -1;
 
@@ -180,7 +170,7 @@ int main(int argc, char** argv) {
     // Static Images
     if (fc < 2) {
       dmp::util::print_background_image_toDisplay();
-      dmp::modules::swap_buffer();
+      dmp::util::swap_buffer();
       fc++;  // Frame Counter
       continue;
     }
@@ -211,29 +201,54 @@ int main(int argc, char** argv) {
             dmp::util::catrank(&networkOutput.front()), 0x88ff8800, 0x00ff0000,
                      0x00000001);
 
-        dmp::modules::swap_buffer();
+        dmp::util::swap_buffer();
         fc++;
 
-        unsigned int button = dmp::modules::get_button_state();
+        int key = getchar();
+        switch (key) {
+          case 27:  // ESC
+          {
+            int next_key = getchar();
+            switch (next_key) {
+              case 91:  // there are more value to read: UP/DOWN/LEFT/RIGHT pressed
+                break;
+              case 79:  // F3 pressed
+                break;
+              default:  // nothing special was pressed, will exit
+                exit_code = 0;
+                break;
+            }
+            break;
+          }
+          case '3':  // exit demo with exit code of selected next demo
+            if (has_democonf) {
+              int sel_num = democonf[democonf_sel].first;
+              if (sel_num != my_number) {
+                exit_code = sel_num;
+              }
+              else {
+                exit_code = my_number;
+              }
+            }
+            break;
 
-        if (button & 4) {  // exit demo with exit code of selected next demo
-          if (has_democonf) {
-            int sel_num = democonf[democonf_sel].first;
-            if (sel_num != my_number) exit_code = sel_num;
-          } else {
-            exit_code = my_number;
-          }
+          case '2':  // cycle through demo configuratom list
+            if (has_democonf) {
+              democonf_display = true;
+              if (democonf_sel == democonf_num - 1) {
+                democonf_sel = 0;
+              }
+              else {
+                democonf_sel++;
+              }
+            }
+            break;
+
+          case '1':
+          case 32:  // SPACE
+            pause = !pause;
+            break;
         }
-        if (button & 2) {  // cycle through demo configuratom list
-          if (has_democonf) {
-            democonf_display = true;
-            if (democonf_sel == democonf_num - 1)
-              democonf_sel = 0;
-            else
-              democonf_sel++;
-          }
-        }
-        if (button & 1) pause = !pause;
       }
 
       if (!pause) {
@@ -251,8 +266,9 @@ int main(int argc, char** argv) {
 
       memcpy(ddr_buf_a_cpu, (void*)imgProc, IMAGE_W * IMAGE_H * 3 * 2);
 
-      if (exit_code == -1)  // do not start new HW ACC runs if about to exit...
+      if (exit_code == -1) {  // do not start new HW ACC runs if about to exit...
         sync_cnn_in++;
+      }
     }
 
     if (democonf_display) {
@@ -264,7 +280,10 @@ int main(int argc, char** argv) {
     }
   }
 
-  dmp::modules::shutdown();
+  g_should_stop = true;
+  pthread_join(hwacc_thread, NULL);
+
+  dmp::util::shutdown();
 
   return exit_code;
 }
