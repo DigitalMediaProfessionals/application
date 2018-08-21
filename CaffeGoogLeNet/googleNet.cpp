@@ -70,10 +70,13 @@ volatile uint64_t sync_cnn_out = 0;
 volatile int conv_time_tot = 0;
 volatile int fc_time_tot = 0;
 
+volatile bool g_should_stop = false;
+
 void* hwacc_thread_func(void* targ) {
-  while (true) {
-    while (sync_cnn_in == sync_cnn_out) {
+  while (!g_should_stop) {
+    if (sync_cnn_in == sync_cnn_out) {
       usleep(1000);  // sleep 1 ms
+      continue;
     }
 
     network.RunNetwork();
@@ -83,11 +86,15 @@ void* hwacc_thread_func(void* targ) {
 
     sync_cnn_out++;
   }
-
-  return NULL;  // will never reach here but this removes compiler warning...
+  return NULL;
 }
 
 int main(int argc, char** argv) {
+  if (!dmp::util::init_fb()) {
+    fprintf(stderr, "dmp::util::init_fb() failed\n");
+    return 1;
+  }
+
   const std::string input_image_path = "./images/";
   const std::vector<std::string> input_image_suffix = {".jpg", ".jpeg", ".JPG",
                                                        ".JPEG"};
@@ -130,13 +137,11 @@ int main(int argc, char** argv) {
   }
 
   dmp::util::set_inputImageSize(IMAGE_W, IMAGE_H);
-  dmp::util::createBackgroundImage(SCREEN_W, SCREEN_H);
+  dmp::util::createBackgroundImage();
 
   if (!dmp::util::load_background_image("fpgatitle_googleNet.ppm")) return 1;
 
-  //dmp::modules::initialize();
-
-  network.Verbose(1);
+  network.Verbose(0);
   const bool dump_outputs = false;
   if (dump_outputs) {
     network.WantLayerOutputs();
@@ -154,8 +159,6 @@ int main(int argc, char** argv) {
 
   void* ddr_buf_a_cpu = network.get_network_input_addr_cpu();
 
-  //dmp::modules::reset_button_state();
-
   int exit_code = -1;
 
   int image_nr = 0;
@@ -168,8 +171,8 @@ int main(int argc, char** argv) {
   while (exit_code == -1) {
     // Static Images
     if (fc < 2) {
-      //dmp::util::print_background_image_toDisplay();
-      //dmp::modules::swap_buffer();
+      dmp::util::print_background_image_toDisplay();
+      dmp::util::swap_buffer();
       fc++;  // Frame Counter
       continue;
     }
@@ -196,9 +199,9 @@ int main(int argc, char** argv) {
 
         dmp::util::print_image_toDisplay((SCREEN_W - IMAGE_W) / 2,
                                          (293 - 128) + 20, imgView);
-        dmp::util::print_result(catstr_vec, TEXT_XOFS, TEXT_YOFS - 8 - 5,
-            dmp::util::catrank(&networkOutput.front()), 0x88ff8800, 0x00ff0000,
-                     0x00000001);
+        dmp::util::print_result(
+            catstr_vec, TEXT_XOFS, TEXT_YOFS - 8 - 5,
+            dmp::util::catrank(&networkOutput.front()), 0x88ff8800, 0x00ff0000, 0x00000001);
 
         if (dump_outputs) {
           const int n_layers = network.get_total_layer_count();
@@ -222,28 +225,54 @@ int main(int argc, char** argv) {
           _exit(0);
         }
 
-        //dmp::modules::swap_buffer();
+        dmp::util::swap_buffer();
         fc++;
 
-        uint32_t button = 0;//dmp::modules::get_button_state();
-        if (button & 4) {  // exit demo with exit code of selected next demo
-          if (has_democonf) {
-            int sel_num = democonf[democonf_sel].first;
-            if (sel_num != my_number) exit_code = sel_num;
-          } else {
-            exit_code = my_number;
+        int key = getchar();
+        switch (key) {
+          case 27:  // ESC
+          {
+            int next_key = getchar();
+            switch (next_key) {
+              case 91:  // there are more value to read: UP/DOWN/LEFT/RIGHT pressed
+                break;
+              case 79:  // F3 pressed
+                break;
+              default:  // nothing special was pressed, will exit
+                exit_code = 0;
+                break;
+            }
+            break;
           }
+          case '3':  // exit demo with exit code of selected next demo
+            if (has_democonf) {
+              int sel_num = democonf[democonf_sel].first;
+              if (sel_num != my_number) {
+                exit_code = sel_num;
+              }
+              else {
+                exit_code = my_number;
+              }
+            }
+            break;
+
+          case '2':  // cycle through demo configuratom list
+            if (has_democonf) {
+              democonf_display = true;
+              if (democonf_sel == democonf_num - 1) {
+                democonf_sel = 0;
+              }
+              else {
+                democonf_sel++;
+              }
+            }
+            break;
+
+          case '1':
+          case 32:  // SPACE
+            pause = !pause;
+            break;
         }
-        if (button & 2) {  // cycle through demo configuratom list
-          if (has_democonf) {
-            democonf_display = true;
-            if (democonf_sel == democonf_num - 1)
-              democonf_sel = 0;
-            else
-              democonf_sel++;
-          }
-        }
-        if (button & 1) pause = !pause;
       }
 
       if (!pause) {
@@ -285,7 +314,9 @@ int main(int argc, char** argv) {
     }
   }
 
-  //dmp::modules::shutdown();
+  g_should_stop = true;
+  pthread_join(hwacc_thread, NULL);
+  dmp::util::shutdown();
 
   return exit_code;
 }
