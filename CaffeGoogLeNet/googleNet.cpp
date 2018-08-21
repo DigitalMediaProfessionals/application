@@ -43,8 +43,8 @@ CCaffeGoogLeNet network;
 
 using namespace std;
 
-#define SCREEN_W 1280
-#define SCREEN_H 720
+#define SCREEN_W (dmp::util::get_screen_width())
+#define SCREEN_H (dmp::util::get_screen_height())
 
 #define IMAGE_W 224
 #define IMAGE_H 224

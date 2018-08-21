@@ -41,8 +41,8 @@ CSegNetBasic network;
 
 using namespace std;
 
-#define SCREEN_W 1280
-#define SCREEN_H 720
+#define SCREEN_W (dmp::util::get_screen_width())
+#define SCREEN_H (dmp::util::get_screen_height())
 
 #define IMAGE_W 320
 #define IMAGE_H 240
@@ -52,10 +52,10 @@ using namespace std;
 #define TEXT_XOFS (((SCREEN_W - IMAGE_W) / 2) / 24 + 4)  // 8x8 characters
 #define TEXT_YOFS ((512 + 48) / 8 + 2 + 3 + 2)           // 8x8 characters
 
-unsigned int imgView[IMAGE_W * IMAGE_H];
-unsigned short imgProc[IMAGE_W * IMAGE_H * 3];
+uint32_t imgView[IMAGE_W * IMAGE_H];
+uint16_t imgProc[IMAGE_W * IMAGE_H * 3];
 
-unsigned int fc = 0;
+uint32_t fc = 0;
 
 // 2ND THREAD FOR HW CONTROL
 
@@ -63,10 +63,12 @@ volatile uint64_t sync_cnn_in = 0;
 volatile uint64_t sync_cnn_out = 0;
 
 volatile int conv_time_tot = 0;
-volatile int ip_time_tot = 0;
+volatile int fc_time_tot = 0;
+
+volatile bool g_should_stop = false;
 
 #if 0
-const unsigned int class_color[] = {
+const uint32_t class_color[] = {
 	0x80FFFF00,		//Sky
 	0x80808000,		//Bulding
 	0xC0C08000,		//Pole
@@ -81,7 +83,7 @@ const unsigned int class_color[] = {
 	0x00000000,		//Unlabelled
 };
 #else
-const unsigned int class_color[] = {
+const uint32_t class_color[] = {
     0x40808000,  // Sky
     0x40404000,  // Bulding
     0x60604000,  // Pole
@@ -97,9 +99,9 @@ const unsigned int class_color[] = {
 };
 #endif
 
-void convertimage(unsigned short *imgProc, unsigned int *imgView) {
+void convertimage(uint16_t *imgProc, uint32_t *imgView) {
   unsigned char c[3];
-  unsigned short t;
+  uint16_t t;
   for (int y = 0; y < IMAGE_H; y++) {
     for (int x = 0; x < IMAGE_W; x++) {
       for (int i = 0; i < 3; i++) {
@@ -111,7 +113,7 @@ void convertimage(unsigned short *imgProc, unsigned int *imgView) {
   }
 }
 
-void visualize(void *netoutCPU, unsigned int *imgView) {
+void visualize(void *netoutCPU, uint32_t *imgView) {
   short *networkOutput = reinterpret_cast<short *>(netoutCPU);
   for (int y = 0; y < IMAGE_H; y++) {
     for (int x = 0; x < IMAGE_W; x++) {
@@ -130,26 +132,34 @@ void visualize(void *netoutCPU, unsigned int *imgView) {
 }
 
 void *hwacc_thread_func(void *targ) {
-  while (true) {
-    while (sync_cnn_in == sync_cnn_out) {
+  while (!g_should_stop) {
+    if (sync_cnn_in == sync_cnn_out) {
       usleep(1000);  // sleep 1 ms
+      continue;
     }
 
-    network.run_network();
+    network.RunNetwork();
 
-    conv_time_tot =
-        network.get_convolution_performance();  // time_diff(&t1, &t2);
-    ip_time_tot = network.get_innerproduct_performance();
+    conv_time_tot = network.get_conv_usec();
+    fc_time_tot = network.get_fc_usec();
 
     sync_cnn_out++;
   }
-
-  return NULL;  // will never reach here but this removes compiler warning...
+  return NULL;
 }
 
 int main(int argc, char **argv) {
+  if (!dmp::util::init_fb()) {
+    fprintf(stderr, "dmp::util::init_fb() failed\n");
+    return 1;
+  }
+
   const char input_image_file[] = "segnet_image.bin";
-  FILE *fimg = fopen(input_image_file, "r");
+  FILE *fimg = fopen(input_image_file, "rb");
+  if (!fimg) {
+    fprintf(stderr, "Could not open segnet_image.bin for reading\n");
+    return 1;
+  }
 
   vector<float> networkOutput;
 
@@ -181,28 +191,24 @@ int main(int argc, char **argv) {
   }
 
   dmp::util::set_inputImageSize(IMAGE_W, IMAGE_H);
-  dmp::util::createBackgroundImage(SCREEN_W, SCREEN_H);
+  dmp::util::createBackgroundImage();
 
   if (!dmp::util::load_background_image("fpgatitle_yolo.ppm")) return 1;
 
-  dmp::modules::initialize();
+  network.Verbose(2);
+  if (!network.Initialize()) {
+    return -1;
+  }
+  if (!network.LoadWeights(FILENAME_WEIGHTS)) {
+    return -1;
+  }
 
   string conv_freq, fc_freq;
-  unsigned int conv_freq_int, fc_freq_int;
-  dmp::modules::get_info(dmp::modules::FREQ_CONV, &conv_freq_int);
-  dmp::modules::get_info(dmp::modules::FREQ_FC, &fc_freq_int);
-  conv_freq = to_string(conv_freq_int);
-  fc_freq = to_string(fc_freq_int);
-
-  network.verbose(true);
-  network.initialize();
-  network.reserve_memory();
-  network.load_weights(FILENAME_WEIGHTS);
+  conv_freq = std::to_string(network.get_dv_info().conv_freq);
+  fc_freq = std::to_string(network.get_dv_info().fc_freq);
 
   void *ddr_buf_a_cpu = network.get_network_input_addr_cpu();
-  void *ddr_buf_b_cpu = network.get_layer(15).addr_cpu_output;
-
-  dmp::modules::reset_button_state();
+  void *ddr_buf_b_cpu = network.get_io_ptr() + network.get_layer(15).output_offs;
 
   int exit_code = -1;
 
@@ -217,7 +223,7 @@ int main(int argc, char **argv) {
     // Static Images
     if (fc < 2) {
       dmp::util::print_background_image_toDisplay();
-      dmp::modules::swap_buffer();
+      dmp::util::swap_buffer();
       fc++;  // Frame Counter
       continue;
     }
@@ -239,29 +245,54 @@ int main(int argc, char **argv) {
         visualize(ddr_buf_b_cpu, imgView);
         dmp::util::print_image_toDisplay(SCREEN_W / 2, (293 - 128) + 20,
                                          imgView);
-        dmp::modules::swap_buffer();
+        dmp::util::swap_buffer();
         fc++;
 
-        unsigned int button = dmp::modules::get_button_state();
-        if (button & 4) {  // exit demo with exit code of selected next demo
-          if (has_democonf) {
-            int sel_num = democonf[democonf_sel].first;
-            if (sel_num != my_number) exit_code = sel_num;
-          } else {
-            exit_code = my_number;
+        int key = getchar();
+        switch (key) {
+          case 27:  // ESC
+          {
+            int next_key = getchar();
+            switch (next_key) {
+              case 91:  // there are more value to read: UP/DOWN/LEFT/RIGHT pressed
+                break;
+              case 79:  // F3 pressed
+                break;
+              default:  // nothing special was pressed, will exit
+                exit_code = 0;
+                break;
+            }
+            break;
           }
+          case '3':  // exit demo with exit code of selected next demo
+            if (has_democonf) {
+              int sel_num = democonf[democonf_sel].first;
+              if (sel_num != my_number) {
+                exit_code = sel_num;
+              }
+              else {
+                exit_code = my_number;
+              }
+            }
+            break;
+
+          case '2':  // cycle through demo configuratom list
+            if (has_democonf) {
+              democonf_display = true;
+              if (democonf_sel == democonf_num - 1) {
+                democonf_sel = 0;
+              }
+              else {
+                democonf_sel++;
+              }
+            }
+            break;
+
+          case '1':
+          case 32:  // SPACE
+            pause = !pause;
+            break;
         }
-        // exit_code = my_number;
-        if (button & 2) {  // cycle through demo configuratom list
-          if (has_democonf) {
-            democonf_display = true;
-            if (democonf_sel == democonf_num - 1)
-              democonf_sel = 0;
-            else
-              democonf_sel++;
-          }
-        }
-        if (button & 1) pause = !pause;
       }
 
       if (!pause) {
@@ -280,8 +311,9 @@ int main(int argc, char **argv) {
       // Copy image to FPGA memory
       memcpy(ddr_buf_a_cpu, (void *)imgProc, IMAGE_W * IMAGE_H * 3 * 2);
 
-      if (exit_code == -1)  // do not start new HW ACC runs if about to exit...
+      if (exit_code == -1) {  // do not start new HW ACC runs if about to exit...
         sync_cnn_in++;
+      }
     }
 
     if (democonf_display) {
@@ -293,7 +325,10 @@ int main(int argc, char **argv) {
     }
   }
 
-  dmp::modules::shutdown();
+  g_should_stop = true;
+  pthread_join(hwacc_thread, NULL);
+
+  dmp::util::shutdown();
 
   return exit_code;
 }
