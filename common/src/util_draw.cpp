@@ -27,6 +27,7 @@
 #include <linux/fb.h>
 #include <linux/videodev2.h>
 #include <linux/kd.h>
+#include <signal.h>
 
 using namespace dmp;
 using namespace util;
@@ -93,12 +94,16 @@ uint32_t get_screen_height() {
   return g_fb_var_info.yres;
 }
 
-static void release_fb() {
+static void release_console() {
   if (g_console != -1) {
     ioctl(g_console, KDSETMODE, KD_TEXT);
     close(g_console);
     g_console = -1;
   }
+}
+
+static void release_fb() {
+  release_console();
   if (g_fb_mem) {
     munmap(g_fb_mem, g_fb_fix_info.smem_len);
     g_fb_mem = NULL;
@@ -107,6 +112,36 @@ static void release_fb() {
     close(g_fb_file);
     g_fb_file = -1;
   }
+}
+
+/// @brief Previous signal handlers.
+static void (*g_prev_sigint)(int sig) = NULL;
+static void (*g_prev_sigquit)(int sig) = NULL;
+static void (*g_prev_sigterm)(int sig) = NULL;
+
+static void process_signal(int sig, void (*prev_handler)(int sig)) {
+  release_console();
+  if (prev_handler == SIG_IGN) {
+    return;
+  }
+  if (prev_handler == SIG_DFL) {
+    signal(sig, SIG_DFL);
+    raise(sig);
+    return;
+  }
+  (*prev_handler)(sig);
+}
+
+static void on_sigint(int sig) {
+  process_signal(sig, g_prev_sigint);
+}
+
+static void on_sigquit(int sig) {
+  process_signal(sig, g_prev_sigquit);
+}
+
+static void on_sigterm(int sig) {
+  process_signal(sig, g_prev_sigterm);
 }
 
 bool init_fb() {
@@ -193,17 +228,15 @@ bool init_fb() {
   }
 
   // Set graphics mode on the console
-  static const char *console_fnmes[2] = {"/dev/tty", "/dev/tty0"};
-  for (int i = 0; i < 2; ++i) {
-    g_console = open(console_fnmes[i], O_RDWR | O_CLOEXEC);
-    if (g_console != -1) {
-      if (ioctl(g_console, KDSETMODE, KD_GRAPHICS)) {
-        close(g_console);
-        g_console = -1;
-      }
-      else {
-        break;
-      }
+  g_console = open("/dev/tty0", O_RDWR | O_CLOEXEC);
+  if (g_console != -1) {
+    g_prev_sigint = signal(SIGINT, on_sigint);
+    g_prev_sigquit = signal(SIGQUIT, on_sigquit);
+    g_prev_sigterm = signal(SIGTERM, on_sigterm);
+    if (ioctl(g_console, KDSETMODE, KD_GRAPHICS) < 0) {
+      ERR("Could not change console to graphics mode\n");
+      close(g_console);
+      g_console = -1;
     }
   }
 
