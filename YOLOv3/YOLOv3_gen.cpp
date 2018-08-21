@@ -18,40 +18,23 @@
 
 #include "YOLOv3_gen.h"
 
-CYOLOv3::CYOLOv3() {}
 
-CYOLOv3::~CYOLOv3() {}
-
-unsigned int CYOLOv3::get_total_layer_count() {
-  return num_layers;
+CYOLOv3::CYOLOv3() {
+  // Empty by design
 }
 
-unsigned int CYOLOv3::get_output_layer_count() {
-  return num_output_layers;
+CYOLOv3::~CYOLOv3() {
+  // Empty by design
 }
 
-unsigned int CYOLOv3::get_convolution_layer_count() {
-  return num_conv_layers;
-}
+bool CYOLOv3::Initialize() {
+  if (!ReserveMemory(17822496, 7536640)) {
+    return false;
+  }
 
-unsigned int CYOLOv3::get_innerproduct_layer_count() {
-  return num_fc_layers;
-}
+  set_num_layers(22);
+  set_num_output_layers(1);
 
-int CYOLOv3::initialize() {
-  num_layers = 22;
-  num_output_layers = 1;
-  num_conv_layers = 18;
-  num_fc_layers = 0;
-  weight_size = 17822496;
-  buffer_size = 7536640;
-  layers.resize(num_layers);
-  output_layers.resize(num_output_layers);
-  conv_layers.resize(num_conv_layers);
-  fc_layers.resize(num_fc_layers);
-  memory_size_request.resize(2);
-
-  //set_default_convolution_layers_parameters();
   Layer_0();
   Layer_1();
   Layer_2();
@@ -75,11 +58,11 @@ int CYOLOv3::initialize() {
   Layer_20();
   Layer_21();
 
-  //Add 2 memory size requests. One for weights, the other for io buffers
-  memory_size_request[0] = weight_size;
-  memory_size_request[1] = buffer_size;
+  if (!GenerateCommandLists()) {
+    return false;
+  }
 
-  return 0;
+  return true;
 }
 
 //Layer_0: Convolution Layer
@@ -88,29 +71,32 @@ int CYOLOv3::initialize() {
 //  ->: batch_normalization_1
 //  ->: leaky_re_lu_1
 void CYOLOv3::Layer_0() {
-  struct top_conv_conf& _conf = get_conv_layer(0);
-  //Topo: 00000000000000000000000000000001
-  _conf.hw.header.topo = 0x1; // [31:0] Output Destination of each run, 0 = UBUF, 1 = EXTMEM
+  get_layer(0).name = "conv2d_1, batch_normalization_1, batch_normalization_1, leaky_re_lu_1";
+  dmp_dv_cmdraw_conv_v0& conf = get_layer(0).conv_conf;
+  conf.header.size = sizeof(conf);
+  conf.header.device_type = DMP_DV_DEV_CONV;
+  conf.header.version = 0;
+  // Topo: 00000000000000000000000000000001
+  conf.topo = 0x1;  // [31:0] Output Destination of each run, 0 = UBUF, 1 = EXTMEM
 
-  //Input Configuration:
-  _conf.hw.input.w = 512; // Input Width
-  _conf.hw.input.h = 320; // Input Height
-  _conf.hw.input.z = 1; // Input Depth
-  _conf.hw.input.c = 3; // Input Channels
-  _conf.hw.input.input_base_addr = 0x00000000; // Input byte address
-  _conf.hw.input.tiles = 6; // Number of horizontal tiles (supported with restrictions)
+  // Input Configuration:
+  conf.w = 512;  // Input Width
+  conf.h = 320;  // Input Height
+  conf.z = 1;  // Input Depth
+  conf.c = 3;  // Input Channels
+  conf.input_buf.mem = io_mem_;
+  conf.input_buf.offs = 0;
 
-  //Output Configuration:
-  _conf.sw.output.w = 512; // Output Width
-  _conf.sw.output.h = 320; // Output Height
-  _conf.sw.output.z = 1; // Output Depth
-  _conf.sw.output.m = 16; // Output Channels
-  _conf.hw.output.output_base_addr = 0x000F0000; // Output byte address
-  _conf.hw.output.eltwise_base_addr = 0xDEADBEEF; // Input byte address for elementwise add (0 = UBUF Input Buffer)
-  _conf.hw.output.output_mode = 0; // 0 = concat, 1 = eltwise add
+  // Output Configuration:
+  conf.output_buf.mem = io_mem_;
+  conf.output_buf.offs = 983040;
 
-  //Runs Configuration:
-  //->1 run(s)
+  conf.eltwise_buf.mem = NULL;
+  conf.eltwise_buf.offs = 0;  // Input byte address for elementwise add (0 = UBUF Input Buffer)
+  conf.output_mode = 0;  // 0 = concat, 1 = eltwise add
+
+  // Runs Configuration:
+  // ->1 run(s)
   //--------------------------------------------------
   //RUN : 0
   //--------------------------------------------------
@@ -118,39 +104,30 @@ void CYOLOv3::Layer_0() {
   //->: batch_normalization_1
   //->: batch_normalization_1
   //->: leaky_re_lu_1
-  _conf.sw.run[0].in_w = 512; // Optional: Input width (not used by HW - discovered on the fly)
-  _conf.sw.run[0].in_h = 320; // Optional: Input height (not used by HW - discovered on the fly)
-  _conf.sw.run[0].in_c = 3; // Optional: Input Channels (not used by HW - discovered on the fly)
-  _conf.sw.run[0].out_w = 512; // Optional: Output width (not used by HW - discovered on the fly)
-  _conf.sw.run[0].out_h = 320; // Optional: Output height (not used by HW - discovered on the fly)
-  _conf.hw.run[0].m = 16; // Output Channels
-  _conf.hw.run[0].conv_enable = 1; // 1 = Enabled, 0 = Disabled
-  _conf.hw.run[0].p = 3; // Filter Width and Height
-  _conf.hw.run[0].pz = 1; // Filter Depth
-  _conf.hw.run[0].weight_base_addr = 0x00000000; // Filter Weight and Bias byte address
-  _conf.hw.run[0].weight_fmt = 1; // Weight format (0 = random access blocks, 1 = compact stream, 3 = 8-bit qunatized stream)
-  _conf.sw.run[0].weight_size = 2336; // Actual size in bytes of LUT, weights and bias (in bytes)
-  _conf.hw.run[0].conv_pad = 0x1010101; // bits [7:0] = left padding, bits [15:8] = right padding, bits [23:16] = top padding, bits [31:24] = bottom padding
-  _conf.hw.run[0].conv_stride = 0x101; // bits [7:0] = X stride, bits [15:8] = Y stride
-  _conf.hw.run[0].conv_dilation = 0x0; // bits [7:0] = X dilation, bits [15:8] = Y dilation
-  _conf.hw.run[0].pool_enable = 0;  // 0 = disabled, 1 = max pooling, 2 = average pooling
-  _conf.hw.run[0].pool_size = 0x0; // bits [7:0] = width, bits [15:8] = height
-  _conf.hw.run[0].pool_stride = 0x101; // bits [7:0] = X stride, bits [15:8] = Y stride
-  _conf.hw.run[0].pool_pad = 0x0; // bits [7:0] = left padding, bits [15:8] = right padding, bits [23:16] = top padding, bits [31:24] = bottom padding
-  _conf.hw.run[0].pool_avg_param = 0x0; // Must be set to 1/pool_size^2 in FP16 format when using average pooling (average pooling assumes square size)
-  _conf.hw.run[0].actfunc = 2; // Activation Function: 0 = None, 1 = Tanh, 2 = Leaky ReLU, 3 = Sigmoid, 4 = PReLU, 5 = ELU, 6 = ReLU6
-  _conf.hw.run[0].actfunc_param = 0x2E66; // Leaky ReLU parameter (NOTE: 0x2E66 is 0.1 in FP16)
-  _conf.hw.run[0].rectifi_en = 0; // Rectification, i.e. max(0, x) (NOTE: Can be applied after non-ReLU activation function)
-  _conf.hw.run[0].lrn= 0x0; // [0] : 1 = LRN enable, 0 = LRN disable, [1] : 1 = incl. power func, 0 = excl., [8:11] = x^2 scale factor log2
-  _conf.hw.run[0].ALIGN_0 = 0;//Some comments needed here
+  conf.run[0].m = 16;  // Output Channels
+  conf.run[0].conv_enable = 1;  // 1 = Enabled, 0 = Disabled
+  conf.run[0].p = 3;  // Filter Width and Height
+  conf.run[0].pz = 1;  // Filter Depth
+  conf.run[0].weight_buf.mem = weights_mem_;
+  conf.run[0].weight_buf.offs = 0;
+  conf.run[0].weight_fmt = 1;  // Weight format (0 = random access blocks, 1 = compact stream, 3 = 8-bit qunatized stream)
+  conf.run[0].conv_pad = 0x1010101;  // bits [7:0] = left padding, bits [15:8] = right padding, bits [23:16] = top padding, bits [31:24] = bottom padding
+  conf.run[0].conv_stride = 0x101;  // bits [7:0] = X stride, bits [15:8] = Y stride
+  conf.run[0].conv_dilation = 0x0;  // bits [7:0] = X dilation, bits [15:8] = Y dilation
+  conf.run[0].pool_enable = 0;  // 0 = disabled, 1 = max pooling, 2 = average pooling
+  conf.run[0].pool_size = 0x0;  // bits [7:0] = width, bits [15:8] = height
+  conf.run[0].pool_stride = 0x101;  // bits [7:0] = X stride, bits [15:8] = Y stride
+  conf.run[0].pool_pad = 0x0;  // bits [7:0] = left padding, bits [15:8] = right padding, bits [23:16] = top padding, bits [31:24] = bottom padding
+  conf.run[0].pool_avg_param = 0x0;  // Must be set to 1/pool_size^2 in FP16 format when using average pooling (average pooling assumes square size)
+  conf.run[0].actfunc = 2;  // Activation Function: 0 = None, 1 = Tanh, 2 = Leaky ReLU, 3 = Sigmoid, 4 = PReLU, 5 = ELU, 6 = ReLU6
+  conf.run[0].actfunc_param = 0x2E66;  // Leaky ReLU parameter (NOTE: 0x2E66 is 0.1 in FP16)
+  conf.run[0].rectifi_en = 0;  // Rectification, i.e. max(0, x) (NOTE: Can be applied after non-ReLU activation function)
+  conf.run[0].lrn = 0x0;  // [0] : 1 = LRN enable, 0 = LRN disable, [1] : 1 = incl. power func, 0 = excl., [8:11] = x^2 scale factor log2
 
-  struct fpga_layer& layer = layers[0];
+  fpga_layer& layer = get_layer(0);
   layer.type = LT_CONV;
-  layer.hw_conf = (void*)&_conf;
-  layer.addr_cpu_input = 0x0;
-  layer.addr_cpu_output = 0x0;
-  layer.addr_offset_input = 0x00000000;
-  layer.addr_offset_output = 0x000F0000;
+  layer.input_offs = 0;
+  layer.output_offs = 983040;
   layer.output_size = 5242880;
   layer.input_dim[0] = 512;
   layer.input_dim[1] = 320;
@@ -168,66 +145,60 @@ void CYOLOv3::Layer_0() {
 //Layer_1: Convolution Layer
 //  ->: max_pooling2d_1
 void CYOLOv3::Layer_1() {
-  struct top_conv_conf& _conf = get_conv_layer(1);
-  //Topo: 00000000000000000000000000000001
-  _conf.hw.header.topo = 0x1; // [31:0] Output Destination of each run, 0 = UBUF, 1 = EXTMEM
+  get_layer(1).name = "max_pooling2d_1";
+  dmp_dv_cmdraw_conv_v0& conf = get_layer(1).conv_conf;
+  conf.header.size = sizeof(conf);
+  conf.header.device_type = DMP_DV_DEV_CONV;
+  conf.header.version = 0;
+  // Topo: 00000000000000000000000000000001
+  conf.topo = 0x1;  // [31:0] Output Destination of each run, 0 = UBUF, 1 = EXTMEM
 
-  //Input Configuration:
-  _conf.hw.input.w = 512; // Input Width
-  _conf.hw.input.h = 320; // Input Height
-  _conf.hw.input.z = 1; // Input Depth
-  _conf.hw.input.c = 16; // Input Channels
-  _conf.hw.input.input_base_addr = 0x000F0000; // Input byte address
-  _conf.hw.input.tiles = 1; // Number of horizontal tiles (supported with restrictions)
+  // Input Configuration:
+  conf.w = 512;  // Input Width
+  conf.h = 320;  // Input Height
+  conf.z = 1;  // Input Depth
+  conf.c = 16;  // Input Channels
+  conf.input_buf.mem = io_mem_;
+  conf.input_buf.offs = 983040;
 
-  //Output Configuration:
-  _conf.sw.output.w = 256; // Output Width
-  _conf.sw.output.h = 160; // Output Height
-  _conf.sw.output.z = 1; // Output Depth
-  _conf.sw.output.m = 16; // Output Channels
-  _conf.hw.output.output_base_addr = 0x005F0000; // Output byte address
-  _conf.hw.output.eltwise_base_addr = 0xDEADBEEF; // Input byte address for elementwise add (0 = UBUF Input Buffer)
-  _conf.hw.output.output_mode = 0; // 0 = concat, 1 = eltwise add
+  // Output Configuration:
+  conf.output_buf.mem = io_mem_;
+  conf.output_buf.offs = 6225920;
 
-  //Runs Configuration:
-  //->1 run(s)
+  conf.eltwise_buf.mem = NULL;
+  conf.eltwise_buf.offs = 0;  // Input byte address for elementwise add (0 = UBUF Input Buffer)
+  conf.output_mode = 0;  // 0 = concat, 1 = eltwise add
+
+  // Runs Configuration:
+  // ->1 run(s)
   //--------------------------------------------------
   //RUN : 0
   //--------------------------------------------------
   //->: max_pooling2d_1
-  _conf.sw.run[0].in_w = 512; // Optional: Input width (not used by HW - discovered on the fly)
-  _conf.sw.run[0].in_h = 320; // Optional: Input height (not used by HW - discovered on the fly)
-  _conf.sw.run[0].in_c = 16; // Optional: Input Channels (not used by HW - discovered on the fly)
-  _conf.sw.run[0].out_w = 256; // Optional: Output width (not used by HW - discovered on the fly)
-  _conf.sw.run[0].out_h = 160; // Optional: Output height (not used by HW - discovered on the fly)
-  _conf.hw.run[0].m = 16; // Output Channels
-  _conf.hw.run[0].conv_enable = 0; // 1 = Enabled, 0 = Disabled
-  _conf.hw.run[0].p = 1; // Filter Width and Height
-  _conf.hw.run[0].pz = 1; // Filter Depth
-  _conf.hw.run[0].weight_base_addr = 0x00000920; // Filter Weight and Bias byte address
-  _conf.hw.run[0].weight_fmt = 0; // Weight format (0 = random access blocks, 1 = compact stream, 3 = 8-bit qunatized stream)
-  _conf.sw.run[0].weight_size = 0; // Actual size in bytes of LUT, weights and bias (in bytes)
-  _conf.hw.run[0].conv_pad = 0x0; // bits [7:0] = left padding, bits [15:8] = right padding, bits [23:16] = top padding, bits [31:24] = bottom padding
-  _conf.hw.run[0].conv_stride = 0x101; // bits [7:0] = X stride, bits [15:8] = Y stride
-  _conf.hw.run[0].conv_dilation = 0x0; // bits [7:0] = X dilation, bits [15:8] = Y dilation
-  _conf.hw.run[0].pool_enable = 1;  // 0 = disabled, 1 = max pooling, 2 = average pooling
-  _conf.hw.run[0].pool_size = 0x202; // bits [7:0] = width, bits [15:8] = height
-  _conf.hw.run[0].pool_stride = 0x202; // bits [7:0] = X stride, bits [15:8] = Y stride
-  _conf.hw.run[0].pool_pad = 0x0; // bits [7:0] = left padding, bits [15:8] = right padding, bits [23:16] = top padding, bits [31:24] = bottom padding
-  _conf.hw.run[0].pool_avg_param = 0x0; // Must be set to 1/pool_size^2 in FP16 format when using average pooling (average pooling assumes square size)
-  _conf.hw.run[0].actfunc = 0; // Activation Function: 0 = None, 1 = Tanh, 2 = Leaky ReLU, 3 = Sigmoid, 4 = PReLU, 5 = ELU, 6 = ReLU6
-  _conf.hw.run[0].actfunc_param = 0x0; // Leaky ReLU parameter (NOTE: 0x2E66 is 0.1 in FP16)
-  _conf.hw.run[0].rectifi_en = 0; // Rectification, i.e. max(0, x) (NOTE: Can be applied after non-ReLU activation function)
-  _conf.hw.run[0].lrn= 0x0; // [0] : 1 = LRN enable, 0 = LRN disable, [1] : 1 = incl. power func, 0 = excl., [8:11] = x^2 scale factor log2
-  _conf.hw.run[0].ALIGN_0 = 0;//Some comments needed here
+  conf.run[0].m = 16;  // Output Channels
+  conf.run[0].conv_enable = 0;  // 1 = Enabled, 0 = Disabled
+  conf.run[0].p = 1;  // Filter Width and Height
+  conf.run[0].pz = 1;  // Filter Depth
+  conf.run[0].weight_buf.mem = weights_mem_;
+  conf.run[0].weight_buf.offs = 2336;
+  conf.run[0].weight_fmt = 0;  // Weight format (0 = random access blocks, 1 = compact stream, 3 = 8-bit qunatized stream)
+  conf.run[0].conv_pad = 0x0;  // bits [7:0] = left padding, bits [15:8] = right padding, bits [23:16] = top padding, bits [31:24] = bottom padding
+  conf.run[0].conv_stride = 0x101;  // bits [7:0] = X stride, bits [15:8] = Y stride
+  conf.run[0].conv_dilation = 0x0;  // bits [7:0] = X dilation, bits [15:8] = Y dilation
+  conf.run[0].pool_enable = 1;  // 0 = disabled, 1 = max pooling, 2 = average pooling
+  conf.run[0].pool_size = 0x202;  // bits [7:0] = width, bits [15:8] = height
+  conf.run[0].pool_stride = 0x202;  // bits [7:0] = X stride, bits [15:8] = Y stride
+  conf.run[0].pool_pad = 0x0;  // bits [7:0] = left padding, bits [15:8] = right padding, bits [23:16] = top padding, bits [31:24] = bottom padding
+  conf.run[0].pool_avg_param = 0x0;  // Must be set to 1/pool_size^2 in FP16 format when using average pooling (average pooling assumes square size)
+  conf.run[0].actfunc = 0;  // Activation Function: 0 = None, 1 = Tanh, 2 = Leaky ReLU, 3 = Sigmoid, 4 = PReLU, 5 = ELU, 6 = ReLU6
+  conf.run[0].actfunc_param = 0x0;  // Leaky ReLU parameter (NOTE: 0x2E66 is 0.1 in FP16)
+  conf.run[0].rectifi_en = 0;  // Rectification, i.e. max(0, x) (NOTE: Can be applied after non-ReLU activation function)
+  conf.run[0].lrn = 0x0;  // [0] : 1 = LRN enable, 0 = LRN disable, [1] : 1 = incl. power func, 0 = excl., [8:11] = x^2 scale factor log2
 
-  struct fpga_layer& layer = layers[1];
+  fpga_layer& layer = get_layer(1);
   layer.type = LT_CONV;
-  layer.hw_conf = (void*)&_conf;
-  layer.addr_cpu_input = 0x0;
-  layer.addr_cpu_output = 0x0;
-  layer.addr_offset_input = 0x000F0000;
-  layer.addr_offset_output = 0x005F0000;
+  layer.input_offs = 983040;
+  layer.output_offs = 6225920;
   layer.output_size = 1310720;
   layer.input_dim[0] = 512;
   layer.input_dim[1] = 320;
@@ -248,29 +219,32 @@ void CYOLOv3::Layer_1() {
 //  ->: batch_normalization_2
 //  ->: leaky_re_lu_2
 void CYOLOv3::Layer_2() {
-  struct top_conv_conf& _conf = get_conv_layer(2);
-  //Topo: 00000000000000000000000000000001
-  _conf.hw.header.topo = 0x1; // [31:0] Output Destination of each run, 0 = UBUF, 1 = EXTMEM
+  get_layer(2).name = "conv2d_2, batch_normalization_2, batch_normalization_2, leaky_re_lu_2";
+  dmp_dv_cmdraw_conv_v0& conf = get_layer(2).conv_conf;
+  conf.header.size = sizeof(conf);
+  conf.header.device_type = DMP_DV_DEV_CONV;
+  conf.header.version = 0;
+  // Topo: 00000000000000000000000000000001
+  conf.topo = 0x1;  // [31:0] Output Destination of each run, 0 = UBUF, 1 = EXTMEM
 
-  //Input Configuration:
-  _conf.hw.input.w = 256; // Input Width
-  _conf.hw.input.h = 160; // Input Height
-  _conf.hw.input.z = 1; // Input Depth
-  _conf.hw.input.c = 16; // Input Channels
-  _conf.hw.input.input_base_addr = 0x005F0000; // Input byte address
-  _conf.hw.input.tiles = 4; // Number of horizontal tiles (supported with restrictions)
+  // Input Configuration:
+  conf.w = 256;  // Input Width
+  conf.h = 160;  // Input Height
+  conf.z = 1;  // Input Depth
+  conf.c = 16;  // Input Channels
+  conf.input_buf.mem = io_mem_;
+  conf.input_buf.offs = 6225920;
 
-  //Output Configuration:
-  _conf.sw.output.w = 256; // Output Width
-  _conf.sw.output.h = 160; // Output Height
-  _conf.sw.output.z = 1; // Output Depth
-  _conf.sw.output.m = 32; // Output Channels
-  _conf.hw.output.output_base_addr = 0x00000000; // Output byte address
-  _conf.hw.output.eltwise_base_addr = 0xDEADBEEF; // Input byte address for elementwise add (0 = UBUF Input Buffer)
-  _conf.hw.output.output_mode = 0; // 0 = concat, 1 = eltwise add
+  // Output Configuration:
+  conf.output_buf.mem = io_mem_;
+  conf.output_buf.offs = 0;
 
-  //Runs Configuration:
-  //->1 run(s)
+  conf.eltwise_buf.mem = NULL;
+  conf.eltwise_buf.offs = 0;  // Input byte address for elementwise add (0 = UBUF Input Buffer)
+  conf.output_mode = 0;  // 0 = concat, 1 = eltwise add
+
+  // Runs Configuration:
+  // ->1 run(s)
   //--------------------------------------------------
   //RUN : 0
   //--------------------------------------------------
@@ -278,39 +252,30 @@ void CYOLOv3::Layer_2() {
   //->: batch_normalization_2
   //->: batch_normalization_2
   //->: leaky_re_lu_2
-  _conf.sw.run[0].in_w = 256; // Optional: Input width (not used by HW - discovered on the fly)
-  _conf.sw.run[0].in_h = 160; // Optional: Input height (not used by HW - discovered on the fly)
-  _conf.sw.run[0].in_c = 16; // Optional: Input Channels (not used by HW - discovered on the fly)
-  _conf.sw.run[0].out_w = 256; // Optional: Output width (not used by HW - discovered on the fly)
-  _conf.sw.run[0].out_h = 160; // Optional: Output height (not used by HW - discovered on the fly)
-  _conf.hw.run[0].m = 32; // Output Channels
-  _conf.hw.run[0].conv_enable = 1; // 1 = Enabled, 0 = Disabled
-  _conf.hw.run[0].p = 3; // Filter Width and Height
-  _conf.hw.run[0].pz = 1; // Filter Depth
-  _conf.hw.run[0].weight_base_addr = 0x00000920; // Filter Weight and Bias byte address
-  _conf.hw.run[0].weight_fmt = 1; // Weight format (0 = random access blocks, 1 = compact stream, 3 = 8-bit qunatized stream)
-  _conf.sw.run[0].weight_size = 9280; // Actual size in bytes of LUT, weights and bias (in bytes)
-  _conf.hw.run[0].conv_pad = 0x1010101; // bits [7:0] = left padding, bits [15:8] = right padding, bits [23:16] = top padding, bits [31:24] = bottom padding
-  _conf.hw.run[0].conv_stride = 0x101; // bits [7:0] = X stride, bits [15:8] = Y stride
-  _conf.hw.run[0].conv_dilation = 0x0; // bits [7:0] = X dilation, bits [15:8] = Y dilation
-  _conf.hw.run[0].pool_enable = 0;  // 0 = disabled, 1 = max pooling, 2 = average pooling
-  _conf.hw.run[0].pool_size = 0x0; // bits [7:0] = width, bits [15:8] = height
-  _conf.hw.run[0].pool_stride = 0x101; // bits [7:0] = X stride, bits [15:8] = Y stride
-  _conf.hw.run[0].pool_pad = 0x0; // bits [7:0] = left padding, bits [15:8] = right padding, bits [23:16] = top padding, bits [31:24] = bottom padding
-  _conf.hw.run[0].pool_avg_param = 0x0; // Must be set to 1/pool_size^2 in FP16 format when using average pooling (average pooling assumes square size)
-  _conf.hw.run[0].actfunc = 2; // Activation Function: 0 = None, 1 = Tanh, 2 = Leaky ReLU, 3 = Sigmoid, 4 = PReLU, 5 = ELU, 6 = ReLU6
-  _conf.hw.run[0].actfunc_param = 0x2E66; // Leaky ReLU parameter (NOTE: 0x2E66 is 0.1 in FP16)
-  _conf.hw.run[0].rectifi_en = 0; // Rectification, i.e. max(0, x) (NOTE: Can be applied after non-ReLU activation function)
-  _conf.hw.run[0].lrn= 0x0; // [0] : 1 = LRN enable, 0 = LRN disable, [1] : 1 = incl. power func, 0 = excl., [8:11] = x^2 scale factor log2
-  _conf.hw.run[0].ALIGN_0 = 0;//Some comments needed here
+  conf.run[0].m = 32;  // Output Channels
+  conf.run[0].conv_enable = 1;  // 1 = Enabled, 0 = Disabled
+  conf.run[0].p = 3;  // Filter Width and Height
+  conf.run[0].pz = 1;  // Filter Depth
+  conf.run[0].weight_buf.mem = weights_mem_;
+  conf.run[0].weight_buf.offs = 2336;
+  conf.run[0].weight_fmt = 1;  // Weight format (0 = random access blocks, 1 = compact stream, 3 = 8-bit qunatized stream)
+  conf.run[0].conv_pad = 0x1010101;  // bits [7:0] = left padding, bits [15:8] = right padding, bits [23:16] = top padding, bits [31:24] = bottom padding
+  conf.run[0].conv_stride = 0x101;  // bits [7:0] = X stride, bits [15:8] = Y stride
+  conf.run[0].conv_dilation = 0x0;  // bits [7:0] = X dilation, bits [15:8] = Y dilation
+  conf.run[0].pool_enable = 0;  // 0 = disabled, 1 = max pooling, 2 = average pooling
+  conf.run[0].pool_size = 0x0;  // bits [7:0] = width, bits [15:8] = height
+  conf.run[0].pool_stride = 0x101;  // bits [7:0] = X stride, bits [15:8] = Y stride
+  conf.run[0].pool_pad = 0x0;  // bits [7:0] = left padding, bits [15:8] = right padding, bits [23:16] = top padding, bits [31:24] = bottom padding
+  conf.run[0].pool_avg_param = 0x0;  // Must be set to 1/pool_size^2 in FP16 format when using average pooling (average pooling assumes square size)
+  conf.run[0].actfunc = 2;  // Activation Function: 0 = None, 1 = Tanh, 2 = Leaky ReLU, 3 = Sigmoid, 4 = PReLU, 5 = ELU, 6 = ReLU6
+  conf.run[0].actfunc_param = 0x2E66;  // Leaky ReLU parameter (NOTE: 0x2E66 is 0.1 in FP16)
+  conf.run[0].rectifi_en = 0;  // Rectification, i.e. max(0, x) (NOTE: Can be applied after non-ReLU activation function)
+  conf.run[0].lrn = 0x0;  // [0] : 1 = LRN enable, 0 = LRN disable, [1] : 1 = incl. power func, 0 = excl., [8:11] = x^2 scale factor log2
 
-  struct fpga_layer& layer = layers[2];
+  fpga_layer& layer = get_layer(2);
   layer.type = LT_CONV;
-  layer.hw_conf = (void*)&_conf;
-  layer.addr_cpu_input = 0x0;
-  layer.addr_cpu_output = 0x0;
-  layer.addr_offset_input = 0x005F0000;
-  layer.addr_offset_output = 0x00000000;
+  layer.input_offs = 6225920;
+  layer.output_offs = 0;
   layer.output_size = 2621440;
   layer.input_dim[0] = 256;
   layer.input_dim[1] = 160;
@@ -328,66 +293,60 @@ void CYOLOv3::Layer_2() {
 //Layer_3: Convolution Layer
 //  ->: max_pooling2d_2
 void CYOLOv3::Layer_3() {
-  struct top_conv_conf& _conf = get_conv_layer(3);
-  //Topo: 00000000000000000000000000000001
-  _conf.hw.header.topo = 0x1; // [31:0] Output Destination of each run, 0 = UBUF, 1 = EXTMEM
+  get_layer(3).name = "max_pooling2d_2";
+  dmp_dv_cmdraw_conv_v0& conf = get_layer(3).conv_conf;
+  conf.header.size = sizeof(conf);
+  conf.header.device_type = DMP_DV_DEV_CONV;
+  conf.header.version = 0;
+  // Topo: 00000000000000000000000000000001
+  conf.topo = 0x1;  // [31:0] Output Destination of each run, 0 = UBUF, 1 = EXTMEM
 
-  //Input Configuration:
-  _conf.hw.input.w = 256; // Input Width
-  _conf.hw.input.h = 160; // Input Height
-  _conf.hw.input.z = 1; // Input Depth
-  _conf.hw.input.c = 32; // Input Channels
-  _conf.hw.input.input_base_addr = 0x00000000; // Input byte address
-  _conf.hw.input.tiles = 1; // Number of horizontal tiles (supported with restrictions)
+  // Input Configuration:
+  conf.w = 256;  // Input Width
+  conf.h = 160;  // Input Height
+  conf.z = 1;  // Input Depth
+  conf.c = 32;  // Input Channels
+  conf.input_buf.mem = io_mem_;
+  conf.input_buf.offs = 0;
 
-  //Output Configuration:
-  _conf.sw.output.w = 128; // Output Width
-  _conf.sw.output.h = 80; // Output Height
-  _conf.sw.output.z = 1; // Output Depth
-  _conf.sw.output.m = 32; // Output Channels
-  _conf.hw.output.output_base_addr = 0x00280000; // Output byte address
-  _conf.hw.output.eltwise_base_addr = 0xDEADBEEF; // Input byte address for elementwise add (0 = UBUF Input Buffer)
-  _conf.hw.output.output_mode = 0; // 0 = concat, 1 = eltwise add
+  // Output Configuration:
+  conf.output_buf.mem = io_mem_;
+  conf.output_buf.offs = 2621440;
 
-  //Runs Configuration:
-  //->1 run(s)
+  conf.eltwise_buf.mem = NULL;
+  conf.eltwise_buf.offs = 0;  // Input byte address for elementwise add (0 = UBUF Input Buffer)
+  conf.output_mode = 0;  // 0 = concat, 1 = eltwise add
+
+  // Runs Configuration:
+  // ->1 run(s)
   //--------------------------------------------------
   //RUN : 0
   //--------------------------------------------------
   //->: max_pooling2d_2
-  _conf.sw.run[0].in_w = 256; // Optional: Input width (not used by HW - discovered on the fly)
-  _conf.sw.run[0].in_h = 160; // Optional: Input height (not used by HW - discovered on the fly)
-  _conf.sw.run[0].in_c = 32; // Optional: Input Channels (not used by HW - discovered on the fly)
-  _conf.sw.run[0].out_w = 128; // Optional: Output width (not used by HW - discovered on the fly)
-  _conf.sw.run[0].out_h = 80; // Optional: Output height (not used by HW - discovered on the fly)
-  _conf.hw.run[0].m = 32; // Output Channels
-  _conf.hw.run[0].conv_enable = 0; // 1 = Enabled, 0 = Disabled
-  _conf.hw.run[0].p = 1; // Filter Width and Height
-  _conf.hw.run[0].pz = 1; // Filter Depth
-  _conf.hw.run[0].weight_base_addr = 0x00002D60; // Filter Weight and Bias byte address
-  _conf.hw.run[0].weight_fmt = 0; // Weight format (0 = random access blocks, 1 = compact stream, 3 = 8-bit qunatized stream)
-  _conf.sw.run[0].weight_size = 0; // Actual size in bytes of LUT, weights and bias (in bytes)
-  _conf.hw.run[0].conv_pad = 0x0; // bits [7:0] = left padding, bits [15:8] = right padding, bits [23:16] = top padding, bits [31:24] = bottom padding
-  _conf.hw.run[0].conv_stride = 0x101; // bits [7:0] = X stride, bits [15:8] = Y stride
-  _conf.hw.run[0].conv_dilation = 0x0; // bits [7:0] = X dilation, bits [15:8] = Y dilation
-  _conf.hw.run[0].pool_enable = 1;  // 0 = disabled, 1 = max pooling, 2 = average pooling
-  _conf.hw.run[0].pool_size = 0x202; // bits [7:0] = width, bits [15:8] = height
-  _conf.hw.run[0].pool_stride = 0x202; // bits [7:0] = X stride, bits [15:8] = Y stride
-  _conf.hw.run[0].pool_pad = 0x0; // bits [7:0] = left padding, bits [15:8] = right padding, bits [23:16] = top padding, bits [31:24] = bottom padding
-  _conf.hw.run[0].pool_avg_param = 0x0; // Must be set to 1/pool_size^2 in FP16 format when using average pooling (average pooling assumes square size)
-  _conf.hw.run[0].actfunc = 0; // Activation Function: 0 = None, 1 = Tanh, 2 = Leaky ReLU, 3 = Sigmoid, 4 = PReLU, 5 = ELU, 6 = ReLU6
-  _conf.hw.run[0].actfunc_param = 0x0; // Leaky ReLU parameter (NOTE: 0x2E66 is 0.1 in FP16)
-  _conf.hw.run[0].rectifi_en = 0; // Rectification, i.e. max(0, x) (NOTE: Can be applied after non-ReLU activation function)
-  _conf.hw.run[0].lrn= 0x0; // [0] : 1 = LRN enable, 0 = LRN disable, [1] : 1 = incl. power func, 0 = excl., [8:11] = x^2 scale factor log2
-  _conf.hw.run[0].ALIGN_0 = 0;//Some comments needed here
+  conf.run[0].m = 32;  // Output Channels
+  conf.run[0].conv_enable = 0;  // 1 = Enabled, 0 = Disabled
+  conf.run[0].p = 1;  // Filter Width and Height
+  conf.run[0].pz = 1;  // Filter Depth
+  conf.run[0].weight_buf.mem = weights_mem_;
+  conf.run[0].weight_buf.offs = 11616;
+  conf.run[0].weight_fmt = 0;  // Weight format (0 = random access blocks, 1 = compact stream, 3 = 8-bit qunatized stream)
+  conf.run[0].conv_pad = 0x0;  // bits [7:0] = left padding, bits [15:8] = right padding, bits [23:16] = top padding, bits [31:24] = bottom padding
+  conf.run[0].conv_stride = 0x101;  // bits [7:0] = X stride, bits [15:8] = Y stride
+  conf.run[0].conv_dilation = 0x0;  // bits [7:0] = X dilation, bits [15:8] = Y dilation
+  conf.run[0].pool_enable = 1;  // 0 = disabled, 1 = max pooling, 2 = average pooling
+  conf.run[0].pool_size = 0x202;  // bits [7:0] = width, bits [15:8] = height
+  conf.run[0].pool_stride = 0x202;  // bits [7:0] = X stride, bits [15:8] = Y stride
+  conf.run[0].pool_pad = 0x0;  // bits [7:0] = left padding, bits [15:8] = right padding, bits [23:16] = top padding, bits [31:24] = bottom padding
+  conf.run[0].pool_avg_param = 0x0;  // Must be set to 1/pool_size^2 in FP16 format when using average pooling (average pooling assumes square size)
+  conf.run[0].actfunc = 0;  // Activation Function: 0 = None, 1 = Tanh, 2 = Leaky ReLU, 3 = Sigmoid, 4 = PReLU, 5 = ELU, 6 = ReLU6
+  conf.run[0].actfunc_param = 0x0;  // Leaky ReLU parameter (NOTE: 0x2E66 is 0.1 in FP16)
+  conf.run[0].rectifi_en = 0;  // Rectification, i.e. max(0, x) (NOTE: Can be applied after non-ReLU activation function)
+  conf.run[0].lrn = 0x0;  // [0] : 1 = LRN enable, 0 = LRN disable, [1] : 1 = incl. power func, 0 = excl., [8:11] = x^2 scale factor log2
 
-  struct fpga_layer& layer = layers[3];
+  fpga_layer& layer = get_layer(3);
   layer.type = LT_CONV;
-  layer.hw_conf = (void*)&_conf;
-  layer.addr_cpu_input = 0x0;
-  layer.addr_cpu_output = 0x0;
-  layer.addr_offset_input = 0x00000000;
-  layer.addr_offset_output = 0x00280000;
+  layer.input_offs = 0;
+  layer.output_offs = 2621440;
   layer.output_size = 655360;
   layer.input_dim[0] = 256;
   layer.input_dim[1] = 160;
@@ -408,29 +367,32 @@ void CYOLOv3::Layer_3() {
 //  ->: batch_normalization_3
 //  ->: leaky_re_lu_3
 void CYOLOv3::Layer_4() {
-  struct top_conv_conf& _conf = get_conv_layer(4);
-  //Topo: 00000000000000000000000000000001
-  _conf.hw.header.topo = 0x1; // [31:0] Output Destination of each run, 0 = UBUF, 1 = EXTMEM
+  get_layer(4).name = "conv2d_3, batch_normalization_3, batch_normalization_3, leaky_re_lu_3";
+  dmp_dv_cmdraw_conv_v0& conf = get_layer(4).conv_conf;
+  conf.header.size = sizeof(conf);
+  conf.header.device_type = DMP_DV_DEV_CONV;
+  conf.header.version = 0;
+  // Topo: 00000000000000000000000000000001
+  conf.topo = 0x1;  // [31:0] Output Destination of each run, 0 = UBUF, 1 = EXTMEM
 
-  //Input Configuration:
-  _conf.hw.input.w = 128; // Input Width
-  _conf.hw.input.h = 80; // Input Height
-  _conf.hw.input.z = 1; // Input Depth
-  _conf.hw.input.c = 32; // Input Channels
-  _conf.hw.input.input_base_addr = 0x00280000; // Input byte address
-  _conf.hw.input.tiles = 2; // Number of horizontal tiles (supported with restrictions)
+  // Input Configuration:
+  conf.w = 128;  // Input Width
+  conf.h = 80;  // Input Height
+  conf.z = 1;  // Input Depth
+  conf.c = 32;  // Input Channels
+  conf.input_buf.mem = io_mem_;
+  conf.input_buf.offs = 2621440;
 
-  //Output Configuration:
-  _conf.sw.output.w = 128; // Output Width
-  _conf.sw.output.h = 80; // Output Height
-  _conf.sw.output.z = 1; // Output Depth
-  _conf.sw.output.m = 64; // Output Channels
-  _conf.hw.output.output_base_addr = 0x00000000; // Output byte address
-  _conf.hw.output.eltwise_base_addr = 0xDEADBEEF; // Input byte address for elementwise add (0 = UBUF Input Buffer)
-  _conf.hw.output.output_mode = 0; // 0 = concat, 1 = eltwise add
+  // Output Configuration:
+  conf.output_buf.mem = io_mem_;
+  conf.output_buf.offs = 0;
 
-  //Runs Configuration:
-  //->1 run(s)
+  conf.eltwise_buf.mem = NULL;
+  conf.eltwise_buf.offs = 0;  // Input byte address for elementwise add (0 = UBUF Input Buffer)
+  conf.output_mode = 0;  // 0 = concat, 1 = eltwise add
+
+  // Runs Configuration:
+  // ->1 run(s)
   //--------------------------------------------------
   //RUN : 0
   //--------------------------------------------------
@@ -438,39 +400,30 @@ void CYOLOv3::Layer_4() {
   //->: batch_normalization_3
   //->: batch_normalization_3
   //->: leaky_re_lu_3
-  _conf.sw.run[0].in_w = 128; // Optional: Input width (not used by HW - discovered on the fly)
-  _conf.sw.run[0].in_h = 80; // Optional: Input height (not used by HW - discovered on the fly)
-  _conf.sw.run[0].in_c = 32; // Optional: Input Channels (not used by HW - discovered on the fly)
-  _conf.sw.run[0].out_w = 128; // Optional: Output width (not used by HW - discovered on the fly)
-  _conf.sw.run[0].out_h = 80; // Optional: Output height (not used by HW - discovered on the fly)
-  _conf.hw.run[0].m = 64; // Output Channels
-  _conf.hw.run[0].conv_enable = 1; // 1 = Enabled, 0 = Disabled
-  _conf.hw.run[0].p = 3; // Filter Width and Height
-  _conf.hw.run[0].pz = 1; // Filter Depth
-  _conf.hw.run[0].weight_base_addr = 0x00002D60; // Filter Weight and Bias byte address
-  _conf.hw.run[0].weight_fmt = 1; // Weight format (0 = random access blocks, 1 = compact stream, 3 = 8-bit qunatized stream)
-  _conf.sw.run[0].weight_size = 36992; // Actual size in bytes of LUT, weights and bias (in bytes)
-  _conf.hw.run[0].conv_pad = 0x1010101; // bits [7:0] = left padding, bits [15:8] = right padding, bits [23:16] = top padding, bits [31:24] = bottom padding
-  _conf.hw.run[0].conv_stride = 0x101; // bits [7:0] = X stride, bits [15:8] = Y stride
-  _conf.hw.run[0].conv_dilation = 0x0; // bits [7:0] = X dilation, bits [15:8] = Y dilation
-  _conf.hw.run[0].pool_enable = 0;  // 0 = disabled, 1 = max pooling, 2 = average pooling
-  _conf.hw.run[0].pool_size = 0x0; // bits [7:0] = width, bits [15:8] = height
-  _conf.hw.run[0].pool_stride = 0x101; // bits [7:0] = X stride, bits [15:8] = Y stride
-  _conf.hw.run[0].pool_pad = 0x0; // bits [7:0] = left padding, bits [15:8] = right padding, bits [23:16] = top padding, bits [31:24] = bottom padding
-  _conf.hw.run[0].pool_avg_param = 0x0; // Must be set to 1/pool_size^2 in FP16 format when using average pooling (average pooling assumes square size)
-  _conf.hw.run[0].actfunc = 2; // Activation Function: 0 = None, 1 = Tanh, 2 = Leaky ReLU, 3 = Sigmoid, 4 = PReLU, 5 = ELU, 6 = ReLU6
-  _conf.hw.run[0].actfunc_param = 0x2E66; // Leaky ReLU parameter (NOTE: 0x2E66 is 0.1 in FP16)
-  _conf.hw.run[0].rectifi_en = 0; // Rectification, i.e. max(0, x) (NOTE: Can be applied after non-ReLU activation function)
-  _conf.hw.run[0].lrn= 0x0; // [0] : 1 = LRN enable, 0 = LRN disable, [1] : 1 = incl. power func, 0 = excl., [8:11] = x^2 scale factor log2
-  _conf.hw.run[0].ALIGN_0 = 0;//Some comments needed here
+  conf.run[0].m = 64;  // Output Channels
+  conf.run[0].conv_enable = 1;  // 1 = Enabled, 0 = Disabled
+  conf.run[0].p = 3;  // Filter Width and Height
+  conf.run[0].pz = 1;  // Filter Depth
+  conf.run[0].weight_buf.mem = weights_mem_;
+  conf.run[0].weight_buf.offs = 11616;
+  conf.run[0].weight_fmt = 1;  // Weight format (0 = random access blocks, 1 = compact stream, 3 = 8-bit qunatized stream)
+  conf.run[0].conv_pad = 0x1010101;  // bits [7:0] = left padding, bits [15:8] = right padding, bits [23:16] = top padding, bits [31:24] = bottom padding
+  conf.run[0].conv_stride = 0x101;  // bits [7:0] = X stride, bits [15:8] = Y stride
+  conf.run[0].conv_dilation = 0x0;  // bits [7:0] = X dilation, bits [15:8] = Y dilation
+  conf.run[0].pool_enable = 0;  // 0 = disabled, 1 = max pooling, 2 = average pooling
+  conf.run[0].pool_size = 0x0;  // bits [7:0] = width, bits [15:8] = height
+  conf.run[0].pool_stride = 0x101;  // bits [7:0] = X stride, bits [15:8] = Y stride
+  conf.run[0].pool_pad = 0x0;  // bits [7:0] = left padding, bits [15:8] = right padding, bits [23:16] = top padding, bits [31:24] = bottom padding
+  conf.run[0].pool_avg_param = 0x0;  // Must be set to 1/pool_size^2 in FP16 format when using average pooling (average pooling assumes square size)
+  conf.run[0].actfunc = 2;  // Activation Function: 0 = None, 1 = Tanh, 2 = Leaky ReLU, 3 = Sigmoid, 4 = PReLU, 5 = ELU, 6 = ReLU6
+  conf.run[0].actfunc_param = 0x2E66;  // Leaky ReLU parameter (NOTE: 0x2E66 is 0.1 in FP16)
+  conf.run[0].rectifi_en = 0;  // Rectification, i.e. max(0, x) (NOTE: Can be applied after non-ReLU activation function)
+  conf.run[0].lrn = 0x0;  // [0] : 1 = LRN enable, 0 = LRN disable, [1] : 1 = incl. power func, 0 = excl., [8:11] = x^2 scale factor log2
 
-  struct fpga_layer& layer = layers[4];
+  fpga_layer& layer = get_layer(4);
   layer.type = LT_CONV;
-  layer.hw_conf = (void*)&_conf;
-  layer.addr_cpu_input = 0x0;
-  layer.addr_cpu_output = 0x0;
-  layer.addr_offset_input = 0x00280000;
-  layer.addr_offset_output = 0x00000000;
+  layer.input_offs = 2621440;
+  layer.output_offs = 0;
   layer.output_size = 1310720;
   layer.input_dim[0] = 128;
   layer.input_dim[1] = 80;
@@ -488,66 +441,60 @@ void CYOLOv3::Layer_4() {
 //Layer_5: Convolution Layer
 //  ->: max_pooling2d_3
 void CYOLOv3::Layer_5() {
-  struct top_conv_conf& _conf = get_conv_layer(5);
-  //Topo: 00000000000000000000000000000001
-  _conf.hw.header.topo = 0x1; // [31:0] Output Destination of each run, 0 = UBUF, 1 = EXTMEM
+  get_layer(5).name = "max_pooling2d_3";
+  dmp_dv_cmdraw_conv_v0& conf = get_layer(5).conv_conf;
+  conf.header.size = sizeof(conf);
+  conf.header.device_type = DMP_DV_DEV_CONV;
+  conf.header.version = 0;
+  // Topo: 00000000000000000000000000000001
+  conf.topo = 0x1;  // [31:0] Output Destination of each run, 0 = UBUF, 1 = EXTMEM
 
-  //Input Configuration:
-  _conf.hw.input.w = 128; // Input Width
-  _conf.hw.input.h = 80; // Input Height
-  _conf.hw.input.z = 1; // Input Depth
-  _conf.hw.input.c = 64; // Input Channels
-  _conf.hw.input.input_base_addr = 0x00000000; // Input byte address
-  _conf.hw.input.tiles = 1; // Number of horizontal tiles (supported with restrictions)
+  // Input Configuration:
+  conf.w = 128;  // Input Width
+  conf.h = 80;  // Input Height
+  conf.z = 1;  // Input Depth
+  conf.c = 64;  // Input Channels
+  conf.input_buf.mem = io_mem_;
+  conf.input_buf.offs = 0;
 
-  //Output Configuration:
-  _conf.sw.output.w = 64; // Output Width
-  _conf.sw.output.h = 40; // Output Height
-  _conf.sw.output.z = 1; // Output Depth
-  _conf.sw.output.m = 64; // Output Channels
-  _conf.hw.output.output_base_addr = 0x00140000; // Output byte address
-  _conf.hw.output.eltwise_base_addr = 0xDEADBEEF; // Input byte address for elementwise add (0 = UBUF Input Buffer)
-  _conf.hw.output.output_mode = 0; // 0 = concat, 1 = eltwise add
+  // Output Configuration:
+  conf.output_buf.mem = io_mem_;
+  conf.output_buf.offs = 1310720;
 
-  //Runs Configuration:
-  //->1 run(s)
+  conf.eltwise_buf.mem = NULL;
+  conf.eltwise_buf.offs = 0;  // Input byte address for elementwise add (0 = UBUF Input Buffer)
+  conf.output_mode = 0;  // 0 = concat, 1 = eltwise add
+
+  // Runs Configuration:
+  // ->1 run(s)
   //--------------------------------------------------
   //RUN : 0
   //--------------------------------------------------
   //->: max_pooling2d_3
-  _conf.sw.run[0].in_w = 128; // Optional: Input width (not used by HW - discovered on the fly)
-  _conf.sw.run[0].in_h = 80; // Optional: Input height (not used by HW - discovered on the fly)
-  _conf.sw.run[0].in_c = 64; // Optional: Input Channels (not used by HW - discovered on the fly)
-  _conf.sw.run[0].out_w = 64; // Optional: Output width (not used by HW - discovered on the fly)
-  _conf.sw.run[0].out_h = 40; // Optional: Output height (not used by HW - discovered on the fly)
-  _conf.hw.run[0].m = 64; // Output Channels
-  _conf.hw.run[0].conv_enable = 0; // 1 = Enabled, 0 = Disabled
-  _conf.hw.run[0].p = 1; // Filter Width and Height
-  _conf.hw.run[0].pz = 1; // Filter Depth
-  _conf.hw.run[0].weight_base_addr = 0x0000BDE0; // Filter Weight and Bias byte address
-  _conf.hw.run[0].weight_fmt = 0; // Weight format (0 = random access blocks, 1 = compact stream, 3 = 8-bit qunatized stream)
-  _conf.sw.run[0].weight_size = 0; // Actual size in bytes of LUT, weights and bias (in bytes)
-  _conf.hw.run[0].conv_pad = 0x0; // bits [7:0] = left padding, bits [15:8] = right padding, bits [23:16] = top padding, bits [31:24] = bottom padding
-  _conf.hw.run[0].conv_stride = 0x101; // bits [7:0] = X stride, bits [15:8] = Y stride
-  _conf.hw.run[0].conv_dilation = 0x0; // bits [7:0] = X dilation, bits [15:8] = Y dilation
-  _conf.hw.run[0].pool_enable = 1;  // 0 = disabled, 1 = max pooling, 2 = average pooling
-  _conf.hw.run[0].pool_size = 0x202; // bits [7:0] = width, bits [15:8] = height
-  _conf.hw.run[0].pool_stride = 0x202; // bits [7:0] = X stride, bits [15:8] = Y stride
-  _conf.hw.run[0].pool_pad = 0x0; // bits [7:0] = left padding, bits [15:8] = right padding, bits [23:16] = top padding, bits [31:24] = bottom padding
-  _conf.hw.run[0].pool_avg_param = 0x0; // Must be set to 1/pool_size^2 in FP16 format when using average pooling (average pooling assumes square size)
-  _conf.hw.run[0].actfunc = 0; // Activation Function: 0 = None, 1 = Tanh, 2 = Leaky ReLU, 3 = Sigmoid, 4 = PReLU, 5 = ELU, 6 = ReLU6
-  _conf.hw.run[0].actfunc_param = 0x0; // Leaky ReLU parameter (NOTE: 0x2E66 is 0.1 in FP16)
-  _conf.hw.run[0].rectifi_en = 0; // Rectification, i.e. max(0, x) (NOTE: Can be applied after non-ReLU activation function)
-  _conf.hw.run[0].lrn= 0x0; // [0] : 1 = LRN enable, 0 = LRN disable, [1] : 1 = incl. power func, 0 = excl., [8:11] = x^2 scale factor log2
-  _conf.hw.run[0].ALIGN_0 = 0;//Some comments needed here
+  conf.run[0].m = 64;  // Output Channels
+  conf.run[0].conv_enable = 0;  // 1 = Enabled, 0 = Disabled
+  conf.run[0].p = 1;  // Filter Width and Height
+  conf.run[0].pz = 1;  // Filter Depth
+  conf.run[0].weight_buf.mem = weights_mem_;
+  conf.run[0].weight_buf.offs = 48608;
+  conf.run[0].weight_fmt = 0;  // Weight format (0 = random access blocks, 1 = compact stream, 3 = 8-bit qunatized stream)
+  conf.run[0].conv_pad = 0x0;  // bits [7:0] = left padding, bits [15:8] = right padding, bits [23:16] = top padding, bits [31:24] = bottom padding
+  conf.run[0].conv_stride = 0x101;  // bits [7:0] = X stride, bits [15:8] = Y stride
+  conf.run[0].conv_dilation = 0x0;  // bits [7:0] = X dilation, bits [15:8] = Y dilation
+  conf.run[0].pool_enable = 1;  // 0 = disabled, 1 = max pooling, 2 = average pooling
+  conf.run[0].pool_size = 0x202;  // bits [7:0] = width, bits [15:8] = height
+  conf.run[0].pool_stride = 0x202;  // bits [7:0] = X stride, bits [15:8] = Y stride
+  conf.run[0].pool_pad = 0x0;  // bits [7:0] = left padding, bits [15:8] = right padding, bits [23:16] = top padding, bits [31:24] = bottom padding
+  conf.run[0].pool_avg_param = 0x0;  // Must be set to 1/pool_size^2 in FP16 format when using average pooling (average pooling assumes square size)
+  conf.run[0].actfunc = 0;  // Activation Function: 0 = None, 1 = Tanh, 2 = Leaky ReLU, 3 = Sigmoid, 4 = PReLU, 5 = ELU, 6 = ReLU6
+  conf.run[0].actfunc_param = 0x0;  // Leaky ReLU parameter (NOTE: 0x2E66 is 0.1 in FP16)
+  conf.run[0].rectifi_en = 0;  // Rectification, i.e. max(0, x) (NOTE: Can be applied after non-ReLU activation function)
+  conf.run[0].lrn = 0x0;  // [0] : 1 = LRN enable, 0 = LRN disable, [1] : 1 = incl. power func, 0 = excl., [8:11] = x^2 scale factor log2
 
-  struct fpga_layer& layer = layers[5];
+  fpga_layer& layer = get_layer(5);
   layer.type = LT_CONV;
-  layer.hw_conf = (void*)&_conf;
-  layer.addr_cpu_input = 0x0;
-  layer.addr_cpu_output = 0x0;
-  layer.addr_offset_input = 0x00000000;
-  layer.addr_offset_output = 0x00140000;
+  layer.input_offs = 0;
+  layer.output_offs = 1310720;
   layer.output_size = 327680;
   layer.input_dim[0] = 128;
   layer.input_dim[1] = 80;
@@ -569,29 +516,32 @@ void CYOLOv3::Layer_5() {
 //  ->: leaky_re_lu_4
 //  ->: max_pooling2d_4
 void CYOLOv3::Layer_6() {
-  struct top_conv_conf& _conf = get_conv_layer(6);
-  //Topo: 00000000000000000000000000000001
-  _conf.hw.header.topo = 0x1; // [31:0] Output Destination of each run, 0 = UBUF, 1 = EXTMEM
+  get_layer(6).name = "conv2d_4, batch_normalization_4, batch_normalization_4, leaky_re_lu_4, max_pooling2d_4";
+  dmp_dv_cmdraw_conv_v0& conf = get_layer(6).conv_conf;
+  conf.header.size = sizeof(conf);
+  conf.header.device_type = DMP_DV_DEV_CONV;
+  conf.header.version = 0;
+  // Topo: 00000000000000000000000000000001
+  conf.topo = 0x1;  // [31:0] Output Destination of each run, 0 = UBUF, 1 = EXTMEM
 
-  //Input Configuration:
-  _conf.hw.input.w = 64; // Input Width
-  _conf.hw.input.h = 40; // Input Height
-  _conf.hw.input.z = 1; // Input Depth
-  _conf.hw.input.c = 64; // Input Channels
-  _conf.hw.input.input_base_addr = 0x00140000; // Input byte address
-  _conf.hw.input.tiles = 1; // Number of horizontal tiles (supported with restrictions)
+  // Input Configuration:
+  conf.w = 64;  // Input Width
+  conf.h = 40;  // Input Height
+  conf.z = 1;  // Input Depth
+  conf.c = 64;  // Input Channels
+  conf.input_buf.mem = io_mem_;
+  conf.input_buf.offs = 1310720;
 
-  //Output Configuration:
-  _conf.sw.output.w = 32; // Output Width
-  _conf.sw.output.h = 20; // Output Height
-  _conf.sw.output.z = 1; // Output Depth
-  _conf.sw.output.m = 128; // Output Channels
-  _conf.hw.output.output_base_addr = 0x00000000; // Output byte address
-  _conf.hw.output.eltwise_base_addr = 0xDEADBEEF; // Input byte address for elementwise add (0 = UBUF Input Buffer)
-  _conf.hw.output.output_mode = 0; // 0 = concat, 1 = eltwise add
+  // Output Configuration:
+  conf.output_buf.mem = io_mem_;
+  conf.output_buf.offs = 0;
 
-  //Runs Configuration:
-  //->1 run(s)
+  conf.eltwise_buf.mem = NULL;
+  conf.eltwise_buf.offs = 0;  // Input byte address for elementwise add (0 = UBUF Input Buffer)
+  conf.output_mode = 0;  // 0 = concat, 1 = eltwise add
+
+  // Runs Configuration:
+  // ->1 run(s)
   //--------------------------------------------------
   //RUN : 0
   //--------------------------------------------------
@@ -600,39 +550,30 @@ void CYOLOv3::Layer_6() {
   //->: batch_normalization_4
   //->: leaky_re_lu_4
   //->: max_pooling2d_4
-  _conf.sw.run[0].in_w = 64; // Optional: Input width (not used by HW - discovered on the fly)
-  _conf.sw.run[0].in_h = 40; // Optional: Input height (not used by HW - discovered on the fly)
-  _conf.sw.run[0].in_c = 64; // Optional: Input Channels (not used by HW - discovered on the fly)
-  _conf.sw.run[0].out_w = 32; // Optional: Output width (not used by HW - discovered on the fly)
-  _conf.sw.run[0].out_h = 20; // Optional: Output height (not used by HW - discovered on the fly)
-  _conf.hw.run[0].m = 128; // Output Channels
-  _conf.hw.run[0].conv_enable = 1; // 1 = Enabled, 0 = Disabled
-  _conf.hw.run[0].p = 3; // Filter Width and Height
-  _conf.hw.run[0].pz = 1; // Filter Depth
-  _conf.hw.run[0].weight_base_addr = 0x0000BDE0; // Filter Weight and Bias byte address
-  _conf.hw.run[0].weight_fmt = 1; // Weight format (0 = random access blocks, 1 = compact stream, 3 = 8-bit qunatized stream)
-  _conf.sw.run[0].weight_size = 147712; // Actual size in bytes of LUT, weights and bias (in bytes)
-  _conf.hw.run[0].conv_pad = 0x1010101; // bits [7:0] = left padding, bits [15:8] = right padding, bits [23:16] = top padding, bits [31:24] = bottom padding
-  _conf.hw.run[0].conv_stride = 0x101; // bits [7:0] = X stride, bits [15:8] = Y stride
-  _conf.hw.run[0].conv_dilation = 0x0; // bits [7:0] = X dilation, bits [15:8] = Y dilation
-  _conf.hw.run[0].pool_enable = 1;  // 0 = disabled, 1 = max pooling, 2 = average pooling
-  _conf.hw.run[0].pool_size = 0x202; // bits [7:0] = width, bits [15:8] = height
-  _conf.hw.run[0].pool_stride = 0x202; // bits [7:0] = X stride, bits [15:8] = Y stride
-  _conf.hw.run[0].pool_pad = 0x0; // bits [7:0] = left padding, bits [15:8] = right padding, bits [23:16] = top padding, bits [31:24] = bottom padding
-  _conf.hw.run[0].pool_avg_param = 0x0; // Must be set to 1/pool_size^2 in FP16 format when using average pooling (average pooling assumes square size)
-  _conf.hw.run[0].actfunc = 2; // Activation Function: 0 = None, 1 = Tanh, 2 = Leaky ReLU, 3 = Sigmoid, 4 = PReLU, 5 = ELU, 6 = ReLU6
-  _conf.hw.run[0].actfunc_param = 0x2E66; // Leaky ReLU parameter (NOTE: 0x2E66 is 0.1 in FP16)
-  _conf.hw.run[0].rectifi_en = 0; // Rectification, i.e. max(0, x) (NOTE: Can be applied after non-ReLU activation function)
-  _conf.hw.run[0].lrn= 0x0; // [0] : 1 = LRN enable, 0 = LRN disable, [1] : 1 = incl. power func, 0 = excl., [8:11] = x^2 scale factor log2
-  _conf.hw.run[0].ALIGN_0 = 0;//Some comments needed here
+  conf.run[0].m = 128;  // Output Channels
+  conf.run[0].conv_enable = 1;  // 1 = Enabled, 0 = Disabled
+  conf.run[0].p = 3;  // Filter Width and Height
+  conf.run[0].pz = 1;  // Filter Depth
+  conf.run[0].weight_buf.mem = weights_mem_;
+  conf.run[0].weight_buf.offs = 48608;
+  conf.run[0].weight_fmt = 1;  // Weight format (0 = random access blocks, 1 = compact stream, 3 = 8-bit qunatized stream)
+  conf.run[0].conv_pad = 0x1010101;  // bits [7:0] = left padding, bits [15:8] = right padding, bits [23:16] = top padding, bits [31:24] = bottom padding
+  conf.run[0].conv_stride = 0x101;  // bits [7:0] = X stride, bits [15:8] = Y stride
+  conf.run[0].conv_dilation = 0x0;  // bits [7:0] = X dilation, bits [15:8] = Y dilation
+  conf.run[0].pool_enable = 1;  // 0 = disabled, 1 = max pooling, 2 = average pooling
+  conf.run[0].pool_size = 0x202;  // bits [7:0] = width, bits [15:8] = height
+  conf.run[0].pool_stride = 0x202;  // bits [7:0] = X stride, bits [15:8] = Y stride
+  conf.run[0].pool_pad = 0x0;  // bits [7:0] = left padding, bits [15:8] = right padding, bits [23:16] = top padding, bits [31:24] = bottom padding
+  conf.run[0].pool_avg_param = 0x0;  // Must be set to 1/pool_size^2 in FP16 format when using average pooling (average pooling assumes square size)
+  conf.run[0].actfunc = 2;  // Activation Function: 0 = None, 1 = Tanh, 2 = Leaky ReLU, 3 = Sigmoid, 4 = PReLU, 5 = ELU, 6 = ReLU6
+  conf.run[0].actfunc_param = 0x2E66;  // Leaky ReLU parameter (NOTE: 0x2E66 is 0.1 in FP16)
+  conf.run[0].rectifi_en = 0;  // Rectification, i.e. max(0, x) (NOTE: Can be applied after non-ReLU activation function)
+  conf.run[0].lrn = 0x0;  // [0] : 1 = LRN enable, 0 = LRN disable, [1] : 1 = incl. power func, 0 = excl., [8:11] = x^2 scale factor log2
 
-  struct fpga_layer& layer = layers[6];
+  fpga_layer& layer = get_layer(6);
   layer.type = LT_CONV;
-  layer.hw_conf = (void*)&_conf;
-  layer.addr_cpu_input = 0x0;
-  layer.addr_cpu_output = 0x0;
-  layer.addr_offset_input = 0x00140000;
-  layer.addr_offset_output = 0x00000000;
+  layer.input_offs = 1310720;
+  layer.output_offs = 0;
   layer.output_size = 163840;
   layer.input_dim[0] = 64;
   layer.input_dim[1] = 40;
@@ -653,29 +594,32 @@ void CYOLOv3::Layer_6() {
 //  ->: batch_normalization_5
 //  ->: leaky_re_lu_5
 void CYOLOv3::Layer_7() {
-  struct top_conv_conf& _conf = get_conv_layer(7);
-  //Topo: 00000000000000000000000000000001
-  _conf.hw.header.topo = 0x1; // [31:0] Output Destination of each run, 0 = UBUF, 1 = EXTMEM
+  get_layer(7).name = "conv2d_5, batch_normalization_5, batch_normalization_5, leaky_re_lu_5";
+  dmp_dv_cmdraw_conv_v0& conf = get_layer(7).conv_conf;
+  conf.header.size = sizeof(conf);
+  conf.header.device_type = DMP_DV_DEV_CONV;
+  conf.header.version = 0;
+  // Topo: 00000000000000000000000000000001
+  conf.topo = 0x1;  // [31:0] Output Destination of each run, 0 = UBUF, 1 = EXTMEM
 
-  //Input Configuration:
-  _conf.hw.input.w = 32; // Input Width
-  _conf.hw.input.h = 20; // Input Height
-  _conf.hw.input.z = 1; // Input Depth
-  _conf.hw.input.c = 128; // Input Channels
-  _conf.hw.input.input_base_addr = 0x00000000; // Input byte address
-  _conf.hw.input.tiles = 1; // Number of horizontal tiles (supported with restrictions)
+  // Input Configuration:
+  conf.w = 32;  // Input Width
+  conf.h = 20;  // Input Height
+  conf.z = 1;  // Input Depth
+  conf.c = 128;  // Input Channels
+  conf.input_buf.mem = io_mem_;
+  conf.input_buf.offs = 0;
 
-  //Output Configuration:
-  _conf.sw.output.w = 32; // Output Width
-  _conf.sw.output.h = 20; // Output Height
-  _conf.sw.output.z = 1; // Output Depth
-  _conf.sw.output.m = 256; // Output Channels
-  _conf.hw.output.output_base_addr = 0x00050000; // Output byte address
-  _conf.hw.output.eltwise_base_addr = 0xDEADBEEF; // Input byte address for elementwise add (0 = UBUF Input Buffer)
-  _conf.hw.output.output_mode = 0; // 0 = concat, 1 = eltwise add
+  // Output Configuration:
+  conf.output_buf.mem = io_mem_;
+  conf.output_buf.offs = 327680;
 
-  //Runs Configuration:
-  //->1 run(s)
+  conf.eltwise_buf.mem = NULL;
+  conf.eltwise_buf.offs = 0;  // Input byte address for elementwise add (0 = UBUF Input Buffer)
+  conf.output_mode = 0;  // 0 = concat, 1 = eltwise add
+
+  // Runs Configuration:
+  // ->1 run(s)
   //--------------------------------------------------
   //RUN : 0
   //--------------------------------------------------
@@ -683,39 +627,30 @@ void CYOLOv3::Layer_7() {
   //->: batch_normalization_5
   //->: batch_normalization_5
   //->: leaky_re_lu_5
-  _conf.sw.run[0].in_w = 32; // Optional: Input width (not used by HW - discovered on the fly)
-  _conf.sw.run[0].in_h = 20; // Optional: Input height (not used by HW - discovered on the fly)
-  _conf.sw.run[0].in_c = 128; // Optional: Input Channels (not used by HW - discovered on the fly)
-  _conf.sw.run[0].out_w = 32; // Optional: Output width (not used by HW - discovered on the fly)
-  _conf.sw.run[0].out_h = 20; // Optional: Output height (not used by HW - discovered on the fly)
-  _conf.hw.run[0].m = 256; // Output Channels
-  _conf.hw.run[0].conv_enable = 1; // 1 = Enabled, 0 = Disabled
-  _conf.hw.run[0].p = 3; // Filter Width and Height
-  _conf.hw.run[0].pz = 1; // Filter Depth
-  _conf.hw.run[0].weight_base_addr = 0x0002FEE0; // Filter Weight and Bias byte address
-  _conf.hw.run[0].weight_fmt = 1; // Weight format (0 = random access blocks, 1 = compact stream, 3 = 8-bit qunatized stream)
-  _conf.sw.run[0].weight_size = 590336; // Actual size in bytes of LUT, weights and bias (in bytes)
-  _conf.hw.run[0].conv_pad = 0x1010101; // bits [7:0] = left padding, bits [15:8] = right padding, bits [23:16] = top padding, bits [31:24] = bottom padding
-  _conf.hw.run[0].conv_stride = 0x101; // bits [7:0] = X stride, bits [15:8] = Y stride
-  _conf.hw.run[0].conv_dilation = 0x0; // bits [7:0] = X dilation, bits [15:8] = Y dilation
-  _conf.hw.run[0].pool_enable = 0;  // 0 = disabled, 1 = max pooling, 2 = average pooling
-  _conf.hw.run[0].pool_size = 0x0; // bits [7:0] = width, bits [15:8] = height
-  _conf.hw.run[0].pool_stride = 0x101; // bits [7:0] = X stride, bits [15:8] = Y stride
-  _conf.hw.run[0].pool_pad = 0x0; // bits [7:0] = left padding, bits [15:8] = right padding, bits [23:16] = top padding, bits [31:24] = bottom padding
-  _conf.hw.run[0].pool_avg_param = 0x0; // Must be set to 1/pool_size^2 in FP16 format when using average pooling (average pooling assumes square size)
-  _conf.hw.run[0].actfunc = 2; // Activation Function: 0 = None, 1 = Tanh, 2 = Leaky ReLU, 3 = Sigmoid, 4 = PReLU, 5 = ELU, 6 = ReLU6
-  _conf.hw.run[0].actfunc_param = 0x2E66; // Leaky ReLU parameter (NOTE: 0x2E66 is 0.1 in FP16)
-  _conf.hw.run[0].rectifi_en = 0; // Rectification, i.e. max(0, x) (NOTE: Can be applied after non-ReLU activation function)
-  _conf.hw.run[0].lrn= 0x0; // [0] : 1 = LRN enable, 0 = LRN disable, [1] : 1 = incl. power func, 0 = excl., [8:11] = x^2 scale factor log2
-  _conf.hw.run[0].ALIGN_0 = 0;//Some comments needed here
+  conf.run[0].m = 256;  // Output Channels
+  conf.run[0].conv_enable = 1;  // 1 = Enabled, 0 = Disabled
+  conf.run[0].p = 3;  // Filter Width and Height
+  conf.run[0].pz = 1;  // Filter Depth
+  conf.run[0].weight_buf.mem = weights_mem_;
+  conf.run[0].weight_buf.offs = 196320;
+  conf.run[0].weight_fmt = 1;  // Weight format (0 = random access blocks, 1 = compact stream, 3 = 8-bit qunatized stream)
+  conf.run[0].conv_pad = 0x1010101;  // bits [7:0] = left padding, bits [15:8] = right padding, bits [23:16] = top padding, bits [31:24] = bottom padding
+  conf.run[0].conv_stride = 0x101;  // bits [7:0] = X stride, bits [15:8] = Y stride
+  conf.run[0].conv_dilation = 0x0;  // bits [7:0] = X dilation, bits [15:8] = Y dilation
+  conf.run[0].pool_enable = 0;  // 0 = disabled, 1 = max pooling, 2 = average pooling
+  conf.run[0].pool_size = 0x0;  // bits [7:0] = width, bits [15:8] = height
+  conf.run[0].pool_stride = 0x101;  // bits [7:0] = X stride, bits [15:8] = Y stride
+  conf.run[0].pool_pad = 0x0;  // bits [7:0] = left padding, bits [15:8] = right padding, bits [23:16] = top padding, bits [31:24] = bottom padding
+  conf.run[0].pool_avg_param = 0x0;  // Must be set to 1/pool_size^2 in FP16 format when using average pooling (average pooling assumes square size)
+  conf.run[0].actfunc = 2;  // Activation Function: 0 = None, 1 = Tanh, 2 = Leaky ReLU, 3 = Sigmoid, 4 = PReLU, 5 = ELU, 6 = ReLU6
+  conf.run[0].actfunc_param = 0x2E66;  // Leaky ReLU parameter (NOTE: 0x2E66 is 0.1 in FP16)
+  conf.run[0].rectifi_en = 0;  // Rectification, i.e. max(0, x) (NOTE: Can be applied after non-ReLU activation function)
+  conf.run[0].lrn = 0x0;  // [0] : 1 = LRN enable, 0 = LRN disable, [1] : 1 = incl. power func, 0 = excl., [8:11] = x^2 scale factor log2
 
-  struct fpga_layer& layer = layers[7];
+  fpga_layer& layer = get_layer(7);
   layer.type = LT_CONV;
-  layer.hw_conf = (void*)&_conf;
-  layer.addr_cpu_input = 0x0;
-  layer.addr_cpu_output = 0x0;
-  layer.addr_offset_input = 0x00000000;
-  layer.addr_offset_output = 0x00050000;
+  layer.input_offs = 0;
+  layer.output_offs = 327680;
   layer.output_size = 327680;
   layer.input_dim[0] = 32;
   layer.input_dim[1] = 20;
@@ -733,66 +668,60 @@ void CYOLOv3::Layer_7() {
 //Layer_8: Convolution Layer
 //  ->: max_pooling2d_5
 void CYOLOv3::Layer_8() {
-  struct top_conv_conf& _conf = get_conv_layer(8);
-  //Topo: 00000000000000000000000000000001
-  _conf.hw.header.topo = 0x1; // [31:0] Output Destination of each run, 0 = UBUF, 1 = EXTMEM
+  get_layer(8).name = "max_pooling2d_5";
+  dmp_dv_cmdraw_conv_v0& conf = get_layer(8).conv_conf;
+  conf.header.size = sizeof(conf);
+  conf.header.device_type = DMP_DV_DEV_CONV;
+  conf.header.version = 0;
+  // Topo: 00000000000000000000000000000001
+  conf.topo = 0x1;  // [31:0] Output Destination of each run, 0 = UBUF, 1 = EXTMEM
 
-  //Input Configuration:
-  _conf.hw.input.w = 32; // Input Width
-  _conf.hw.input.h = 20; // Input Height
-  _conf.hw.input.z = 1; // Input Depth
-  _conf.hw.input.c = 256; // Input Channels
-  _conf.hw.input.input_base_addr = 0x00050000; // Input byte address
-  _conf.hw.input.tiles = 1; // Number of horizontal tiles (supported with restrictions)
+  // Input Configuration:
+  conf.w = 32;  // Input Width
+  conf.h = 20;  // Input Height
+  conf.z = 1;  // Input Depth
+  conf.c = 256;  // Input Channels
+  conf.input_buf.mem = io_mem_;
+  conf.input_buf.offs = 327680;
 
-  //Output Configuration:
-  _conf.sw.output.w = 16; // Output Width
-  _conf.sw.output.h = 10; // Output Height
-  _conf.sw.output.z = 1; // Output Depth
-  _conf.sw.output.m = 256; // Output Channels
-  _conf.hw.output.output_base_addr = 0x00000000; // Output byte address
-  _conf.hw.output.eltwise_base_addr = 0xDEADBEEF; // Input byte address for elementwise add (0 = UBUF Input Buffer)
-  _conf.hw.output.output_mode = 0; // 0 = concat, 1 = eltwise add
+  // Output Configuration:
+  conf.output_buf.mem = io_mem_;
+  conf.output_buf.offs = 0;
 
-  //Runs Configuration:
-  //->1 run(s)
+  conf.eltwise_buf.mem = NULL;
+  conf.eltwise_buf.offs = 0;  // Input byte address for elementwise add (0 = UBUF Input Buffer)
+  conf.output_mode = 0;  // 0 = concat, 1 = eltwise add
+
+  // Runs Configuration:
+  // ->1 run(s)
   //--------------------------------------------------
   //RUN : 0
   //--------------------------------------------------
   //->: max_pooling2d_5
-  _conf.sw.run[0].in_w = 32; // Optional: Input width (not used by HW - discovered on the fly)
-  _conf.sw.run[0].in_h = 20; // Optional: Input height (not used by HW - discovered on the fly)
-  _conf.sw.run[0].in_c = 256; // Optional: Input Channels (not used by HW - discovered on the fly)
-  _conf.sw.run[0].out_w = 16; // Optional: Output width (not used by HW - discovered on the fly)
-  _conf.sw.run[0].out_h = 10; // Optional: Output height (not used by HW - discovered on the fly)
-  _conf.hw.run[0].m = 256; // Output Channels
-  _conf.hw.run[0].conv_enable = 0; // 1 = Enabled, 0 = Disabled
-  _conf.hw.run[0].p = 1; // Filter Width and Height
-  _conf.hw.run[0].pz = 1; // Filter Depth
-  _conf.hw.run[0].weight_base_addr = 0x000C00E0; // Filter Weight and Bias byte address
-  _conf.hw.run[0].weight_fmt = 0; // Weight format (0 = random access blocks, 1 = compact stream, 3 = 8-bit qunatized stream)
-  _conf.sw.run[0].weight_size = 0; // Actual size in bytes of LUT, weights and bias (in bytes)
-  _conf.hw.run[0].conv_pad = 0x0; // bits [7:0] = left padding, bits [15:8] = right padding, bits [23:16] = top padding, bits [31:24] = bottom padding
-  _conf.hw.run[0].conv_stride = 0x101; // bits [7:0] = X stride, bits [15:8] = Y stride
-  _conf.hw.run[0].conv_dilation = 0x0; // bits [7:0] = X dilation, bits [15:8] = Y dilation
-  _conf.hw.run[0].pool_enable = 1;  // 0 = disabled, 1 = max pooling, 2 = average pooling
-  _conf.hw.run[0].pool_size = 0x202; // bits [7:0] = width, bits [15:8] = height
-  _conf.hw.run[0].pool_stride = 0x202; // bits [7:0] = X stride, bits [15:8] = Y stride
-  _conf.hw.run[0].pool_pad = 0x0; // bits [7:0] = left padding, bits [15:8] = right padding, bits [23:16] = top padding, bits [31:24] = bottom padding
-  _conf.hw.run[0].pool_avg_param = 0x0; // Must be set to 1/pool_size^2 in FP16 format when using average pooling (average pooling assumes square size)
-  _conf.hw.run[0].actfunc = 0; // Activation Function: 0 = None, 1 = Tanh, 2 = Leaky ReLU, 3 = Sigmoid, 4 = PReLU, 5 = ELU, 6 = ReLU6
-  _conf.hw.run[0].actfunc_param = 0x0; // Leaky ReLU parameter (NOTE: 0x2E66 is 0.1 in FP16)
-  _conf.hw.run[0].rectifi_en = 0; // Rectification, i.e. max(0, x) (NOTE: Can be applied after non-ReLU activation function)
-  _conf.hw.run[0].lrn= 0x0; // [0] : 1 = LRN enable, 0 = LRN disable, [1] : 1 = incl. power func, 0 = excl., [8:11] = x^2 scale factor log2
-  _conf.hw.run[0].ALIGN_0 = 0;//Some comments needed here
+  conf.run[0].m = 256;  // Output Channels
+  conf.run[0].conv_enable = 0;  // 1 = Enabled, 0 = Disabled
+  conf.run[0].p = 1;  // Filter Width and Height
+  conf.run[0].pz = 1;  // Filter Depth
+  conf.run[0].weight_buf.mem = weights_mem_;
+  conf.run[0].weight_buf.offs = 786656;
+  conf.run[0].weight_fmt = 0;  // Weight format (0 = random access blocks, 1 = compact stream, 3 = 8-bit qunatized stream)
+  conf.run[0].conv_pad = 0x0;  // bits [7:0] = left padding, bits [15:8] = right padding, bits [23:16] = top padding, bits [31:24] = bottom padding
+  conf.run[0].conv_stride = 0x101;  // bits [7:0] = X stride, bits [15:8] = Y stride
+  conf.run[0].conv_dilation = 0x0;  // bits [7:0] = X dilation, bits [15:8] = Y dilation
+  conf.run[0].pool_enable = 1;  // 0 = disabled, 1 = max pooling, 2 = average pooling
+  conf.run[0].pool_size = 0x202;  // bits [7:0] = width, bits [15:8] = height
+  conf.run[0].pool_stride = 0x202;  // bits [7:0] = X stride, bits [15:8] = Y stride
+  conf.run[0].pool_pad = 0x0;  // bits [7:0] = left padding, bits [15:8] = right padding, bits [23:16] = top padding, bits [31:24] = bottom padding
+  conf.run[0].pool_avg_param = 0x0;  // Must be set to 1/pool_size^2 in FP16 format when using average pooling (average pooling assumes square size)
+  conf.run[0].actfunc = 0;  // Activation Function: 0 = None, 1 = Tanh, 2 = Leaky ReLU, 3 = Sigmoid, 4 = PReLU, 5 = ELU, 6 = ReLU6
+  conf.run[0].actfunc_param = 0x0;  // Leaky ReLU parameter (NOTE: 0x2E66 is 0.1 in FP16)
+  conf.run[0].rectifi_en = 0;  // Rectification, i.e. max(0, x) (NOTE: Can be applied after non-ReLU activation function)
+  conf.run[0].lrn = 0x0;  // [0] : 1 = LRN enable, 0 = LRN disable, [1] : 1 = incl. power func, 0 = excl., [8:11] = x^2 scale factor log2
 
-  struct fpga_layer& layer = layers[8];
+  fpga_layer& layer = get_layer(8);
   layer.type = LT_CONV;
-  layer.hw_conf = (void*)&_conf;
-  layer.addr_cpu_input = 0x0;
-  layer.addr_cpu_output = 0x0;
-  layer.addr_offset_input = 0x00050000;
-  layer.addr_offset_output = 0x00000000;
+  layer.input_offs = 327680;
+  layer.output_offs = 0;
   layer.output_size = 81920;
   layer.input_dim[0] = 32;
   layer.input_dim[1] = 20;
@@ -814,29 +743,32 @@ void CYOLOv3::Layer_8() {
 //  ->: leaky_re_lu_6
 //  ->: max_pooling2d_6
 void CYOLOv3::Layer_9() {
-  struct top_conv_conf& _conf = get_conv_layer(9);
-  //Topo: 00000000000000000000000000000001
-  _conf.hw.header.topo = 0x1; // [31:0] Output Destination of each run, 0 = UBUF, 1 = EXTMEM
+  get_layer(9).name = "conv2d_6, batch_normalization_6, batch_normalization_6, leaky_re_lu_6, max_pooling2d_6";
+  dmp_dv_cmdraw_conv_v0& conf = get_layer(9).conv_conf;
+  conf.header.size = sizeof(conf);
+  conf.header.device_type = DMP_DV_DEV_CONV;
+  conf.header.version = 0;
+  // Topo: 00000000000000000000000000000001
+  conf.topo = 0x1;  // [31:0] Output Destination of each run, 0 = UBUF, 1 = EXTMEM
 
-  //Input Configuration:
-  _conf.hw.input.w = 16; // Input Width
-  _conf.hw.input.h = 10; // Input Height
-  _conf.hw.input.z = 1; // Input Depth
-  _conf.hw.input.c = 256; // Input Channels
-  _conf.hw.input.input_base_addr = 0x00000000; // Input byte address
-  _conf.hw.input.tiles = 1; // Number of horizontal tiles (supported with restrictions)
+  // Input Configuration:
+  conf.w = 16;  // Input Width
+  conf.h = 10;  // Input Height
+  conf.z = 1;  // Input Depth
+  conf.c = 256;  // Input Channels
+  conf.input_buf.mem = io_mem_;
+  conf.input_buf.offs = 0;
 
-  //Output Configuration:
-  _conf.sw.output.w = 16; // Output Width
-  _conf.sw.output.h = 10; // Output Height
-  _conf.sw.output.z = 1; // Output Depth
-  _conf.sw.output.m = 512; // Output Channels
-  _conf.hw.output.output_base_addr = 0x000A0000; // Output byte address
-  _conf.hw.output.eltwise_base_addr = 0xDEADBEEF; // Input byte address for elementwise add (0 = UBUF Input Buffer)
-  _conf.hw.output.output_mode = 0; // 0 = concat, 1 = eltwise add
+  // Output Configuration:
+  conf.output_buf.mem = io_mem_;
+  conf.output_buf.offs = 655360;
 
-  //Runs Configuration:
-  //->1 run(s)
+  conf.eltwise_buf.mem = NULL;
+  conf.eltwise_buf.offs = 0;  // Input byte address for elementwise add (0 = UBUF Input Buffer)
+  conf.output_mode = 0;  // 0 = concat, 1 = eltwise add
+
+  // Runs Configuration:
+  // ->1 run(s)
   //--------------------------------------------------
   //RUN : 0
   //--------------------------------------------------
@@ -845,39 +777,30 @@ void CYOLOv3::Layer_9() {
   //->: batch_normalization_6
   //->: leaky_re_lu_6
   //->: max_pooling2d_6
-  _conf.sw.run[0].in_w = 16; // Optional: Input width (not used by HW - discovered on the fly)
-  _conf.sw.run[0].in_h = 10; // Optional: Input height (not used by HW - discovered on the fly)
-  _conf.sw.run[0].in_c = 256; // Optional: Input Channels (not used by HW - discovered on the fly)
-  _conf.sw.run[0].out_w = 16; // Optional: Output width (not used by HW - discovered on the fly)
-  _conf.sw.run[0].out_h = 10; // Optional: Output height (not used by HW - discovered on the fly)
-  _conf.hw.run[0].m = 512; // Output Channels
-  _conf.hw.run[0].conv_enable = 1; // 1 = Enabled, 0 = Disabled
-  _conf.hw.run[0].p = 3; // Filter Width and Height
-  _conf.hw.run[0].pz = 1; // Filter Depth
-  _conf.hw.run[0].weight_base_addr = 0x000C00E0; // Filter Weight and Bias byte address
-  _conf.hw.run[0].weight_fmt = 1; // Weight format (0 = random access blocks, 1 = compact stream, 3 = 8-bit qunatized stream)
-  _conf.sw.run[0].weight_size = 2360320; // Actual size in bytes of LUT, weights and bias (in bytes)
-  _conf.hw.run[0].conv_pad = 0x1010101; // bits [7:0] = left padding, bits [15:8] = right padding, bits [23:16] = top padding, bits [31:24] = bottom padding
-  _conf.hw.run[0].conv_stride = 0x101; // bits [7:0] = X stride, bits [15:8] = Y stride
-  _conf.hw.run[0].conv_dilation = 0x0; // bits [7:0] = X dilation, bits [15:8] = Y dilation
-  _conf.hw.run[0].pool_enable = 1;  // 0 = disabled, 1 = max pooling, 2 = average pooling
-  _conf.hw.run[0].pool_size = 0x202; // bits [7:0] = width, bits [15:8] = height
-  _conf.hw.run[0].pool_stride = 0x101; // bits [7:0] = X stride, bits [15:8] = Y stride
-  _conf.hw.run[0].pool_pad = 0x1000100; // bits [7:0] = left padding, bits [15:8] = right padding, bits [23:16] = top padding, bits [31:24] = bottom padding
-  _conf.hw.run[0].pool_avg_param = 0x0; // Must be set to 1/pool_size^2 in FP16 format when using average pooling (average pooling assumes square size)
-  _conf.hw.run[0].actfunc = 2; // Activation Function: 0 = None, 1 = Tanh, 2 = Leaky ReLU, 3 = Sigmoid, 4 = PReLU, 5 = ELU, 6 = ReLU6
-  _conf.hw.run[0].actfunc_param = 0x2E66; // Leaky ReLU parameter (NOTE: 0x2E66 is 0.1 in FP16)
-  _conf.hw.run[0].rectifi_en = 0; // Rectification, i.e. max(0, x) (NOTE: Can be applied after non-ReLU activation function)
-  _conf.hw.run[0].lrn= 0x0; // [0] : 1 = LRN enable, 0 = LRN disable, [1] : 1 = incl. power func, 0 = excl., [8:11] = x^2 scale factor log2
-  _conf.hw.run[0].ALIGN_0 = 0;//Some comments needed here
+  conf.run[0].m = 512;  // Output Channels
+  conf.run[0].conv_enable = 1;  // 1 = Enabled, 0 = Disabled
+  conf.run[0].p = 3;  // Filter Width and Height
+  conf.run[0].pz = 1;  // Filter Depth
+  conf.run[0].weight_buf.mem = weights_mem_;
+  conf.run[0].weight_buf.offs = 786656;
+  conf.run[0].weight_fmt = 1;  // Weight format (0 = random access blocks, 1 = compact stream, 3 = 8-bit qunatized stream)
+  conf.run[0].conv_pad = 0x1010101;  // bits [7:0] = left padding, bits [15:8] = right padding, bits [23:16] = top padding, bits [31:24] = bottom padding
+  conf.run[0].conv_stride = 0x101;  // bits [7:0] = X stride, bits [15:8] = Y stride
+  conf.run[0].conv_dilation = 0x0;  // bits [7:0] = X dilation, bits [15:8] = Y dilation
+  conf.run[0].pool_enable = 1;  // 0 = disabled, 1 = max pooling, 2 = average pooling
+  conf.run[0].pool_size = 0x202;  // bits [7:0] = width, bits [15:8] = height
+  conf.run[0].pool_stride = 0x101;  // bits [7:0] = X stride, bits [15:8] = Y stride
+  conf.run[0].pool_pad = 0x1000100;  // bits [7:0] = left padding, bits [15:8] = right padding, bits [23:16] = top padding, bits [31:24] = bottom padding
+  conf.run[0].pool_avg_param = 0x0;  // Must be set to 1/pool_size^2 in FP16 format when using average pooling (average pooling assumes square size)
+  conf.run[0].actfunc = 2;  // Activation Function: 0 = None, 1 = Tanh, 2 = Leaky ReLU, 3 = Sigmoid, 4 = PReLU, 5 = ELU, 6 = ReLU6
+  conf.run[0].actfunc_param = 0x2E66;  // Leaky ReLU parameter (NOTE: 0x2E66 is 0.1 in FP16)
+  conf.run[0].rectifi_en = 0;  // Rectification, i.e. max(0, x) (NOTE: Can be applied after non-ReLU activation function)
+  conf.run[0].lrn = 0x0;  // [0] : 1 = LRN enable, 0 = LRN disable, [1] : 1 = incl. power func, 0 = excl., [8:11] = x^2 scale factor log2
 
-  struct fpga_layer& layer = layers[9];
+  fpga_layer& layer = get_layer(9);
   layer.type = LT_CONV;
-  layer.hw_conf = (void*)&_conf;
-  layer.addr_cpu_input = 0x0;
-  layer.addr_cpu_output = 0x0;
-  layer.addr_offset_input = 0x00000000;
-  layer.addr_offset_output = 0x000A0000;
+  layer.input_offs = 0;
+  layer.output_offs = 655360;
   layer.output_size = 163840;
   layer.input_dim[0] = 16;
   layer.input_dim[1] = 10;
@@ -898,29 +821,32 @@ void CYOLOv3::Layer_9() {
 //  ->: batch_normalization_7
 //  ->: leaky_re_lu_7
 void CYOLOv3::Layer_10() {
-  struct top_conv_conf& _conf = get_conv_layer(10);
-  //Topo: 00000000000000000000000000000001
-  _conf.hw.header.topo = 0x1; // [31:0] Output Destination of each run, 0 = UBUF, 1 = EXTMEM
+  get_layer(10).name = "conv2d_7, batch_normalization_7, batch_normalization_7, leaky_re_lu_7";
+  dmp_dv_cmdraw_conv_v0& conf = get_layer(10).conv_conf;
+  conf.header.size = sizeof(conf);
+  conf.header.device_type = DMP_DV_DEV_CONV;
+  conf.header.version = 0;
+  // Topo: 00000000000000000000000000000001
+  conf.topo = 0x1;  // [31:0] Output Destination of each run, 0 = UBUF, 1 = EXTMEM
 
-  //Input Configuration:
-  _conf.hw.input.w = 16; // Input Width
-  _conf.hw.input.h = 10; // Input Height
-  _conf.hw.input.z = 1; // Input Depth
-  _conf.hw.input.c = 512; // Input Channels
-  _conf.hw.input.input_base_addr = 0x000A0000; // Input byte address
-  _conf.hw.input.tiles = 1; // Number of horizontal tiles (supported with restrictions)
+  // Input Configuration:
+  conf.w = 16;  // Input Width
+  conf.h = 10;  // Input Height
+  conf.z = 1;  // Input Depth
+  conf.c = 512;  // Input Channels
+  conf.input_buf.mem = io_mem_;
+  conf.input_buf.offs = 655360;
 
-  //Output Configuration:
-  _conf.sw.output.w = 16; // Output Width
-  _conf.sw.output.h = 10; // Output Height
-  _conf.sw.output.z = 1; // Output Depth
-  _conf.sw.output.m = 1024; // Output Channels
-  _conf.hw.output.output_base_addr = 0x000C8000; // Output byte address
-  _conf.hw.output.eltwise_base_addr = 0xDEADBEEF; // Input byte address for elementwise add (0 = UBUF Input Buffer)
-  _conf.hw.output.output_mode = 0; // 0 = concat, 1 = eltwise add
+  // Output Configuration:
+  conf.output_buf.mem = io_mem_;
+  conf.output_buf.offs = 819200;
 
-  //Runs Configuration:
-  //->1 run(s)
+  conf.eltwise_buf.mem = NULL;
+  conf.eltwise_buf.offs = 0;  // Input byte address for elementwise add (0 = UBUF Input Buffer)
+  conf.output_mode = 0;  // 0 = concat, 1 = eltwise add
+
+  // Runs Configuration:
+  // ->1 run(s)
   //--------------------------------------------------
   //RUN : 0
   //--------------------------------------------------
@@ -928,39 +854,30 @@ void CYOLOv3::Layer_10() {
   //->: batch_normalization_7
   //->: batch_normalization_7
   //->: leaky_re_lu_7
-  _conf.sw.run[0].in_w = 16; // Optional: Input width (not used by HW - discovered on the fly)
-  _conf.sw.run[0].in_h = 10; // Optional: Input height (not used by HW - discovered on the fly)
-  _conf.sw.run[0].in_c = 512; // Optional: Input Channels (not used by HW - discovered on the fly)
-  _conf.sw.run[0].out_w = 16; // Optional: Output width (not used by HW - discovered on the fly)
-  _conf.sw.run[0].out_h = 10; // Optional: Output height (not used by HW - discovered on the fly)
-  _conf.hw.run[0].m = 1024; // Output Channels
-  _conf.hw.run[0].conv_enable = 1; // 1 = Enabled, 0 = Disabled
-  _conf.hw.run[0].p = 3; // Filter Width and Height
-  _conf.hw.run[0].pz = 1; // Filter Depth
-  _conf.hw.run[0].weight_base_addr = 0x003004E0; // Filter Weight and Bias byte address
-  _conf.hw.run[0].weight_fmt = 1; // Weight format (0 = random access blocks, 1 = compact stream, 3 = 8-bit qunatized stream)
-  _conf.sw.run[0].weight_size = 9439232; // Actual size in bytes of LUT, weights and bias (in bytes)
-  _conf.hw.run[0].conv_pad = 0x1010101; // bits [7:0] = left padding, bits [15:8] = right padding, bits [23:16] = top padding, bits [31:24] = bottom padding
-  _conf.hw.run[0].conv_stride = 0x101; // bits [7:0] = X stride, bits [15:8] = Y stride
-  _conf.hw.run[0].conv_dilation = 0x0; // bits [7:0] = X dilation, bits [15:8] = Y dilation
-  _conf.hw.run[0].pool_enable = 0;  // 0 = disabled, 1 = max pooling, 2 = average pooling
-  _conf.hw.run[0].pool_size = 0x0; // bits [7:0] = width, bits [15:8] = height
-  _conf.hw.run[0].pool_stride = 0x101; // bits [7:0] = X stride, bits [15:8] = Y stride
-  _conf.hw.run[0].pool_pad = 0x0; // bits [7:0] = left padding, bits [15:8] = right padding, bits [23:16] = top padding, bits [31:24] = bottom padding
-  _conf.hw.run[0].pool_avg_param = 0x0; // Must be set to 1/pool_size^2 in FP16 format when using average pooling (average pooling assumes square size)
-  _conf.hw.run[0].actfunc = 2; // Activation Function: 0 = None, 1 = Tanh, 2 = Leaky ReLU, 3 = Sigmoid, 4 = PReLU, 5 = ELU, 6 = ReLU6
-  _conf.hw.run[0].actfunc_param = 0x2E66; // Leaky ReLU parameter (NOTE: 0x2E66 is 0.1 in FP16)
-  _conf.hw.run[0].rectifi_en = 0; // Rectification, i.e. max(0, x) (NOTE: Can be applied after non-ReLU activation function)
-  _conf.hw.run[0].lrn= 0x0; // [0] : 1 = LRN enable, 0 = LRN disable, [1] : 1 = incl. power func, 0 = excl., [8:11] = x^2 scale factor log2
-  _conf.hw.run[0].ALIGN_0 = 0;//Some comments needed here
+  conf.run[0].m = 1024;  // Output Channels
+  conf.run[0].conv_enable = 1;  // 1 = Enabled, 0 = Disabled
+  conf.run[0].p = 3;  // Filter Width and Height
+  conf.run[0].pz = 1;  // Filter Depth
+  conf.run[0].weight_buf.mem = weights_mem_;
+  conf.run[0].weight_buf.offs = 3146976;
+  conf.run[0].weight_fmt = 1;  // Weight format (0 = random access blocks, 1 = compact stream, 3 = 8-bit qunatized stream)
+  conf.run[0].conv_pad = 0x1010101;  // bits [7:0] = left padding, bits [15:8] = right padding, bits [23:16] = top padding, bits [31:24] = bottom padding
+  conf.run[0].conv_stride = 0x101;  // bits [7:0] = X stride, bits [15:8] = Y stride
+  conf.run[0].conv_dilation = 0x0;  // bits [7:0] = X dilation, bits [15:8] = Y dilation
+  conf.run[0].pool_enable = 0;  // 0 = disabled, 1 = max pooling, 2 = average pooling
+  conf.run[0].pool_size = 0x0;  // bits [7:0] = width, bits [15:8] = height
+  conf.run[0].pool_stride = 0x101;  // bits [7:0] = X stride, bits [15:8] = Y stride
+  conf.run[0].pool_pad = 0x0;  // bits [7:0] = left padding, bits [15:8] = right padding, bits [23:16] = top padding, bits [31:24] = bottom padding
+  conf.run[0].pool_avg_param = 0x0;  // Must be set to 1/pool_size^2 in FP16 format when using average pooling (average pooling assumes square size)
+  conf.run[0].actfunc = 2;  // Activation Function: 0 = None, 1 = Tanh, 2 = Leaky ReLU, 3 = Sigmoid, 4 = PReLU, 5 = ELU, 6 = ReLU6
+  conf.run[0].actfunc_param = 0x2E66;  // Leaky ReLU parameter (NOTE: 0x2E66 is 0.1 in FP16)
+  conf.run[0].rectifi_en = 0;  // Rectification, i.e. max(0, x) (NOTE: Can be applied after non-ReLU activation function)
+  conf.run[0].lrn = 0x0;  // [0] : 1 = LRN enable, 0 = LRN disable, [1] : 1 = incl. power func, 0 = excl., [8:11] = x^2 scale factor log2
 
-  struct fpga_layer& layer = layers[10];
+  fpga_layer& layer = get_layer(10);
   layer.type = LT_CONV;
-  layer.hw_conf = (void*)&_conf;
-  layer.addr_cpu_input = 0x0;
-  layer.addr_cpu_output = 0x0;
-  layer.addr_offset_input = 0x000A0000;
-  layer.addr_offset_output = 0x000C8000;
+  layer.input_offs = 655360;
+  layer.output_offs = 819200;
   layer.output_size = 327680;
   layer.input_dim[0] = 16;
   layer.input_dim[1] = 10;
@@ -981,29 +898,32 @@ void CYOLOv3::Layer_10() {
 //  ->: batch_normalization_8
 //  ->: leaky_re_lu_8
 void CYOLOv3::Layer_11() {
-  struct top_conv_conf& _conf = get_conv_layer(11);
-  //Topo: 00000000000000000000000000000001
-  _conf.hw.header.topo = 0x1; // [31:0] Output Destination of each run, 0 = UBUF, 1 = EXTMEM
+  get_layer(11).name = "conv2d_8, batch_normalization_8, batch_normalization_8, leaky_re_lu_8";
+  dmp_dv_cmdraw_conv_v0& conf = get_layer(11).conv_conf;
+  conf.header.size = sizeof(conf);
+  conf.header.device_type = DMP_DV_DEV_CONV;
+  conf.header.version = 0;
+  // Topo: 00000000000000000000000000000001
+  conf.topo = 0x1;  // [31:0] Output Destination of each run, 0 = UBUF, 1 = EXTMEM
 
-  //Input Configuration:
-  _conf.hw.input.w = 16; // Input Width
-  _conf.hw.input.h = 10; // Input Height
-  _conf.hw.input.z = 1; // Input Depth
-  _conf.hw.input.c = 1024; // Input Channels
-  _conf.hw.input.input_base_addr = 0x000C8000; // Input byte address
-  _conf.hw.input.tiles = 1; // Number of horizontal tiles (supported with restrictions)
+  // Input Configuration:
+  conf.w = 16;  // Input Width
+  conf.h = 10;  // Input Height
+  conf.z = 1;  // Input Depth
+  conf.c = 1024;  // Input Channels
+  conf.input_buf.mem = io_mem_;
+  conf.input_buf.offs = 819200;
 
-  //Output Configuration:
-  _conf.sw.output.w = 16; // Output Width
-  _conf.sw.output.h = 10; // Output Height
-  _conf.sw.output.z = 1; // Output Depth
-  _conf.sw.output.m = 256; // Output Channels
-  _conf.hw.output.output_base_addr = 0x00000000; // Output byte address
-  _conf.hw.output.eltwise_base_addr = 0xDEADBEEF; // Input byte address for elementwise add (0 = UBUF Input Buffer)
-  _conf.hw.output.output_mode = 0; // 0 = concat, 1 = eltwise add
+  // Output Configuration:
+  conf.output_buf.mem = io_mem_;
+  conf.output_buf.offs = 0;
 
-  //Runs Configuration:
-  //->1 run(s)
+  conf.eltwise_buf.mem = NULL;
+  conf.eltwise_buf.offs = 0;  // Input byte address for elementwise add (0 = UBUF Input Buffer)
+  conf.output_mode = 0;  // 0 = concat, 1 = eltwise add
+
+  // Runs Configuration:
+  // ->1 run(s)
   //--------------------------------------------------
   //RUN : 0
   //--------------------------------------------------
@@ -1011,39 +931,30 @@ void CYOLOv3::Layer_11() {
   //->: batch_normalization_8
   //->: batch_normalization_8
   //->: leaky_re_lu_8
-  _conf.sw.run[0].in_w = 16; // Optional: Input width (not used by HW - discovered on the fly)
-  _conf.sw.run[0].in_h = 10; // Optional: Input height (not used by HW - discovered on the fly)
-  _conf.sw.run[0].in_c = 1024; // Optional: Input Channels (not used by HW - discovered on the fly)
-  _conf.sw.run[0].out_w = 16; // Optional: Output width (not used by HW - discovered on the fly)
-  _conf.sw.run[0].out_h = 10; // Optional: Output height (not used by HW - discovered on the fly)
-  _conf.hw.run[0].m = 256; // Output Channels
-  _conf.hw.run[0].conv_enable = 1; // 1 = Enabled, 0 = Disabled
-  _conf.hw.run[0].p = 1; // Filter Width and Height
-  _conf.hw.run[0].pz = 1; // Filter Depth
-  _conf.hw.run[0].weight_base_addr = 0x00C00CE0; // Filter Weight and Bias byte address
-  _conf.hw.run[0].weight_fmt = 1; // Weight format (0 = random access blocks, 1 = compact stream, 3 = 8-bit qunatized stream)
-  _conf.sw.run[0].weight_size = 590336; // Actual size in bytes of LUT, weights and bias (in bytes)
-  _conf.hw.run[0].conv_pad = 0x0; // bits [7:0] = left padding, bits [15:8] = right padding, bits [23:16] = top padding, bits [31:24] = bottom padding
-  _conf.hw.run[0].conv_stride = 0x101; // bits [7:0] = X stride, bits [15:8] = Y stride
-  _conf.hw.run[0].conv_dilation = 0x0; // bits [7:0] = X dilation, bits [15:8] = Y dilation
-  _conf.hw.run[0].pool_enable = 0;  // 0 = disabled, 1 = max pooling, 2 = average pooling
-  _conf.hw.run[0].pool_size = 0x0; // bits [7:0] = width, bits [15:8] = height
-  _conf.hw.run[0].pool_stride = 0x101; // bits [7:0] = X stride, bits [15:8] = Y stride
-  _conf.hw.run[0].pool_pad = 0x0; // bits [7:0] = left padding, bits [15:8] = right padding, bits [23:16] = top padding, bits [31:24] = bottom padding
-  _conf.hw.run[0].pool_avg_param = 0x0; // Must be set to 1/pool_size^2 in FP16 format when using average pooling (average pooling assumes square size)
-  _conf.hw.run[0].actfunc = 2; // Activation Function: 0 = None, 1 = Tanh, 2 = Leaky ReLU, 3 = Sigmoid, 4 = PReLU, 5 = ELU, 6 = ReLU6
-  _conf.hw.run[0].actfunc_param = 0x2E66; // Leaky ReLU parameter (NOTE: 0x2E66 is 0.1 in FP16)
-  _conf.hw.run[0].rectifi_en = 0; // Rectification, i.e. max(0, x) (NOTE: Can be applied after non-ReLU activation function)
-  _conf.hw.run[0].lrn= 0x0; // [0] : 1 = LRN enable, 0 = LRN disable, [1] : 1 = incl. power func, 0 = excl., [8:11] = x^2 scale factor log2
-  _conf.hw.run[0].ALIGN_0 = 0;//Some comments needed here
+  conf.run[0].m = 256;  // Output Channels
+  conf.run[0].conv_enable = 1;  // 1 = Enabled, 0 = Disabled
+  conf.run[0].p = 1;  // Filter Width and Height
+  conf.run[0].pz = 1;  // Filter Depth
+  conf.run[0].weight_buf.mem = weights_mem_;
+  conf.run[0].weight_buf.offs = 12586208;
+  conf.run[0].weight_fmt = 1;  // Weight format (0 = random access blocks, 1 = compact stream, 3 = 8-bit qunatized stream)
+  conf.run[0].conv_pad = 0x0;  // bits [7:0] = left padding, bits [15:8] = right padding, bits [23:16] = top padding, bits [31:24] = bottom padding
+  conf.run[0].conv_stride = 0x101;  // bits [7:0] = X stride, bits [15:8] = Y stride
+  conf.run[0].conv_dilation = 0x0;  // bits [7:0] = X dilation, bits [15:8] = Y dilation
+  conf.run[0].pool_enable = 0;  // 0 = disabled, 1 = max pooling, 2 = average pooling
+  conf.run[0].pool_size = 0x0;  // bits [7:0] = width, bits [15:8] = height
+  conf.run[0].pool_stride = 0x101;  // bits [7:0] = X stride, bits [15:8] = Y stride
+  conf.run[0].pool_pad = 0x0;  // bits [7:0] = left padding, bits [15:8] = right padding, bits [23:16] = top padding, bits [31:24] = bottom padding
+  conf.run[0].pool_avg_param = 0x0;  // Must be set to 1/pool_size^2 in FP16 format when using average pooling (average pooling assumes square size)
+  conf.run[0].actfunc = 2;  // Activation Function: 0 = None, 1 = Tanh, 2 = Leaky ReLU, 3 = Sigmoid, 4 = PReLU, 5 = ELU, 6 = ReLU6
+  conf.run[0].actfunc_param = 0x2E66;  // Leaky ReLU parameter (NOTE: 0x2E66 is 0.1 in FP16)
+  conf.run[0].rectifi_en = 0;  // Rectification, i.e. max(0, x) (NOTE: Can be applied after non-ReLU activation function)
+  conf.run[0].lrn = 0x0;  // [0] : 1 = LRN enable, 0 = LRN disable, [1] : 1 = incl. power func, 0 = excl., [8:11] = x^2 scale factor log2
 
-  struct fpga_layer& layer = layers[11];
+  fpga_layer& layer = get_layer(11);
   layer.type = LT_CONV;
-  layer.hw_conf = (void*)&_conf;
-  layer.addr_cpu_input = 0x0;
-  layer.addr_cpu_output = 0x0;
-  layer.addr_offset_input = 0x000C8000;
-  layer.addr_offset_output = 0x00000000;
+  layer.input_offs = 819200;
+  layer.output_offs = 0;
   layer.output_size = 81920;
   layer.input_dim[0] = 16;
   layer.input_dim[1] = 10;
@@ -1064,29 +975,32 @@ void CYOLOv3::Layer_11() {
 //  ->: batch_normalization_9
 //  ->: leaky_re_lu_9
 void CYOLOv3::Layer_12() {
-  struct top_conv_conf& _conf = get_conv_layer(12);
-  //Topo: 00000000000000000000000000000001
-  _conf.hw.header.topo = 0x1; // [31:0] Output Destination of each run, 0 = UBUF, 1 = EXTMEM
+  get_layer(12).name = "conv2d_9, batch_normalization_9, batch_normalization_9, leaky_re_lu_9";
+  dmp_dv_cmdraw_conv_v0& conf = get_layer(12).conv_conf;
+  conf.header.size = sizeof(conf);
+  conf.header.device_type = DMP_DV_DEV_CONV;
+  conf.header.version = 0;
+  // Topo: 00000000000000000000000000000001
+  conf.topo = 0x1;  // [31:0] Output Destination of each run, 0 = UBUF, 1 = EXTMEM
 
-  //Input Configuration:
-  _conf.hw.input.w = 16; // Input Width
-  _conf.hw.input.h = 10; // Input Height
-  _conf.hw.input.z = 1; // Input Depth
-  _conf.hw.input.c = 256; // Input Channels
-  _conf.hw.input.input_base_addr = 0x00000000; // Input byte address
-  _conf.hw.input.tiles = 1; // Number of horizontal tiles (supported with restrictions)
+  // Input Configuration:
+  conf.w = 16;  // Input Width
+  conf.h = 10;  // Input Height
+  conf.z = 1;  // Input Depth
+  conf.c = 256;  // Input Channels
+  conf.input_buf.mem = io_mem_;
+  conf.input_buf.offs = 0;
 
-  //Output Configuration:
-  _conf.sw.output.w = 16; // Output Width
-  _conf.sw.output.h = 10; // Output Height
-  _conf.sw.output.z = 1; // Output Depth
-  _conf.sw.output.m = 512; // Output Channels
-  _conf.hw.output.output_base_addr = 0x000A0000; // Output byte address
-  _conf.hw.output.eltwise_base_addr = 0xDEADBEEF; // Input byte address for elementwise add (0 = UBUF Input Buffer)
-  _conf.hw.output.output_mode = 0; // 0 = concat, 1 = eltwise add
+  // Output Configuration:
+  conf.output_buf.mem = io_mem_;
+  conf.output_buf.offs = 655360;
 
-  //Runs Configuration:
-  //->1 run(s)
+  conf.eltwise_buf.mem = NULL;
+  conf.eltwise_buf.offs = 0;  // Input byte address for elementwise add (0 = UBUF Input Buffer)
+  conf.output_mode = 0;  // 0 = concat, 1 = eltwise add
+
+  // Runs Configuration:
+  // ->1 run(s)
   //--------------------------------------------------
   //RUN : 0
   //--------------------------------------------------
@@ -1094,39 +1008,30 @@ void CYOLOv3::Layer_12() {
   //->: batch_normalization_9
   //->: batch_normalization_9
   //->: leaky_re_lu_9
-  _conf.sw.run[0].in_w = 16; // Optional: Input width (not used by HW - discovered on the fly)
-  _conf.sw.run[0].in_h = 10; // Optional: Input height (not used by HW - discovered on the fly)
-  _conf.sw.run[0].in_c = 256; // Optional: Input Channels (not used by HW - discovered on the fly)
-  _conf.sw.run[0].out_w = 16; // Optional: Output width (not used by HW - discovered on the fly)
-  _conf.sw.run[0].out_h = 10; // Optional: Output height (not used by HW - discovered on the fly)
-  _conf.hw.run[0].m = 512; // Output Channels
-  _conf.hw.run[0].conv_enable = 1; // 1 = Enabled, 0 = Disabled
-  _conf.hw.run[0].p = 3; // Filter Width and Height
-  _conf.hw.run[0].pz = 1; // Filter Depth
-  _conf.hw.run[0].weight_base_addr = 0x00C90EE0; // Filter Weight and Bias byte address
-  _conf.hw.run[0].weight_fmt = 1; // Weight format (0 = random access blocks, 1 = compact stream, 3 = 8-bit qunatized stream)
-  _conf.sw.run[0].weight_size = 2360320; // Actual size in bytes of LUT, weights and bias (in bytes)
-  _conf.hw.run[0].conv_pad = 0x1010101; // bits [7:0] = left padding, bits [15:8] = right padding, bits [23:16] = top padding, bits [31:24] = bottom padding
-  _conf.hw.run[0].conv_stride = 0x101; // bits [7:0] = X stride, bits [15:8] = Y stride
-  _conf.hw.run[0].conv_dilation = 0x0; // bits [7:0] = X dilation, bits [15:8] = Y dilation
-  _conf.hw.run[0].pool_enable = 0;  // 0 = disabled, 1 = max pooling, 2 = average pooling
-  _conf.hw.run[0].pool_size = 0x0; // bits [7:0] = width, bits [15:8] = height
-  _conf.hw.run[0].pool_stride = 0x101; // bits [7:0] = X stride, bits [15:8] = Y stride
-  _conf.hw.run[0].pool_pad = 0x0; // bits [7:0] = left padding, bits [15:8] = right padding, bits [23:16] = top padding, bits [31:24] = bottom padding
-  _conf.hw.run[0].pool_avg_param = 0x0; // Must be set to 1/pool_size^2 in FP16 format when using average pooling (average pooling assumes square size)
-  _conf.hw.run[0].actfunc = 2; // Activation Function: 0 = None, 1 = Tanh, 2 = Leaky ReLU, 3 = Sigmoid, 4 = PReLU, 5 = ELU, 6 = ReLU6
-  _conf.hw.run[0].actfunc_param = 0x2E66; // Leaky ReLU parameter (NOTE: 0x2E66 is 0.1 in FP16)
-  _conf.hw.run[0].rectifi_en = 0; // Rectification, i.e. max(0, x) (NOTE: Can be applied after non-ReLU activation function)
-  _conf.hw.run[0].lrn= 0x0; // [0] : 1 = LRN enable, 0 = LRN disable, [1] : 1 = incl. power func, 0 = excl., [8:11] = x^2 scale factor log2
-  _conf.hw.run[0].ALIGN_0 = 0;//Some comments needed here
+  conf.run[0].m = 512;  // Output Channels
+  conf.run[0].conv_enable = 1;  // 1 = Enabled, 0 = Disabled
+  conf.run[0].p = 3;  // Filter Width and Height
+  conf.run[0].pz = 1;  // Filter Depth
+  conf.run[0].weight_buf.mem = weights_mem_;
+  conf.run[0].weight_buf.offs = 13176544;
+  conf.run[0].weight_fmt = 1;  // Weight format (0 = random access blocks, 1 = compact stream, 3 = 8-bit qunatized stream)
+  conf.run[0].conv_pad = 0x1010101;  // bits [7:0] = left padding, bits [15:8] = right padding, bits [23:16] = top padding, bits [31:24] = bottom padding
+  conf.run[0].conv_stride = 0x101;  // bits [7:0] = X stride, bits [15:8] = Y stride
+  conf.run[0].conv_dilation = 0x0;  // bits [7:0] = X dilation, bits [15:8] = Y dilation
+  conf.run[0].pool_enable = 0;  // 0 = disabled, 1 = max pooling, 2 = average pooling
+  conf.run[0].pool_size = 0x0;  // bits [7:0] = width, bits [15:8] = height
+  conf.run[0].pool_stride = 0x101;  // bits [7:0] = X stride, bits [15:8] = Y stride
+  conf.run[0].pool_pad = 0x0;  // bits [7:0] = left padding, bits [15:8] = right padding, bits [23:16] = top padding, bits [31:24] = bottom padding
+  conf.run[0].pool_avg_param = 0x0;  // Must be set to 1/pool_size^2 in FP16 format when using average pooling (average pooling assumes square size)
+  conf.run[0].actfunc = 2;  // Activation Function: 0 = None, 1 = Tanh, 2 = Leaky ReLU, 3 = Sigmoid, 4 = PReLU, 5 = ELU, 6 = ReLU6
+  conf.run[0].actfunc_param = 0x2E66;  // Leaky ReLU parameter (NOTE: 0x2E66 is 0.1 in FP16)
+  conf.run[0].rectifi_en = 0;  // Rectification, i.e. max(0, x) (NOTE: Can be applied after non-ReLU activation function)
+  conf.run[0].lrn = 0x0;  // [0] : 1 = LRN enable, 0 = LRN disable, [1] : 1 = incl. power func, 0 = excl., [8:11] = x^2 scale factor log2
 
-  struct fpga_layer& layer = layers[12];
+  fpga_layer& layer = get_layer(12);
   layer.type = LT_CONV;
-  layer.hw_conf = (void*)&_conf;
-  layer.addr_cpu_input = 0x0;
-  layer.addr_cpu_output = 0x0;
-  layer.addr_offset_input = 0x00000000;
-  layer.addr_offset_output = 0x000A0000;
+  layer.input_offs = 0;
+  layer.output_offs = 655360;
   layer.output_size = 163840;
   layer.input_dim[0] = 16;
   layer.input_dim[1] = 10;
@@ -1144,66 +1049,60 @@ void CYOLOv3::Layer_12() {
 //Layer_13: Convolution Layer
 //  ->: conv2d_10
 void CYOLOv3::Layer_13() {
-  struct top_conv_conf& _conf = get_conv_layer(13);
-  //Topo: 00000000000000000000000000000001
-  _conf.hw.header.topo = 0x1; // [31:0] Output Destination of each run, 0 = UBUF, 1 = EXTMEM
+  get_layer(13).name = "conv2d_10";
+  dmp_dv_cmdraw_conv_v0& conf = get_layer(13).conv_conf;
+  conf.header.size = sizeof(conf);
+  conf.header.device_type = DMP_DV_DEV_CONV;
+  conf.header.version = 0;
+  // Topo: 00000000000000000000000000000001
+  conf.topo = 0x1;  // [31:0] Output Destination of each run, 0 = UBUF, 1 = EXTMEM
 
-  //Input Configuration:
-  _conf.hw.input.w = 16; // Input Width
-  _conf.hw.input.h = 10; // Input Height
-  _conf.hw.input.z = 1; // Input Depth
-  _conf.hw.input.c = 512; // Input Channels
-  _conf.hw.input.input_base_addr = 0x000A0000; // Input byte address
-  _conf.hw.input.tiles = 1; // Number of horizontal tiles (supported with restrictions)
+  // Input Configuration:
+  conf.w = 16;  // Input Width
+  conf.h = 10;  // Input Height
+  conf.z = 1;  // Input Depth
+  conf.c = 512;  // Input Channels
+  conf.input_buf.mem = io_mem_;
+  conf.input_buf.offs = 655360;
 
-  //Output Configuration:
-  _conf.sw.output.w = 16; // Output Width
-  _conf.sw.output.h = 10; // Output Height
-  _conf.sw.output.z = 1; // Output Depth
-  _conf.sw.output.m = 255; // Output Channels
-  _conf.hw.output.output_base_addr = 0x00014000; // Output byte address
-  _conf.hw.output.eltwise_base_addr = 0xDEADBEEF; // Input byte address for elementwise add (0 = UBUF Input Buffer)
-  _conf.hw.output.output_mode = 0; // 0 = concat, 1 = eltwise add
+  // Output Configuration:
+  conf.output_buf.mem = io_mem_;
+  conf.output_buf.offs = 81920;
 
-  //Runs Configuration:
-  //->1 run(s)
+  conf.eltwise_buf.mem = NULL;
+  conf.eltwise_buf.offs = 0;  // Input byte address for elementwise add (0 = UBUF Input Buffer)
+  conf.output_mode = 0;  // 0 = concat, 1 = eltwise add
+
+  // Runs Configuration:
+  // ->1 run(s)
   //--------------------------------------------------
   //RUN : 0
   //--------------------------------------------------
   //->: conv2d_10
-  _conf.sw.run[0].in_w = 16; // Optional: Input width (not used by HW - discovered on the fly)
-  _conf.sw.run[0].in_h = 10; // Optional: Input height (not used by HW - discovered on the fly)
-  _conf.sw.run[0].in_c = 512; // Optional: Input Channels (not used by HW - discovered on the fly)
-  _conf.sw.run[0].out_w = 16; // Optional: Output width (not used by HW - discovered on the fly)
-  _conf.sw.run[0].out_h = 10; // Optional: Output height (not used by HW - discovered on the fly)
-  _conf.hw.run[0].m = 255; // Output Channels
-  _conf.hw.run[0].conv_enable = 1; // 1 = Enabled, 0 = Disabled
-  _conf.hw.run[0].p = 1; // Filter Width and Height
-  _conf.hw.run[0].pz = 1; // Filter Depth
-  _conf.hw.run[0].weight_base_addr = 0x00ED12E0; // Filter Weight and Bias byte address
-  _conf.hw.run[0].weight_fmt = 1; // Weight format (0 = random access blocks, 1 = compact stream, 3 = 8-bit qunatized stream)
-  _conf.sw.run[0].weight_size = 294272; // Actual size in bytes of LUT, weights and bias (in bytes)
-  _conf.hw.run[0].conv_pad = 0x0; // bits [7:0] = left padding, bits [15:8] = right padding, bits [23:16] = top padding, bits [31:24] = bottom padding
-  _conf.hw.run[0].conv_stride = 0x101; // bits [7:0] = X stride, bits [15:8] = Y stride
-  _conf.hw.run[0].conv_dilation = 0x0; // bits [7:0] = X dilation, bits [15:8] = Y dilation
-  _conf.hw.run[0].pool_enable = 0;  // 0 = disabled, 1 = max pooling, 2 = average pooling
-  _conf.hw.run[0].pool_size = 0x0; // bits [7:0] = width, bits [15:8] = height
-  _conf.hw.run[0].pool_stride = 0x101; // bits [7:0] = X stride, bits [15:8] = Y stride
-  _conf.hw.run[0].pool_pad = 0x0; // bits [7:0] = left padding, bits [15:8] = right padding, bits [23:16] = top padding, bits [31:24] = bottom padding
-  _conf.hw.run[0].pool_avg_param = 0x0; // Must be set to 1/pool_size^2 in FP16 format when using average pooling (average pooling assumes square size)
-  _conf.hw.run[0].actfunc = 0; // Activation Function: 0 = None, 1 = Tanh, 2 = Leaky ReLU, 3 = Sigmoid, 4 = PReLU, 5 = ELU, 6 = ReLU6
-  _conf.hw.run[0].actfunc_param = 0x0; // Leaky ReLU parameter (NOTE: 0x2E66 is 0.1 in FP16)
-  _conf.hw.run[0].rectifi_en = 0; // Rectification, i.e. max(0, x) (NOTE: Can be applied after non-ReLU activation function)
-  _conf.hw.run[0].lrn= 0x0; // [0] : 1 = LRN enable, 0 = LRN disable, [1] : 1 = incl. power func, 0 = excl., [8:11] = x^2 scale factor log2
-  _conf.hw.run[0].ALIGN_0 = 0;//Some comments needed here
+  conf.run[0].m = 255;  // Output Channels
+  conf.run[0].conv_enable = 1;  // 1 = Enabled, 0 = Disabled
+  conf.run[0].p = 1;  // Filter Width and Height
+  conf.run[0].pz = 1;  // Filter Depth
+  conf.run[0].weight_buf.mem = weights_mem_;
+  conf.run[0].weight_buf.offs = 15536864;
+  conf.run[0].weight_fmt = 1;  // Weight format (0 = random access blocks, 1 = compact stream, 3 = 8-bit qunatized stream)
+  conf.run[0].conv_pad = 0x0;  // bits [7:0] = left padding, bits [15:8] = right padding, bits [23:16] = top padding, bits [31:24] = bottom padding
+  conf.run[0].conv_stride = 0x101;  // bits [7:0] = X stride, bits [15:8] = Y stride
+  conf.run[0].conv_dilation = 0x0;  // bits [7:0] = X dilation, bits [15:8] = Y dilation
+  conf.run[0].pool_enable = 0;  // 0 = disabled, 1 = max pooling, 2 = average pooling
+  conf.run[0].pool_size = 0x0;  // bits [7:0] = width, bits [15:8] = height
+  conf.run[0].pool_stride = 0x101;  // bits [7:0] = X stride, bits [15:8] = Y stride
+  conf.run[0].pool_pad = 0x0;  // bits [7:0] = left padding, bits [15:8] = right padding, bits [23:16] = top padding, bits [31:24] = bottom padding
+  conf.run[0].pool_avg_param = 0x0;  // Must be set to 1/pool_size^2 in FP16 format when using average pooling (average pooling assumes square size)
+  conf.run[0].actfunc = 0;  // Activation Function: 0 = None, 1 = Tanh, 2 = Leaky ReLU, 3 = Sigmoid, 4 = PReLU, 5 = ELU, 6 = ReLU6
+  conf.run[0].actfunc_param = 0x0;  // Leaky ReLU parameter (NOTE: 0x2E66 is 0.1 in FP16)
+  conf.run[0].rectifi_en = 0;  // Rectification, i.e. max(0, x) (NOTE: Can be applied after non-ReLU activation function)
+  conf.run[0].lrn = 0x0;  // [0] : 1 = LRN enable, 0 = LRN disable, [1] : 1 = incl. power func, 0 = excl., [8:11] = x^2 scale factor log2
 
-  struct fpga_layer& layer = layers[13];
+  fpga_layer& layer = get_layer(13);
   layer.type = LT_CONV;
-  layer.hw_conf = (void*)&_conf;
-  layer.addr_cpu_input = 0x0;
-  layer.addr_cpu_output = 0x0;
-  layer.addr_offset_input = 0x000A0000;
-  layer.addr_offset_output = 0x00014000;
+  layer.input_offs = 655360;
+  layer.output_offs = 81920;
   layer.output_size = 81600;
   layer.input_dim[0] = 16;
   layer.input_dim[1] = 10;
@@ -1221,13 +1120,10 @@ void CYOLOv3::Layer_13() {
 //Layer_14: Flatten Layer
 //	->: flatten_1
 void CYOLOv3::Layer_14() {
-  struct fpga_layer& layer = layers[14];
+  fpga_layer& layer = get_layer(14);
   layer.type = LT_FLATTEN;
-  layer.hw_conf = (void*)0;
-  layer.addr_cpu_input = 0x0;
-  layer.addr_cpu_output = 0x0;
-  layer.addr_offset_input = 0x00014000;
-  layer.addr_offset_output = 0x000A0000;
+  layer.input_offs = 81920;
+  layer.output_offs = 655360;
   layer.output_size = 81600;
   layer.input_dim[0] = 16;
   layer.input_dim[1] = 10;
@@ -1246,29 +1142,32 @@ void CYOLOv3::Layer_14() {
 //  ->: batch_normalization_10
 //  ->: leaky_re_lu_10
 void CYOLOv3::Layer_15() {
-  struct top_conv_conf& _conf = get_conv_layer(14);
-  //Topo: 00000000000000000000000000000001
-  _conf.hw.header.topo = 0x1; // [31:0] Output Destination of each run, 0 = UBUF, 1 = EXTMEM
+  get_layer(15).name = "conv2d_11, batch_normalization_10, batch_normalization_10, leaky_re_lu_10";
+  dmp_dv_cmdraw_conv_v0& conf = get_layer(15).conv_conf;
+  conf.header.size = sizeof(conf);
+  conf.header.device_type = DMP_DV_DEV_CONV;
+  conf.header.version = 0;
+  // Topo: 00000000000000000000000000000001
+  conf.topo = 0x1;  // [31:0] Output Destination of each run, 0 = UBUF, 1 = EXTMEM
 
-  //Input Configuration:
-  _conf.hw.input.w = 16; // Input Width
-  _conf.hw.input.h = 10; // Input Height
-  _conf.hw.input.z = 1; // Input Depth
-  _conf.hw.input.c = 256; // Input Channels
-  _conf.hw.input.input_base_addr = 0x00000000; // Input byte address
-  _conf.hw.input.tiles = 1; // Number of horizontal tiles (supported with restrictions)
+  // Input Configuration:
+  conf.w = 16;  // Input Width
+  conf.h = 10;  // Input Height
+  conf.z = 1;  // Input Depth
+  conf.c = 256;  // Input Channels
+  conf.input_buf.mem = io_mem_;
+  conf.input_buf.offs = 0;
 
-  //Output Configuration:
-  _conf.sw.output.w = 16; // Output Width
-  _conf.sw.output.h = 10; // Output Height
-  _conf.sw.output.z = 1; // Output Depth
-  _conf.sw.output.m = 128; // Output Channels
-  _conf.hw.output.output_base_addr = 0x00014000; // Output byte address
-  _conf.hw.output.eltwise_base_addr = 0xDEADBEEF; // Input byte address for elementwise add (0 = UBUF Input Buffer)
-  _conf.hw.output.output_mode = 0; // 0 = concat, 1 = eltwise add
+  // Output Configuration:
+  conf.output_buf.mem = io_mem_;
+  conf.output_buf.offs = 81920;
 
-  //Runs Configuration:
-  //->1 run(s)
+  conf.eltwise_buf.mem = NULL;
+  conf.eltwise_buf.offs = 0;  // Input byte address for elementwise add (0 = UBUF Input Buffer)
+  conf.output_mode = 0;  // 0 = concat, 1 = eltwise add
+
+  // Runs Configuration:
+  // ->1 run(s)
   //--------------------------------------------------
   //RUN : 0
   //--------------------------------------------------
@@ -1276,39 +1175,30 @@ void CYOLOv3::Layer_15() {
   //->: batch_normalization_10
   //->: batch_normalization_10
   //->: leaky_re_lu_10
-  _conf.sw.run[0].in_w = 16; // Optional: Input width (not used by HW - discovered on the fly)
-  _conf.sw.run[0].in_h = 10; // Optional: Input height (not used by HW - discovered on the fly)
-  _conf.sw.run[0].in_c = 256; // Optional: Input Channels (not used by HW - discovered on the fly)
-  _conf.sw.run[0].out_w = 16; // Optional: Output width (not used by HW - discovered on the fly)
-  _conf.sw.run[0].out_h = 10; // Optional: Output height (not used by HW - discovered on the fly)
-  _conf.hw.run[0].m = 128; // Output Channels
-  _conf.hw.run[0].conv_enable = 1; // 1 = Enabled, 0 = Disabled
-  _conf.hw.run[0].p = 1; // Filter Width and Height
-  _conf.hw.run[0].pz = 1; // Filter Depth
-  _conf.hw.run[0].weight_base_addr = 0x00F19060; // Filter Weight and Bias byte address
-  _conf.hw.run[0].weight_fmt = 1; // Weight format (0 = random access blocks, 1 = compact stream, 3 = 8-bit qunatized stream)
-  _conf.sw.run[0].weight_size = 73984; // Actual size in bytes of LUT, weights and bias (in bytes)
-  _conf.hw.run[0].conv_pad = 0x0; // bits [7:0] = left padding, bits [15:8] = right padding, bits [23:16] = top padding, bits [31:24] = bottom padding
-  _conf.hw.run[0].conv_stride = 0x101; // bits [7:0] = X stride, bits [15:8] = Y stride
-  _conf.hw.run[0].conv_dilation = 0x0; // bits [7:0] = X dilation, bits [15:8] = Y dilation
-  _conf.hw.run[0].pool_enable = 0;  // 0 = disabled, 1 = max pooling, 2 = average pooling
-  _conf.hw.run[0].pool_size = 0x0; // bits [7:0] = width, bits [15:8] = height
-  _conf.hw.run[0].pool_stride = 0x101; // bits [7:0] = X stride, bits [15:8] = Y stride
-  _conf.hw.run[0].pool_pad = 0x0; // bits [7:0] = left padding, bits [15:8] = right padding, bits [23:16] = top padding, bits [31:24] = bottom padding
-  _conf.hw.run[0].pool_avg_param = 0x0; // Must be set to 1/pool_size^2 in FP16 format when using average pooling (average pooling assumes square size)
-  _conf.hw.run[0].actfunc = 2; // Activation Function: 0 = None, 1 = Tanh, 2 = Leaky ReLU, 3 = Sigmoid, 4 = PReLU, 5 = ELU, 6 = ReLU6
-  _conf.hw.run[0].actfunc_param = 0x2E66; // Leaky ReLU parameter (NOTE: 0x2E66 is 0.1 in FP16)
-  _conf.hw.run[0].rectifi_en = 0; // Rectification, i.e. max(0, x) (NOTE: Can be applied after non-ReLU activation function)
-  _conf.hw.run[0].lrn= 0x0; // [0] : 1 = LRN enable, 0 = LRN disable, [1] : 1 = incl. power func, 0 = excl., [8:11] = x^2 scale factor log2
-  _conf.hw.run[0].ALIGN_0 = 0;//Some comments needed here
+  conf.run[0].m = 128;  // Output Channels
+  conf.run[0].conv_enable = 1;  // 1 = Enabled, 0 = Disabled
+  conf.run[0].p = 1;  // Filter Width and Height
+  conf.run[0].pz = 1;  // Filter Depth
+  conf.run[0].weight_buf.mem = weights_mem_;
+  conf.run[0].weight_buf.offs = 15831136;
+  conf.run[0].weight_fmt = 1;  // Weight format (0 = random access blocks, 1 = compact stream, 3 = 8-bit qunatized stream)
+  conf.run[0].conv_pad = 0x0;  // bits [7:0] = left padding, bits [15:8] = right padding, bits [23:16] = top padding, bits [31:24] = bottom padding
+  conf.run[0].conv_stride = 0x101;  // bits [7:0] = X stride, bits [15:8] = Y stride
+  conf.run[0].conv_dilation = 0x0;  // bits [7:0] = X dilation, bits [15:8] = Y dilation
+  conf.run[0].pool_enable = 0;  // 0 = disabled, 1 = max pooling, 2 = average pooling
+  conf.run[0].pool_size = 0x0;  // bits [7:0] = width, bits [15:8] = height
+  conf.run[0].pool_stride = 0x101;  // bits [7:0] = X stride, bits [15:8] = Y stride
+  conf.run[0].pool_pad = 0x0;  // bits [7:0] = left padding, bits [15:8] = right padding, bits [23:16] = top padding, bits [31:24] = bottom padding
+  conf.run[0].pool_avg_param = 0x0;  // Must be set to 1/pool_size^2 in FP16 format when using average pooling (average pooling assumes square size)
+  conf.run[0].actfunc = 2;  // Activation Function: 0 = None, 1 = Tanh, 2 = Leaky ReLU, 3 = Sigmoid, 4 = PReLU, 5 = ELU, 6 = ReLU6
+  conf.run[0].actfunc_param = 0x2E66;  // Leaky ReLU parameter (NOTE: 0x2E66 is 0.1 in FP16)
+  conf.run[0].rectifi_en = 0;  // Rectification, i.e. max(0, x) (NOTE: Can be applied after non-ReLU activation function)
+  conf.run[0].lrn = 0x0;  // [0] : 1 = LRN enable, 0 = LRN disable, [1] : 1 = incl. power func, 0 = excl., [8:11] = x^2 scale factor log2
 
-  struct fpga_layer& layer = layers[15];
+  fpga_layer& layer = get_layer(15);
   layer.type = LT_CONV;
-  layer.hw_conf = (void*)&_conf;
-  layer.addr_cpu_input = 0x0;
-  layer.addr_cpu_output = 0x0;
-  layer.addr_offset_input = 0x00000000;
-  layer.addr_offset_output = 0x00014000;
+  layer.input_offs = 0;
+  layer.output_offs = 81920;
   layer.output_size = 40960;
   layer.input_dim[0] = 16;
   layer.input_dim[1] = 10;
@@ -1326,66 +1216,60 @@ void CYOLOv3::Layer_15() {
 //Layer_16: Convolution Layer
 //  ->: up_sampling2d_1
 void CYOLOv3::Layer_16() {
-  struct top_conv_conf& _conf = get_conv_layer(15);
-  //Topo: 00000000000000000000000000000001
-  _conf.hw.header.topo = 0x1; // [31:0] Output Destination of each run, 0 = UBUF, 1 = EXTMEM
+  get_layer(16).name = "up_sampling2d_1";
+  dmp_dv_cmdraw_conv_v0& conf = get_layer(16).conv_conf;
+  conf.header.size = sizeof(conf);
+  conf.header.device_type = DMP_DV_DEV_CONV;
+  conf.header.version = 0;
+  // Topo: 00000000000000000000000000000001
+  conf.topo = 0x1;  // [31:0] Output Destination of each run, 0 = UBUF, 1 = EXTMEM
 
-  //Input Configuration:
-  _conf.hw.input.w = 16; // Input Width
-  _conf.hw.input.h = 10; // Input Height
-  _conf.hw.input.z = 1; // Input Depth
-  _conf.hw.input.c = 128; // Input Channels
-  _conf.hw.input.input_base_addr = 0x00014000; // Input byte address
-  _conf.hw.input.tiles = 1; // Number of horizontal tiles (supported with restrictions)
+  // Input Configuration:
+  conf.w = 16;  // Input Width
+  conf.h = 10;  // Input Height
+  conf.z = 1;  // Input Depth
+  conf.c = 128;  // Input Channels
+  conf.input_buf.mem = io_mem_;
+  conf.input_buf.offs = 81920;
 
-  //Output Configuration:
-  _conf.sw.output.w = 32; // Output Width
-  _conf.sw.output.h = 20; // Output Height
-  _conf.sw.output.z = 1; // Output Depth
-  _conf.sw.output.m = 128; // Output Channels
-  _conf.hw.output.output_base_addr = 0x00028000; // Output byte address
-  _conf.hw.output.eltwise_base_addr = 0xDEADBEEF; // Input byte address for elementwise add (0 = UBUF Input Buffer)
-  _conf.hw.output.output_mode = 0; // 0 = concat, 1 = eltwise add
+  // Output Configuration:
+  conf.output_buf.mem = io_mem_;
+  conf.output_buf.offs = 163840;
 
-  //Runs Configuration:
-  //->1 run(s)
+  conf.eltwise_buf.mem = NULL;
+  conf.eltwise_buf.offs = 0;  // Input byte address for elementwise add (0 = UBUF Input Buffer)
+  conf.output_mode = 0;  // 0 = concat, 1 = eltwise add
+
+  // Runs Configuration:
+  // ->1 run(s)
   //--------------------------------------------------
   //RUN : 0
   //--------------------------------------------------
   //->: up_sampling2d_1
-  _conf.sw.run[0].in_w = 16; // Optional: Input width (not used by HW - discovered on the fly)
-  _conf.sw.run[0].in_h = 10; // Optional: Input height (not used by HW - discovered on the fly)
-  _conf.sw.run[0].in_c = 128; // Optional: Input Channels (not used by HW - discovered on the fly)
-  _conf.sw.run[0].out_w = 32; // Optional: Output width (not used by HW - discovered on the fly)
-  _conf.sw.run[0].out_h = 20; // Optional: Output height (not used by HW - discovered on the fly)
-  _conf.hw.run[0].m = 128; // Output Channels
-  _conf.hw.run[0].conv_enable = 0; // 1 = Enabled, 0 = Disabled
-  _conf.hw.run[0].p = 1; // Filter Width and Height
-  _conf.hw.run[0].pz = 1; // Filter Depth
-  _conf.hw.run[0].weight_base_addr = 0x00F2B160; // Filter Weight and Bias byte address
-  _conf.hw.run[0].weight_fmt = 0; // Weight format (0 = random access blocks, 1 = compact stream, 3 = 8-bit qunatized stream)
-  _conf.sw.run[0].weight_size = 0; // Actual size in bytes of LUT, weights and bias (in bytes)
-  _conf.hw.run[0].conv_pad = 0x0; // bits [7:0] = left padding, bits [15:8] = right padding, bits [23:16] = top padding, bits [31:24] = bottom padding
-  _conf.hw.run[0].conv_stride = 0x101; // bits [7:0] = X stride, bits [15:8] = Y stride
-  _conf.hw.run[0].conv_dilation = 0x0; // bits [7:0] = X dilation, bits [15:8] = Y dilation
-  _conf.hw.run[0].pool_enable = 4;  // 0 = disabled, 1 = max pooling, 2 = average pooling
-  _conf.hw.run[0].pool_size = 0x202; // bits [7:0] = width, bits [15:8] = height
-  _conf.hw.run[0].pool_stride = 0x101; // bits [7:0] = X stride, bits [15:8] = Y stride
-  _conf.hw.run[0].pool_pad = 0x0; // bits [7:0] = left padding, bits [15:8] = right padding, bits [23:16] = top padding, bits [31:24] = bottom padding
-  _conf.hw.run[0].pool_avg_param = 0x0; // Must be set to 1/pool_size^2 in FP16 format when using average pooling (average pooling assumes square size)
-  _conf.hw.run[0].actfunc = 0; // Activation Function: 0 = None, 1 = Tanh, 2 = Leaky ReLU, 3 = Sigmoid, 4 = PReLU, 5 = ELU, 6 = ReLU6
-  _conf.hw.run[0].actfunc_param = 0x0; // Leaky ReLU parameter (NOTE: 0x2E66 is 0.1 in FP16)
-  _conf.hw.run[0].rectifi_en = 0; // Rectification, i.e. max(0, x) (NOTE: Can be applied after non-ReLU activation function)
-  _conf.hw.run[0].lrn= 0x0; // [0] : 1 = LRN enable, 0 = LRN disable, [1] : 1 = incl. power func, 0 = excl., [8:11] = x^2 scale factor log2
-  _conf.hw.run[0].ALIGN_0 = 0;//Some comments needed here
+  conf.run[0].m = 128;  // Output Channels
+  conf.run[0].conv_enable = 0;  // 1 = Enabled, 0 = Disabled
+  conf.run[0].p = 1;  // Filter Width and Height
+  conf.run[0].pz = 1;  // Filter Depth
+  conf.run[0].weight_buf.mem = weights_mem_;
+  conf.run[0].weight_buf.offs = 15905120;
+  conf.run[0].weight_fmt = 0;  // Weight format (0 = random access blocks, 1 = compact stream, 3 = 8-bit qunatized stream)
+  conf.run[0].conv_pad = 0x0;  // bits [7:0] = left padding, bits [15:8] = right padding, bits [23:16] = top padding, bits [31:24] = bottom padding
+  conf.run[0].conv_stride = 0x101;  // bits [7:0] = X stride, bits [15:8] = Y stride
+  conf.run[0].conv_dilation = 0x0;  // bits [7:0] = X dilation, bits [15:8] = Y dilation
+  conf.run[0].pool_enable = 4;  // 0 = disabled, 1 = max pooling, 2 = average pooling
+  conf.run[0].pool_size = 0x202;  // bits [7:0] = width, bits [15:8] = height
+  conf.run[0].pool_stride = 0x101;  // bits [7:0] = X stride, bits [15:8] = Y stride
+  conf.run[0].pool_pad = 0x0;  // bits [7:0] = left padding, bits [15:8] = right padding, bits [23:16] = top padding, bits [31:24] = bottom padding
+  conf.run[0].pool_avg_param = 0x0;  // Must be set to 1/pool_size^2 in FP16 format when using average pooling (average pooling assumes square size)
+  conf.run[0].actfunc = 0;  // Activation Function: 0 = None, 1 = Tanh, 2 = Leaky ReLU, 3 = Sigmoid, 4 = PReLU, 5 = ELU, 6 = ReLU6
+  conf.run[0].actfunc_param = 0x0;  // Leaky ReLU parameter (NOTE: 0x2E66 is 0.1 in FP16)
+  conf.run[0].rectifi_en = 0;  // Rectification, i.e. max(0, x) (NOTE: Can be applied after non-ReLU activation function)
+  conf.run[0].lrn = 0x0;  // [0] : 1 = LRN enable, 0 = LRN disable, [1] : 1 = incl. power func, 0 = excl., [8:11] = x^2 scale factor log2
 
-  struct fpga_layer& layer = layers[16];
+  fpga_layer& layer = get_layer(16);
   layer.type = LT_CONV;
-  layer.hw_conf = (void*)&_conf;
-  layer.addr_cpu_input = 0x0;
-  layer.addr_cpu_output = 0x0;
-  layer.addr_offset_input = 0x00014000;
-  layer.addr_offset_output = 0x00028000;
+  layer.input_offs = 81920;
+  layer.output_offs = 163840;
   layer.output_size = 163840;
   layer.input_dim[0] = 16;
   layer.input_dim[1] = 10;
@@ -1403,13 +1287,10 @@ void CYOLOv3::Layer_16() {
 //Layer_17: Concatenate Layer
 //	->: concatenate_1
 void CYOLOv3::Layer_17() {
-  struct fpga_layer& layer = layers[17];
+  fpga_layer& layer = get_layer(17);
   layer.type = LT_CONCAT;
-  layer.hw_conf = (void*)0;
-  layer.addr_cpu_input = 0x0;
-  layer.addr_cpu_output = 0x0;
-  layer.addr_offset_input = 0x00028000;
-  layer.addr_offset_output = 0x00028000;
+  layer.input_offs = 163840;
+  layer.output_offs = 163840;
   layer.output_size = 491520;
   layer.input_dim[0] = 32;
   layer.input_dim[1] = 20;
@@ -1430,29 +1311,32 @@ void CYOLOv3::Layer_17() {
 //  ->: batch_normalization_11
 //  ->: leaky_re_lu_11
 void CYOLOv3::Layer_18() {
-  struct top_conv_conf& _conf = get_conv_layer(16);
-  //Topo: 00000000000000000000000000000001
-  _conf.hw.header.topo = 0x1; // [31:0] Output Destination of each run, 0 = UBUF, 1 = EXTMEM
+  get_layer(18).name = "conv2d_12, batch_normalization_11, batch_normalization_11, leaky_re_lu_11";
+  dmp_dv_cmdraw_conv_v0& conf = get_layer(18).conv_conf;
+  conf.header.size = sizeof(conf);
+  conf.header.device_type = DMP_DV_DEV_CONV;
+  conf.header.version = 0;
+  // Topo: 00000000000000000000000000000001
+  conf.topo = 0x1;  // [31:0] Output Destination of each run, 0 = UBUF, 1 = EXTMEM
 
-  //Input Configuration:
-  _conf.hw.input.w = 32; // Input Width
-  _conf.hw.input.h = 20; // Input Height
-  _conf.hw.input.z = 1; // Input Depth
-  _conf.hw.input.c = 384; // Input Channels
-  _conf.hw.input.input_base_addr = 0x00028000; // Input byte address
-  _conf.hw.input.tiles = 1; // Number of horizontal tiles (supported with restrictions)
+  // Input Configuration:
+  conf.w = 32;  // Input Width
+  conf.h = 20;  // Input Height
+  conf.z = 1;  // Input Depth
+  conf.c = 384;  // Input Channels
+  conf.input_buf.mem = io_mem_;
+  conf.input_buf.offs = 163840;
 
-  //Output Configuration:
-  _conf.sw.output.w = 32; // Output Width
-  _conf.sw.output.h = 20; // Output Height
-  _conf.sw.output.z = 1; // Output Depth
-  _conf.sw.output.m = 256; // Output Channels
-  _conf.hw.output.output_base_addr = 0x001039C0; // Output byte address
-  _conf.hw.output.eltwise_base_addr = 0xDEADBEEF; // Input byte address for elementwise add (0 = UBUF Input Buffer)
-  _conf.hw.output.output_mode = 0; // 0 = concat, 1 = eltwise add
+  // Output Configuration:
+  conf.output_buf.mem = io_mem_;
+  conf.output_buf.offs = 1063360;
 
-  //Runs Configuration:
-  //->1 run(s)
+  conf.eltwise_buf.mem = NULL;
+  conf.eltwise_buf.offs = 0;  // Input byte address for elementwise add (0 = UBUF Input Buffer)
+  conf.output_mode = 0;  // 0 = concat, 1 = eltwise add
+
+  // Runs Configuration:
+  // ->1 run(s)
   //--------------------------------------------------
   //RUN : 0
   //--------------------------------------------------
@@ -1460,39 +1344,30 @@ void CYOLOv3::Layer_18() {
   //->: batch_normalization_11
   //->: batch_normalization_11
   //->: leaky_re_lu_11
-  _conf.sw.run[0].in_w = 32; // Optional: Input width (not used by HW - discovered on the fly)
-  _conf.sw.run[0].in_h = 20; // Optional: Input height (not used by HW - discovered on the fly)
-  _conf.sw.run[0].in_c = 384; // Optional: Input Channels (not used by HW - discovered on the fly)
-  _conf.sw.run[0].out_w = 32; // Optional: Output width (not used by HW - discovered on the fly)
-  _conf.sw.run[0].out_h = 20; // Optional: Output height (not used by HW - discovered on the fly)
-  _conf.hw.run[0].m = 256; // Output Channels
-  _conf.hw.run[0].conv_enable = 1; // 1 = Enabled, 0 = Disabled
-  _conf.hw.run[0].p = 3; // Filter Width and Height
-  _conf.hw.run[0].pz = 1; // Filter Depth
-  _conf.hw.run[0].weight_base_addr = 0x00F2B160; // Filter Weight and Bias byte address
-  _conf.hw.run[0].weight_fmt = 1; // Weight format (0 = random access blocks, 1 = compact stream, 3 = 8-bit qunatized stream)
-  _conf.sw.run[0].weight_size = 1769984; // Actual size in bytes of LUT, weights and bias (in bytes)
-  _conf.hw.run[0].conv_pad = 0x1010101; // bits [7:0] = left padding, bits [15:8] = right padding, bits [23:16] = top padding, bits [31:24] = bottom padding
-  _conf.hw.run[0].conv_stride = 0x101; // bits [7:0] = X stride, bits [15:8] = Y stride
-  _conf.hw.run[0].conv_dilation = 0x0; // bits [7:0] = X dilation, bits [15:8] = Y dilation
-  _conf.hw.run[0].pool_enable = 0;  // 0 = disabled, 1 = max pooling, 2 = average pooling
-  _conf.hw.run[0].pool_size = 0x0; // bits [7:0] = width, bits [15:8] = height
-  _conf.hw.run[0].pool_stride = 0x101; // bits [7:0] = X stride, bits [15:8] = Y stride
-  _conf.hw.run[0].pool_pad = 0x0; // bits [7:0] = left padding, bits [15:8] = right padding, bits [23:16] = top padding, bits [31:24] = bottom padding
-  _conf.hw.run[0].pool_avg_param = 0x0; // Must be set to 1/pool_size^2 in FP16 format when using average pooling (average pooling assumes square size)
-  _conf.hw.run[0].actfunc = 2; // Activation Function: 0 = None, 1 = Tanh, 2 = Leaky ReLU, 3 = Sigmoid, 4 = PReLU, 5 = ELU, 6 = ReLU6
-  _conf.hw.run[0].actfunc_param = 0x2E66; // Leaky ReLU parameter (NOTE: 0x2E66 is 0.1 in FP16)
-  _conf.hw.run[0].rectifi_en = 0; // Rectification, i.e. max(0, x) (NOTE: Can be applied after non-ReLU activation function)
-  _conf.hw.run[0].lrn= 0x0; // [0] : 1 = LRN enable, 0 = LRN disable, [1] : 1 = incl. power func, 0 = excl., [8:11] = x^2 scale factor log2
-  _conf.hw.run[0].ALIGN_0 = 0;//Some comments needed here
+  conf.run[0].m = 256;  // Output Channels
+  conf.run[0].conv_enable = 1;  // 1 = Enabled, 0 = Disabled
+  conf.run[0].p = 3;  // Filter Width and Height
+  conf.run[0].pz = 1;  // Filter Depth
+  conf.run[0].weight_buf.mem = weights_mem_;
+  conf.run[0].weight_buf.offs = 15905120;
+  conf.run[0].weight_fmt = 1;  // Weight format (0 = random access blocks, 1 = compact stream, 3 = 8-bit qunatized stream)
+  conf.run[0].conv_pad = 0x1010101;  // bits [7:0] = left padding, bits [15:8] = right padding, bits [23:16] = top padding, bits [31:24] = bottom padding
+  conf.run[0].conv_stride = 0x101;  // bits [7:0] = X stride, bits [15:8] = Y stride
+  conf.run[0].conv_dilation = 0x0;  // bits [7:0] = X dilation, bits [15:8] = Y dilation
+  conf.run[0].pool_enable = 0;  // 0 = disabled, 1 = max pooling, 2 = average pooling
+  conf.run[0].pool_size = 0x0;  // bits [7:0] = width, bits [15:8] = height
+  conf.run[0].pool_stride = 0x101;  // bits [7:0] = X stride, bits [15:8] = Y stride
+  conf.run[0].pool_pad = 0x0;  // bits [7:0] = left padding, bits [15:8] = right padding, bits [23:16] = top padding, bits [31:24] = bottom padding
+  conf.run[0].pool_avg_param = 0x0;  // Must be set to 1/pool_size^2 in FP16 format when using average pooling (average pooling assumes square size)
+  conf.run[0].actfunc = 2;  // Activation Function: 0 = None, 1 = Tanh, 2 = Leaky ReLU, 3 = Sigmoid, 4 = PReLU, 5 = ELU, 6 = ReLU6
+  conf.run[0].actfunc_param = 0x2E66;  // Leaky ReLU parameter (NOTE: 0x2E66 is 0.1 in FP16)
+  conf.run[0].rectifi_en = 0;  // Rectification, i.e. max(0, x) (NOTE: Can be applied after non-ReLU activation function)
+  conf.run[0].lrn = 0x0;  // [0] : 1 = LRN enable, 0 = LRN disable, [1] : 1 = incl. power func, 0 = excl., [8:11] = x^2 scale factor log2
 
-  struct fpga_layer& layer = layers[18];
+  fpga_layer& layer = get_layer(18);
   layer.type = LT_CONV;
-  layer.hw_conf = (void*)&_conf;
-  layer.addr_cpu_input = 0x0;
-  layer.addr_cpu_output = 0x0;
-  layer.addr_offset_input = 0x00028000;
-  layer.addr_offset_output = 0x001039C0;
+  layer.input_offs = 163840;
+  layer.output_offs = 1063360;
   layer.output_size = 327680;
   layer.input_dim[0] = 32;
   layer.input_dim[1] = 20;
@@ -1510,66 +1385,60 @@ void CYOLOv3::Layer_18() {
 //Layer_19: Convolution Layer
 //  ->: conv2d_13
 void CYOLOv3::Layer_19() {
-  struct top_conv_conf& _conf = get_conv_layer(17);
-  //Topo: 00000000000000000000000000000001
-  _conf.hw.header.topo = 0x1; // [31:0] Output Destination of each run, 0 = UBUF, 1 = EXTMEM
+  get_layer(19).name = "conv2d_13";
+  dmp_dv_cmdraw_conv_v0& conf = get_layer(19).conv_conf;
+  conf.header.size = sizeof(conf);
+  conf.header.device_type = DMP_DV_DEV_CONV;
+  conf.header.version = 0;
+  // Topo: 00000000000000000000000000000001
+  conf.topo = 0x1;  // [31:0] Output Destination of each run, 0 = UBUF, 1 = EXTMEM
 
-  //Input Configuration:
-  _conf.hw.input.w = 32; // Input Width
-  _conf.hw.input.h = 20; // Input Height
-  _conf.hw.input.z = 1; // Input Depth
-  _conf.hw.input.c = 256; // Input Channels
-  _conf.hw.input.input_base_addr = 0x001039C0; // Input byte address
-  _conf.hw.input.tiles = 1; // Number of horizontal tiles (supported with restrictions)
+  // Input Configuration:
+  conf.w = 32;  // Input Width
+  conf.h = 20;  // Input Height
+  conf.z = 1;  // Input Depth
+  conf.c = 256;  // Input Channels
+  conf.input_buf.mem = io_mem_;
+  conf.input_buf.offs = 1063360;
 
-  //Output Configuration:
-  _conf.sw.output.w = 32; // Output Width
-  _conf.sw.output.h = 20; // Output Height
-  _conf.sw.output.z = 1; // Output Depth
-  _conf.sw.output.m = 255; // Output Channels
-  _conf.hw.output.output_base_addr = 0x00000000; // Output byte address
-  _conf.hw.output.eltwise_base_addr = 0xDEADBEEF; // Input byte address for elementwise add (0 = UBUF Input Buffer)
-  _conf.hw.output.output_mode = 0; // 0 = concat, 1 = eltwise add
+  // Output Configuration:
+  conf.output_buf.mem = io_mem_;
+  conf.output_buf.offs = 0;
 
-  //Runs Configuration:
-  //->1 run(s)
+  conf.eltwise_buf.mem = NULL;
+  conf.eltwise_buf.offs = 0;  // Input byte address for elementwise add (0 = UBUF Input Buffer)
+  conf.output_mode = 0;  // 0 = concat, 1 = eltwise add
+
+  // Runs Configuration:
+  // ->1 run(s)
   //--------------------------------------------------
   //RUN : 0
   //--------------------------------------------------
   //->: conv2d_13
-  _conf.sw.run[0].in_w = 32; // Optional: Input width (not used by HW - discovered on the fly)
-  _conf.sw.run[0].in_h = 20; // Optional: Input height (not used by HW - discovered on the fly)
-  _conf.sw.run[0].in_c = 256; // Optional: Input Channels (not used by HW - discovered on the fly)
-  _conf.sw.run[0].out_w = 32; // Optional: Output width (not used by HW - discovered on the fly)
-  _conf.sw.run[0].out_h = 20; // Optional: Output height (not used by HW - discovered on the fly)
-  _conf.hw.run[0].m = 255; // Output Channels
-  _conf.hw.run[0].conv_enable = 1; // 1 = Enabled, 0 = Disabled
-  _conf.hw.run[0].p = 1; // Filter Width and Height
-  _conf.hw.run[0].pz = 1; // Filter Depth
-  _conf.hw.run[0].weight_base_addr = 0x010DB360; // Filter Weight and Bias byte address
-  _conf.hw.run[0].weight_fmt = 1; // Weight format (0 = random access blocks, 1 = compact stream, 3 = 8-bit qunatized stream)
-  _conf.sw.run[0].weight_size = 147392; // Actual size in bytes of LUT, weights and bias (in bytes)
-  _conf.hw.run[0].conv_pad = 0x0; // bits [7:0] = left padding, bits [15:8] = right padding, bits [23:16] = top padding, bits [31:24] = bottom padding
-  _conf.hw.run[0].conv_stride = 0x101; // bits [7:0] = X stride, bits [15:8] = Y stride
-  _conf.hw.run[0].conv_dilation = 0x0; // bits [7:0] = X dilation, bits [15:8] = Y dilation
-  _conf.hw.run[0].pool_enable = 0;  // 0 = disabled, 1 = max pooling, 2 = average pooling
-  _conf.hw.run[0].pool_size = 0x0; // bits [7:0] = width, bits [15:8] = height
-  _conf.hw.run[0].pool_stride = 0x101; // bits [7:0] = X stride, bits [15:8] = Y stride
-  _conf.hw.run[0].pool_pad = 0x0; // bits [7:0] = left padding, bits [15:8] = right padding, bits [23:16] = top padding, bits [31:24] = bottom padding
-  _conf.hw.run[0].pool_avg_param = 0x0; // Must be set to 1/pool_size^2 in FP16 format when using average pooling (average pooling assumes square size)
-  _conf.hw.run[0].actfunc = 0; // Activation Function: 0 = None, 1 = Tanh, 2 = Leaky ReLU, 3 = Sigmoid, 4 = PReLU, 5 = ELU, 6 = ReLU6
-  _conf.hw.run[0].actfunc_param = 0x0; // Leaky ReLU parameter (NOTE: 0x2E66 is 0.1 in FP16)
-  _conf.hw.run[0].rectifi_en = 0; // Rectification, i.e. max(0, x) (NOTE: Can be applied after non-ReLU activation function)
-  _conf.hw.run[0].lrn= 0x0; // [0] : 1 = LRN enable, 0 = LRN disable, [1] : 1 = incl. power func, 0 = excl., [8:11] = x^2 scale factor log2
-  _conf.hw.run[0].ALIGN_0 = 0;//Some comments needed here
+  conf.run[0].m = 255;  // Output Channels
+  conf.run[0].conv_enable = 1;  // 1 = Enabled, 0 = Disabled
+  conf.run[0].p = 1;  // Filter Width and Height
+  conf.run[0].pz = 1;  // Filter Depth
+  conf.run[0].weight_buf.mem = weights_mem_;
+  conf.run[0].weight_buf.offs = 17675104;
+  conf.run[0].weight_fmt = 1;  // Weight format (0 = random access blocks, 1 = compact stream, 3 = 8-bit qunatized stream)
+  conf.run[0].conv_pad = 0x0;  // bits [7:0] = left padding, bits [15:8] = right padding, bits [23:16] = top padding, bits [31:24] = bottom padding
+  conf.run[0].conv_stride = 0x101;  // bits [7:0] = X stride, bits [15:8] = Y stride
+  conf.run[0].conv_dilation = 0x0;  // bits [7:0] = X dilation, bits [15:8] = Y dilation
+  conf.run[0].pool_enable = 0;  // 0 = disabled, 1 = max pooling, 2 = average pooling
+  conf.run[0].pool_size = 0x0;  // bits [7:0] = width, bits [15:8] = height
+  conf.run[0].pool_stride = 0x101;  // bits [7:0] = X stride, bits [15:8] = Y stride
+  conf.run[0].pool_pad = 0x0;  // bits [7:0] = left padding, bits [15:8] = right padding, bits [23:16] = top padding, bits [31:24] = bottom padding
+  conf.run[0].pool_avg_param = 0x0;  // Must be set to 1/pool_size^2 in FP16 format when using average pooling (average pooling assumes square size)
+  conf.run[0].actfunc = 0;  // Activation Function: 0 = None, 1 = Tanh, 2 = Leaky ReLU, 3 = Sigmoid, 4 = PReLU, 5 = ELU, 6 = ReLU6
+  conf.run[0].actfunc_param = 0x0;  // Leaky ReLU parameter (NOTE: 0x2E66 is 0.1 in FP16)
+  conf.run[0].rectifi_en = 0;  // Rectification, i.e. max(0, x) (NOTE: Can be applied after non-ReLU activation function)
+  conf.run[0].lrn = 0x0;  // [0] : 1 = LRN enable, 0 = LRN disable, [1] : 1 = incl. power func, 0 = excl., [8:11] = x^2 scale factor log2
 
-  struct fpga_layer& layer = layers[19];
+  fpga_layer& layer = get_layer(19);
   layer.type = LT_CONV;
-  layer.hw_conf = (void*)&_conf;
-  layer.addr_cpu_input = 0x0;
-  layer.addr_cpu_output = 0x0;
-  layer.addr_offset_input = 0x001039C0;
-  layer.addr_offset_output = 0x00000000;
+  layer.input_offs = 1063360;
+  layer.output_offs = 0;
   layer.output_size = 326400;
   layer.input_dim[0] = 32;
   layer.input_dim[1] = 20;
@@ -1587,13 +1456,10 @@ void CYOLOv3::Layer_19() {
 //Layer_20: Flatten Layer
 //	->: flatten_2
 void CYOLOv3::Layer_20() {
-  struct fpga_layer& layer = layers[20];
+  fpga_layer& layer = get_layer(20);
   layer.type = LT_FLATTEN;
-  layer.hw_conf = (void*)0;
-  layer.addr_cpu_input = 0x0;
-  layer.addr_cpu_output = 0x0;
-  layer.addr_offset_input = 0x00000000;
-  layer.addr_offset_output = 0x000B3EC0;
+  layer.input_offs = 0;
+  layer.output_offs = 736960;
   layer.output_size = 326400;
   layer.input_dim[0] = 32;
   layer.input_dim[1] = 20;
@@ -1609,13 +1475,10 @@ void CYOLOv3::Layer_20() {
 //Layer_21: Concatenate Layer
 //	->: concatenate_2
 void CYOLOv3::Layer_21() {
-  struct fpga_layer& layer = layers[21];
+  fpga_layer& layer = get_layer(21);
   layer.type = LT_CONCAT;
-  layer.hw_conf = (void*)0;
-  layer.addr_cpu_input = 0x0;
-  layer.addr_cpu_output = 0x0;
-  layer.addr_offset_input = 0x000A0000;
-  layer.addr_offset_output = 0x000A0000;
+  layer.input_offs = 655360;
+  layer.output_offs = 655360;
   layer.output_size = 408000;
   layer.input_dim[0] = 204000;
   layer.input_dim_size = 1;
@@ -1624,6 +1487,6 @@ void CYOLOv3::Layer_21() {
   layer.is_output = true;
   layer.is_f32_output = false;
   layer.is_input_hw_layout = false;
-  output_layers[0] = &layer;
+  output_layers_[0] = &layer;
 }//end of  Layer_21
 

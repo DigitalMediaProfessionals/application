@@ -15,8 +15,8 @@
 
  *  This source code was generated using DMP-DV700 tools.
  */
-
 #pragma once
+
 #include "dmp_network.h"
 
 class CYOLOv3 : public CDMP_Network {
@@ -263,11 +263,7 @@ class CYOLOv3 : public CDMP_Network {
   void Layer_21();
 
  public:
-  unsigned int get_total_layer_count();
-  unsigned int get_output_layer_count();
-  unsigned int get_convolution_layer_count();
-  unsigned int get_innerproduct_layer_count();
-  int initialize();
+  virtual bool Initialize();
   CYOLOv3();
-  ~CYOLOv3();
+  virtual ~CYOLOv3();
 };
