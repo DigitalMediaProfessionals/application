@@ -141,7 +141,10 @@ int main(int argc, char** argv) {
   }
 
   dmp::util::set_inputImageSize(IMAGE_W, IMAGE_H);
-  dmp::util::createBackgroundImage(SCREEN_W, SCREEN_H);
+  if (!dmp::util::createBackgroundImage()) {
+    fprintf(stderr, "dmp::util::createBackgroundImage() failed\n");
+    return 1;
+  }
 
   if (!dmp::util::load_background_image("fpgatitle_mobileNet.ppm")) {
     fprintf(stderr, "dmp::util::load_background_image() failed\n");

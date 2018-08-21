@@ -72,10 +72,10 @@ std::vector<std::pair<float, int> > catrank(float* softmax, int count=1000);
  * size of the network input. Allocate corresponding memory buffer.
 */
 void set_inputImageSize(unsigned w, unsigned int h);
-/*! Set the size of the background image. Typically, 1280x720. Allocate
- * corresponding memory buffer.
+
+/*! Allocate buffers for the background image.
 */
-void createBackgroundImage(int screen_w, int screen_h);
+bool createBackgroundImage();
 
 /*! Delete (free memory) the memory allocated during createBackgroundImage call
 */
