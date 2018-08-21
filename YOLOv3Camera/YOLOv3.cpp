@@ -41,8 +41,8 @@ CYOLOv3 network;
 
 using namespace std;
 
-#define SCREEN_W 1280
-#define SCREEN_H 720
+#define SCREEN_W (dmp::util::get_screen_width())
+#define SCREEN_H (dmp::util::get_screen_height())
 
 #define IMAGE_W 640
 #define IMAGE_H 512
@@ -56,10 +56,10 @@ using namespace std;
 #define TEXT_XOFS (((SCREEN_W - IMAGE_W) / 2) / 24 + 4)  // 8x8 characters
 #define TEXT_YOFS ((512 + 48) / 8 + 2 + 3 + 2)           // 8x8 characters
 
-unsigned int imgView[IMAGE_W * IMAGE_H];
-unsigned short imgProc[PIMAGE_W * PIMAGE_H * 3];
+uint32_t imgView[IMAGE_W * IMAGE_H];
+__fp16 imgProc[PIMAGE_W * PIMAGE_H * 3];
 
-unsigned int fc = 0;
+uint32_t fc = 0;
 
 // 2ND THREAD FOR HW CONTROL
 
@@ -67,7 +67,9 @@ volatile uint64_t sync_cnn_in = 0;
 volatile uint64_t sync_cnn_out = 0;
 
 volatile int conv_time_tot = 0;
-volatile int ip_time_tot = 0;
+volatile int fc_time_tot = 0;
+
+volatile bool g_should_stop = false;
 
 const int NUM_CLASS = 80;
 const int NUM_BOX = 3;
@@ -80,15 +82,15 @@ const float SIG_THRES = -1.3863f;
 const float THRESHOLD = 0.2f;
 const float NMS = 0.45f;
 
-inline float sigmoid(float x) { return 1.0f / (1.0f + exp(-x)); }
+static inline float sigmoid(float x) { return 0.5f + 0.5f * std::tanh(0.5f * x); }
 
-inline float overlap(float x1, float w1, float x2, float w2) {
+static inline float overlap(float x1, float w1, float x2, float w2) {
   float left = max(x1, x2);
   float right = min(x1 + w1, x2 + w2);
   return max(right - left, 0.0f);
 }
 
-float box_iou(const float *a, const float *b) {
+static float box_iou(const float *a, const float *b) {
   float ow = overlap(a[0], a[2], b[0], b[2]);
   float oh = overlap(a[1], a[3], b[1], b[3]);
   float box_int = ow * oh;
@@ -96,15 +98,15 @@ float box_iou(const float *a, const float *b) {
   return box_int / box_uni;
 }
 
-void decode_yolo_box(float *box, const float *anchor, const float *dim, int x,
-                     int y) {
+static void decode_yolo_box(
+    float *box, const float *anchor, const float *dim, int x, int y) {
   box[2] = exp(box[2]) * anchor[0] / NETDIM[0];
   box[3] = exp(box[3]) * anchor[1] / NETDIM[1];
   box[0] = (x + box[0]) / dim[0] - box[2] / 2.0f;
   box[1] = (y + box[1]) / dim[1] - box[3] / 2.0f;
 }
 
-void get_bboxes(const vector<float> &tensor, vector<float> &boxes) {
+static void get_bboxes(const vector<float> &tensor, vector<float> &boxes) {
   int box_num = 0;
   const float *t = &tensor[0];
   float *box;
@@ -187,7 +189,7 @@ const char *class_name[] = {
     "scissors",      "teddy bear",    "hair drier",    "toothbrush",
 };
 
-const unsigned int class_color[] = {
+const uint32_t class_color[] = {
     0x00FF3F00, 0x003FFF00, 0xFF260000, 0xF200FF00, 0xFF4C0000, 0xA5FF0000,
     0xFF720000, 0xFF850000, 0xFF990000, 0xFFAC0000, 0xFFBF0000, 0xFFD20000,
     0xFFE50000, 0xFFF80000, 0xF2FF0000, 0xDFFF0000, 0xCBFF0000, 0xB8FF0000,
@@ -204,7 +206,7 @@ const unsigned int class_color[] = {
     0xFF002600, 0xFF001300,
 };
 
-void draw_bboxes(const vector<float> &boxes, unsigned int *img) {
+static void draw_bboxes(const vector<float> &boxes, uint32_t *img) {
   int num = boxes.size() / NUM_TENSOR;
   const float *box;
 
@@ -234,7 +236,7 @@ void draw_bboxes(const vector<float> &boxes, unsigned int *img) {
     int y = IMAGE_H * box[1];
     int w = IMAGE_W * box[2];
     int h = IMAGE_H * box[3];
-    unsigned int color = class_color[obj_type];
+    uint32_t color = class_color[obj_type];
 
     int x0 = (x > IMAGE_W - 1) ? (IMAGE_W - 1) : ((x < 0) ? 0 : x);
     int y0 = (y > CIMAGE_H - 1) ? (CIMAGE_H - 1) : ((y < 0) ? 0 : y);
@@ -255,16 +257,16 @@ void draw_bboxes(const vector<float> &boxes, unsigned int *img) {
 }
 
 void *hwacc_thread_func(void *targ) {
-  while (true) {
-    while (sync_cnn_in == sync_cnn_out) {
+  while (!g_should_stop) {
+    if (sync_cnn_in == sync_cnn_out) {
       usleep(1000);  // sleep 1 ms
+      continue;
     }
 
-    network.run_network();
+    network.RunNetwork();
 
-    conv_time_tot =
-        network.get_convolution_performance();  // time_diff(&t1, &t2);
-    ip_time_tot = network.get_innerproduct_performance();
+    conv_time_tot = network.get_conv_usec();
+    fc_time_tot = network.get_fc_usec();
 
     sync_cnn_out++;
   }
@@ -273,6 +275,11 @@ void *hwacc_thread_func(void *targ) {
 }
 
 int main(int argc, char **argv) {
+  if (!dmp::util::init_fb()) {
+    fprintf(stderr, "dmp::util::init_fb() failed\n");
+    return 1;
+  }
+
   std::vector<float> tensor;
   std::vector<float> boxes;
 
@@ -305,27 +312,23 @@ int main(int argc, char **argv) {
 
   dmp::util::open_cam(CIMAGE_W, CIMAGE_H, 20);
   dmp::util::set_inputImageSize(CIMAGE_W, CIMAGE_H);
-  dmp::util::createBackgroundImage(SCREEN_W, SCREEN_H);
+  dmp::util::createBackgroundImage();
 
   if (!dmp::util::load_background_image("fpgatitle_yolo.ppm")) return 1;
 
-  dmp::modules::initialize();
+  network.Verbose(0);
+  if (!network.Initialize()) {
+    return -1;
+  }
+  if (!network.LoadWeights(FILENAME_WEIGHTS)) {
+    return -1;
+  }
 
   string conv_freq, fc_freq;
-  unsigned int conv_freq_int, fc_freq_int;
-  dmp::modules::get_info(dmp::modules::FREQ_CONV, &conv_freq_int);
-  dmp::modules::get_info(dmp::modules::FREQ_FC, &fc_freq_int);
-  conv_freq = std::to_string(conv_freq_int);
-  fc_freq = std::to_string(fc_freq_int);
-
-  network.verbose(false);
-  network.initialize();
-  network.reserve_memory();
-  network.load_weights(FILENAME_WEIGHTS);
+  conv_freq = std::to_string(network.get_dv_info().conv_freq);
+  fc_freq = std::to_string(network.get_dv_info().fc_freq);
 
   void *ddr_buf_a_cpu = network.get_network_input_addr_cpu();
-
-  dmp::modules::reset_button_state();
 
   int exit_code = -1;
   bool pause = false;
@@ -337,7 +340,7 @@ int main(int argc, char **argv) {
     // Static Images
     if (fc < 2) {
       dmp::util::print_background_image_toDisplay();
-      dmp::modules::swap_buffer();
+      dmp::util::swap_buffer();
       fc++;  // Frame Counter
       continue;
     }
@@ -345,7 +348,7 @@ int main(int argc, char **argv) {
     // HW processing times
     if (conv_time_tot != 0) {
       dmp::util::print_time_toDisplay(
-          TEXT_XOFS, TEXT_YOFS + 0,
+          TEXT_XOFS + 20, TEXT_YOFS + 5,
           "Convolution (" + conv_freq + " MHz HW ACC)     : ", conv_time_tot,
           9999, 0xff00ff00, 0x00000001);
     }
@@ -356,29 +359,55 @@ int main(int argc, char **argv) {
         get_bboxes(tensor, boxes);
         draw_bboxes(boxes, imgView);
         dmp::util::print_image_toDisplay((SCREEN_W - IMAGE_W) / 2,
-                                         (293 - 128) + 20, imgView);
-        dmp::modules::swap_buffer();
+                                         (293 - 128) - 4, imgView);
+        dmp::util::swap_buffer();
         fc++;
 
-        unsigned int button = dmp::modules::get_button_state();
-        if (button & 4) {  // exit demo with exit code of selected next demo
-          if (has_democonf) {
-            int sel_num = democonf[democonf_sel].first;
-            if (sel_num != my_number) exit_code = sel_num;
-          } else {
-            exit_code = my_number;
+        int key = getchar();
+        switch (key) {
+          case 27:  // ESC
+          {
+            int next_key = getchar();
+            switch (next_key) {
+              case 91:  // there are more value to read: UP/DOWN/LEFT/RIGHT pressed
+                break;
+              case 79:  // F3 pressed
+                break;
+              default:  // nothing special was pressed, will exit
+                exit_code = 0;
+                break;
+            }
+            break;
           }
+          case '3':  // exit demo with exit code of selected next demo
+            if (has_democonf) {
+              int sel_num = democonf[democonf_sel].first;
+              if (sel_num != my_number) {
+                exit_code = sel_num;
+              }
+              else {
+                exit_code = my_number;
+              }
+            }
+            break;
+
+          case '2':  // cycle through demo configuratom list
+            if (has_democonf) {
+              democonf_display = true;
+              if (democonf_sel == democonf_num - 1) {
+                democonf_sel = 0;
+              }
+              else {
+                democonf_sel++;
+              }
+            }
+            break;
+
+          case '1':
+          case 32:  // SPACE
+            pause = !pause;
+            break;
         }
-        if (button & 2) {  // cycle through demo configuratom list
-          if (has_democonf) {
-            democonf_display = true;
-            if (democonf_sel == democonf_num - 1)
-              democonf_sel = 0;
-            else
-              democonf_sel++;
-          }
-        }
-        if (button & 1) pause = !pause;
       }
 
       if (!pause) {
@@ -392,8 +421,9 @@ int main(int argc, char **argv) {
       // Copy image to FPGA memory
       memcpy(ddr_buf_a_cpu, (void *)imgProc, PIMAGE_W * PIMAGE_H * 3 * 2);
 
-      if (exit_code == -1)  // do not start new HW ACC runs if about to exit...
+      if (exit_code == -1) {  // do not start new HW ACC runs if about to exit...
         sync_cnn_in++;
+      }
     }
 
     if (democonf_display) {
@@ -405,7 +435,10 @@ int main(int argc, char **argv) {
     }
   }
 
-  dmp::modules::shutdown();
+  g_should_stop = true;
+  pthread_join(hwacc_thread, NULL);
+
+  dmp::util::shutdown();
 
   return exit_code;
 }
