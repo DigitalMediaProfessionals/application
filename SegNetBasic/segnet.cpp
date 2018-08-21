@@ -195,7 +195,7 @@ int main(int argc, char **argv) {
 
   if (!dmp::util::load_background_image("fpgatitle_yolo.ppm")) return 1;
 
-  network.Verbose(2);
+  network.Verbose(0);
   if (!network.Initialize()) {
     return -1;
   }
