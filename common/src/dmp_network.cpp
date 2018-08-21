@@ -565,9 +565,6 @@ bool CDMP_Network::GenerateCommandLists() {
     return false;
   }
 
-  uint8_t *weights = dmp_dv_mem_map(weights_mem_);
-  dmp_dv_mem_sync_start(weights_mem_, 1, 0);
-
   // Create command lists
   layer_type last_type = LT_INPUT;
   int i_layer = 0;
@@ -587,19 +584,6 @@ bool CDMP_Network::GenerateCommandLists() {
           ERR("dmp_dv_cmdlist_add_raw() failed: %s\n", dmp_dv_get_last_error_message());
           return false;
         }
-        // TODO: remove it when debugging will be completed. -->
-        LOG("%s: weight_offs=%llu\n",
-            it->name.c_str(), (unsigned long long)it->conv_conf.run[0].weight_buf.offs);
-        {
-          char fnme[256];
-          snprintf(fnme, sizeof(fnme), "w.%02d.bin", i_layer);
-          FILE *fout = fopen(fnme, "wb");
-          if (fout) {
-            fwrite(weights + it->conv_conf.run[0].weight_buf.offs, 2, 256 + 8, fout);
-          }
-          fclose(fout);
-        }
-        // <--
         break;
       case LT_FC:
         if ((want_layer_outputs_) || (last_type != LT_FC)) {

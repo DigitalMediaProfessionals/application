@@ -13,7 +13,7 @@ OUT = ../lib/libdv700_util.a
 INCLUDES = -I. -I../include/ -I../../../dv-user-driver/include
  
 # C++ compiler flags (-g -O2 -Wall)
-CCFLAGS =  -pthread -std=c++11 -O3 -D$(BDDEF) -Wall
+CCFLAGS =  -pthread -std=c++11 -O3 -D$(BDDEF) -Wall -Werror
  
 # compiler
 CCC = $(GPP)
