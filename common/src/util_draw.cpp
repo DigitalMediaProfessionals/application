@@ -57,7 +57,12 @@ static bool g_term_set = false;
 #define ERR(...) fprintf(stderr, __VA_ARGS__); fflush(stderr)
 
 static void update_frame_ptr() {
-  g_frame_ptr = g_fb_mem + (g_fb_var_info.yoffset * g_fb_var_info.xres + g_fb_var_info.xoffset) * (g_fb_var_info.bits_per_pixel >> 3);
+  if (g_fb_var_info.yoffset) {
+    g_frame_ptr = g_fb_mem;
+  }
+  else {
+    g_frame_ptr = g_fb_mem + SCREEN_H * SCREEN_W * (g_fb_var_info.bits_per_pixel >> 3);
+  }
 }
 
 static bool set_pan(uint32_t pan_x, uint32_t pan_y) {
