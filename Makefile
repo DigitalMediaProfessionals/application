@@ -2,13 +2,13 @@ SUBDIRS = common/src \
 	CaffeGoogLeNet \
 	CaffeMobileNet \
 	CaffeSqueezeNet \
+	KerasMobileNet \
 	SegNetBasic \
 	YOLOv3 \
 	YOLOv3Camera
 
 MOREDIRS = CaffeGoogLeNetCam \
 	KerasGoogLeNet \
-	KerasMobileNet \
 	KerasSqueezeNet
 
 .PHONY: all clean

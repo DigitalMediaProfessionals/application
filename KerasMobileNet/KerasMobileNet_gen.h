@@ -15,8 +15,8 @@
 
  *  This source code was generated using DMP-DV700 tools.
  */
-
 #pragma once
+
 #include "dmp_network.h"
 
 class CKerasMobileNet : public CDMP_Network {
@@ -352,11 +352,7 @@ class CKerasMobileNet : public CDMP_Network {
   void Layer_29();
 
  public:
-  unsigned int get_total_layer_count();
-  unsigned int get_output_layer_count();
-  unsigned int get_convolution_layer_count();
-  unsigned int get_innerproduct_layer_count();
-  int initialize();
+  virtual bool Initialize();
   CKerasMobileNet();
-  ~CKerasMobileNet();
+  virtual ~CKerasMobileNet();
 };

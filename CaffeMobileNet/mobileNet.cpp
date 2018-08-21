@@ -88,7 +88,6 @@ void* hwacc_thread_func(void* targ) {
 
     ++sync_cnn_out;
   }
-
   return NULL;
 }
 
