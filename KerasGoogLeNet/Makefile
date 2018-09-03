@@ -8,7 +8,7 @@ LFLAGS = -pthread -std=c++11 $(OPT)
 
 DEPS = imagenet_1000_categories.h KerasGoogLeNet_gen.h
 OBJS = KerasGoogLeNet_gen.o googleNet.o
-TGT  = ../SDCard/KerasGoogLeNet
+TGT  = ../bin/KerasGoogLeNet
 
 %.o: %.cpp $(DEPS)
 	$(GPP) $(CFLAGS) -o $@ $<

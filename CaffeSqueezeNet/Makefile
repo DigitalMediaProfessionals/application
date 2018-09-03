@@ -8,7 +8,7 @@ LFLAGS = -pthread -std=c++11 $(OPT)
 
 DEPS = imagenet_1000_categories.h CaffeSqueezeNet_gen.h
 OBJS = CaffeSqueezeNet_gen.o squeezeNet.o
-TGT  = ../SDCard/CaffeSqueezeNet
+TGT  = ../bin/CaffeSqueezeNet
 
 %.o: %.cpp $(DEPS)
 	$(GPP) $(CFLAGS) -o $@ $<

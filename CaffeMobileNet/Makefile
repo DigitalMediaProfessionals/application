@@ -8,7 +8,7 @@ LFLAGS = -pthread -std=c++11 $(OPT)
 
 DEPS = imagenet_1000_categories.h CaffeMobileNet_gen.h
 OBJS = CaffeMobileNet_gen.o mobileNet.o
-TGT  = ../SDCard/CaffeMobileNet
+TGT  = ../bin/CaffeMobileNet
 
 %.o: %.cpp $(DEPS)
 	$(GPP) $(CFLAGS) -o $@ $<

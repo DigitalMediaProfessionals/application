@@ -8,7 +8,7 @@ LFLAGS = -pthread -std=c++11 $(OPT)
 
 DEPS = SegNetBasic_gen.h
 OBJS = SegNetBasic_gen.o segnet.o
-TGT  = ../SDCard/SegNetBasic
+TGT  = ../bin/SegNetBasic
 
 %.o: %.cpp $(DEPS)
 	$(GPP) $(CFLAGS) -o $@ $<

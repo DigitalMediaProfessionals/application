@@ -8,7 +8,7 @@ LFLAGS = -pthread -std=c++11 $(OPT)
 
 DEPS = imagenet_1000_categories.h CaffeGoogLeNet_gen.h
 OBJS = CaffeGoogLeNet_gen.o googleNetCam.o
-TGT  = ../SDCard/CaffeGoogLeNetCam
+TGT  = ../bin/CaffeGoogLeNetCam
 
 %.o: %.cpp $(DEPS)
 	$(GPP) $(CFLAGS) -o $@ $<

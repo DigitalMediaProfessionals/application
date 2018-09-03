@@ -8,7 +8,7 @@ LFLAGS = -pthread -std=c++11 $(OPT)
 
 DEPS = imagenet_1000_categories.h KerasSqueezeNet_gen.h
 OBJS = KerasSqueezeNet_gen.o squeezeNet.o
-TGT  = ../SDCard/KerasSqueezeNet
+TGT  = ../bin/KerasSqueezeNet
 
 %.o: %.cpp $(DEPS)
 	$(GPP) $(CFLAGS) -o $@ $<

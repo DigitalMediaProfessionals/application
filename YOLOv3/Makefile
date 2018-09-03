@@ -8,7 +8,7 @@ LFLAGS = -pthread -std=c++11 $(OPT)
 
 DEPS = YOLOv3_gen.h
 OBJS = YOLOv3_gen.o YOLOv3.o
-TGT  = ../SDCard/YOLOv3
+TGT  = ../bin/YOLOv3
 
 %.o: %.cpp $(DEPS)
 	$(GPP) $(CFLAGS) -o $@ $<

@@ -8,7 +8,7 @@ LFLAGS = -pthread -std=c++11 $(OPT)
 
 DEPS = imagenet_1000_categories.h KerasMobileNet_gen.h
 OBJS = KerasMobileNet_gen.o mobileNet.o
-TGT  = ../SDCard/KerasMobileNet
+TGT  = ../bin/KerasMobileNet
 
 %.o: %.cpp $(DEPS)
 	$(GPP) $(CFLAGS) -o $@ $<
