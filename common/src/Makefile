@@ -4,35 +4,35 @@ INC = -I../include
 
 # source files.
 SRC =  	dmp_network.cpp util_draw.cpp util_input.cpp nanojpeg.cpp v4l2-cam.cpp
- 
+
 OBJ = $(SRC:.cpp=.o)
-	
+
 OUT = ../lib/libdv700_util.a
- 
+
 # include directories
 INCLUDES = -I. -I../include/ -I../../../dv-user-driver/include
- 
+
 # C++ compiler flags (-g -O2 -Wall)
-CCFLAGS =  -pthread -std=c++11 -O3 -Wall -Werror
- 
+CCFLAGS =  -pthread -std=c++11 $(OPT) -Wall -Werror
+
 # compiler
 CCC = $(GPP)
- 
+
 # library paths
-LIBS = -L../ -L/usr/local/lib -lm 
- 
+LIBS = -L../ -L/usr/local/lib -lm
+
 # compile flags
-LDFLAGS = -O3
- 
+LDFLAGS = $(OPT)
+
 .SUFFIXES: .cpp
- 
+
 all: $(OUT)
- 
+
 .cpp.o:
 	$(CCC) $(INCLUDES) $(CCFLAGS) -c $< -o $@
- 
+
 $(OUT): $(OBJ)
 	ar rcs $(OUT) $(OBJ)
- 
+
 clean:
 	rm -f $(OBJ) $(OUT)

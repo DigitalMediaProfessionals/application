@@ -683,30 +683,6 @@ void draw_box_text(int x, int y, std::string s, uint32_t fcol,
   }
 }
 
-void draw_progress_bar(uint32_t addr, int x, int y, int w, int h, int fcol,
-                       int bcol, int steps, int prog) {
-  int gap = 1;
-  float x_step = (1.0 * w) / (1.0 * steps);
-  for (int i = 0; i < steps; i++) {
-    int x_0 = ceil(i * x_step);
-    int x_1 = ceil((i + 1) * x_step);
-    for (int x = x_0; x < x_1; x++) {
-      if (i < prog) {
-        if (x < x_1 - 1 - gap)
-          barbuf[x] = fcol;
-        else
-          barbuf[x] = bcol;
-      } else {
-        barbuf[x] = bcol;
-      }
-    }
-  }
-
-  for (int i = 0; i < h; i++) {
-    memcpy((void*)(addr + ((y + i) * SCREEN_W + x) * 4), (void*)(barbuf), w * 4);
-  }
-}
-
 void print_xy(int x, int y, std::string s, uint32_t fcol,
               uint32_t bcol) {
   uint32_t textbuf[SCREEN_W * 8];
