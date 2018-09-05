@@ -45,7 +45,7 @@ using namespace std;
 #define SCREEN_H (dmp::util::get_screen_height())
 
 #define IMAGE_W 512
-#define IMAGE_H 320
+#define IMAGE_H 288
 
 #define TEXT_XOFS (((SCREEN_W - IMAGE_W) / 2) / 24 + 4)  // 8x8 characters
 #define TEXT_YOFS ((512 + 48) / 8 + 2 + 3 + 2)           // 8x8 characters
@@ -73,8 +73,8 @@ const int NUM_TENSOR = NUM_CLASS + 5;
 //                         10, 13, 16, 30, 33, 23 };
 const float ANCHOR[] = {81, 82, 135, 169, 344, 319, 23, 27, 37, 58, 81, 82};
 // const float DIM[] = { 10, 10, 20, 20, 40, 40 };
-const float DIM[] = {16, 10, 32, 20};
-const float NETDIM[] = {512, 320};
+const float DIM[] = {16, 9, 32, 18};
+const float NETDIM[] = {512, 288};
 const float SIG_THRES = -1.3863f;
 // const float SIG_THRES = 0.0f;
 const float THRESHOLD = 0.2f;
@@ -369,7 +369,7 @@ int main(int argc, char **argv) {
         get_bboxes(tensor, boxes);
         draw_bboxes(boxes, imgView);
         dmp::util::print_image_toDisplay((SCREEN_W - IMAGE_W) / 2,
-                                         (293 - 128) + 20, imgView);
+                                         (293 - 128) + 36, imgView);
         dmp::util::swap_buffer();
         fc++;
 
