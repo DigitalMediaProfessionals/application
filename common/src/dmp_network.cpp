@@ -167,6 +167,11 @@ bool CDMP_Network::LoadWeights(const std::string& filename) {
 }
 
 
+bool CDMP_Network::Commit() {
+  return GenerateCommandLists();
+}
+
+
 /// @brief Reorders channels from WHC8 to HWC.
 static void remap(uint16_t* __restrict src, uint16_t* __restrict dst, int x_size, int y_size, int channel_size) {
   for (int y = 0; y < y_size; ++y) {

@@ -157,6 +157,10 @@ class CDMP_Network {
   /// @brief Loads packed weights from file.
   bool LoadWeights(const std::string& filename);
 
+  /// @brief Commits the network configuration.
+  /// @details Must be called after LoadWeights if network contains fully connected layer.
+  bool Commit();
+
   /// @brief Runs the network.
   bool RunNetwork();
 
