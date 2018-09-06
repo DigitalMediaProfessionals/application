@@ -31,6 +31,84 @@
 
 #include <linux/videodev2.h>
 
+
+#define CLIPVALUE(val) (val > 255 ? 255 : val < 0 ? 0 : val)
+
+static inline void YUV2RGB(const unsigned char y, const unsigned char u,
+                           const unsigned char v, unsigned int *rgb) {
+  const int y2 = (int)y;
+  const int u2 = (int)u - 128;
+  const int v2 = (int)v - 128;
+  int r = y2 + ((v2 * 91947) >> 16);
+  int g = y2 - (((u2 * 22544) + (v2 * 46793)) >> 16);
+  int b = y2 + ((u2 * 115999) >> 16);
+  r = CLIPVALUE(r);
+  g = CLIPVALUE(g);
+  b = CLIPVALUE(b);
+  *rgb = (r << 24) | (g << 16) | (b << 8);
+}
+
+static void yuyv2rgb_crop(unsigned char *__restrict yuyv,
+                          unsigned int *__restrict vImg, int capture_w,
+                          int capture_h, int crop_xoffs, int crop_yoffs,
+                          int crop_w, int crop_h) {
+  assert(((capture_w & 1) == 0) && ((crop_xoffs & 1) == 0) &&
+         ((crop_w & 1) == 0));
+  assert(crop_xoffs + crop_w <= capture_w);
+  assert(crop_yoffs + crop_h <= capture_h);
+
+  unsigned char y0, y1, u, v;
+  unsigned int rgb;
+
+  int i = 2 * (crop_yoffs * capture_w + crop_xoffs);
+  int j = 0;
+
+  for (int y = crop_yoffs; y < (crop_yoffs + crop_h); y++) {
+    for (int x = crop_xoffs; x < (crop_xoffs + crop_w); x += 2, i += 4, j += 2) {
+      y0 = (unsigned char)yuyv[i];
+      u = (unsigned char)yuyv[i + 1];
+      y1 = (unsigned char)yuyv[i + 2];
+      v = (unsigned char)yuyv[i + 3];
+      YUV2RGB(y0, u, v, &rgb);
+      vImg[j] = rgb;
+      YUV2RGB(y1, u, v, &rgb);
+      vImg[j + 1] = rgb;
+    }
+    i += 2 * (capture_w - crop_w);
+  }
+}
+
+static void uyvy2rgb_crop(unsigned char *__restrict uyvy,
+                          unsigned int *__restrict vImg, int capture_w,
+                          int capture_h, int crop_xoffs, int crop_yoffs,
+                          int crop_w, int crop_h) {
+  assert(((capture_w & 1) == 0) && ((crop_xoffs & 1) == 0) &&
+         ((crop_w & 1) == 0));
+  assert(crop_xoffs + crop_w <= capture_w);
+  assert(crop_yoffs + crop_h <= capture_h);
+
+  unsigned char y0, y1, u, v;
+  unsigned int rgb;
+
+  int i = 2 * (crop_yoffs * capture_w + crop_xoffs);
+  int j = 0;
+
+  for (int y = crop_yoffs; y < (crop_yoffs + crop_h); y++) {
+    for (int x = crop_xoffs; x < (crop_xoffs + crop_w); x += 2, i += 4, j += 2) {
+      u = (unsigned char)uyvy[i];
+      y0 = (unsigned char)uyvy[i + 1];
+      v = (unsigned char)uyvy[i + 2];
+      y1 = (unsigned char)uyvy[i + 3];
+      YUV2RGB(y0, u, v, &rgb);
+      vImg[j] = rgb;
+      YUV2RGB(y1, u, v, &rgb);
+      vImg[j + 1] = rgb;
+    }
+    i += 2 * (capture_w - crop_w);
+  }
+}
+
+
 static int fd = -1;
 static char dev_name[] = "/dev/video0";
 struct buffer {
@@ -40,6 +118,12 @@ struct buffer {
 };
 struct buffer *buffers;
 static unsigned int n_buffers;
+typedef void (*f_crop)(unsigned char *__restrict yuv,
+                       unsigned int *__restrict vImg, int capture_w,
+                       int capture_h, int crop_xoffs, int crop_yoffs,
+                       int crop_w, int crop_h);
+static f_crop g_crop = yuyv2rgb_crop;
+
 
 static int v4l2_cam_devinit(int width, int height, int fps) {
   struct v4l2_capability cap;
@@ -93,8 +177,25 @@ static int v4l2_cam_devinit(int width, int height, int fps) {
     fprintf(stderr, "%s does not support V4L2_PIX_FMT_UYVY format\n", dev_name);
     return -1;
   }
+
   const uint32_t opix = fmt.fmt.pix.pixelformat;
-  if ((opix != ipix) || ((int)fmt.fmt.pix.width != width) || ((int)fmt.fmt.pix.height != height)) {
+
+  bool bad_pix = false;
+  switch (opix) {
+    case V4L2_PIX_FMT_UYVY:
+      g_crop = uyvy2rgb_crop;
+      break;
+
+    case V4L2_PIX_FMT_YUYV:
+      g_crop = yuyv2rgb_crop;
+      break;
+
+    default:
+      bad_pix = true;
+      break;
+  }
+
+  if ((bad_pix) || ((int)fmt.fmt.pix.width != width) || ((int)fmt.fmt.pix.height != height)) {
     fprintf(stderr, "Requested width=%d height=%d pixelformat=%c%c%c%c but got width=%d height=%d pixelformat=%c%c%c%c\n",
             width, height,
             (char)(ipix & 0xFF), (char)(ipix >> 8), (char)((ipix >> 16) & 0xFF), (char)((ipix >> 24) & 0xFF),
@@ -195,52 +296,6 @@ int v4l2_cam_start(void) {
   return 0;
 }
 
-#define CLIPVALUE(val) (val > 255 ? 255 : val < 0 ? 0 : val)
-
-static inline void YUV2RGB(const unsigned char y, const unsigned char u,
-                           const unsigned char v, unsigned int *rgb) {
-  const int y2 = (int)y;
-  const int u2 = (int)u - 128;
-  const int v2 = (int)v - 128;
-  int r = y2 + ((v2 * 91947) >> 16);
-  int g = y2 - (((u2 * 22544) + (v2 * 46793)) >> 16);
-  int b = y2 + ((u2 * 115999) >> 16);
-  r = CLIPVALUE(r);
-  g = CLIPVALUE(g);
-  b = CLIPVALUE(b);
-  *rgb = (r << 24) | (g << 16) | (b << 8);
-}
-
-static void uyvy2rgb_crop(unsigned char *__restrict uyvy,
-                          unsigned int *__restrict vImg, int capture_w,
-                          int capture_h, int crop_xoffs, int crop_yoffs,
-                          int crop_w, int crop_h) {
-  assert(((capture_w & 1) == 0) && ((crop_xoffs & 1) == 0) &&
-         ((crop_w & 1) == 0));
-  assert(crop_xoffs + crop_w <= capture_w);
-  assert(crop_yoffs + crop_h <= capture_h);
-
-  unsigned char y0, y1, u, v;
-  unsigned int rgb;
-
-  int i = 2 * (crop_yoffs * capture_w + crop_xoffs);
-  int j = 0;
-
-  for (int y = crop_yoffs; y < (crop_yoffs + crop_h); y++) {
-    for (int x = crop_xoffs; x < (crop_xoffs + crop_w); x += 2, i += 4, j += 2) {
-      u = (unsigned char)uyvy[i];
-      y0 = (unsigned char)uyvy[i + 1];
-      v = (unsigned char)uyvy[i + 2];
-      y1 = (unsigned char)uyvy[i + 3];
-      YUV2RGB(y0, u, v, &rgb);
-      vImg[j] = rgb;
-      YUV2RGB(y1, u, v, &rgb);
-      vImg[j + 1] = rgb;
-    }
-    i += 2 * (capture_w - crop_w);
-  }
-}
-
 int v4l2_cam_get(unsigned int *__restrict vImg, int capture_w, int capture_h,
                  int crop_xoffs, int crop_yoffs, int crop_w, int crop_h) {
   fd_set fds;
@@ -276,8 +331,8 @@ int v4l2_cam_get(unsigned int *__restrict vImg, int capture_w, int capture_h,
 
   assert(buf.index < n_buffers);
 
-  uyvy2rgb_crop((unsigned char *)buffers[buf.index].start, vImg, capture_w,
-                capture_h, crop_xoffs, crop_yoffs, crop_w, crop_h);
+  (*g_crop)((unsigned char *)buffers[buf.index].start, vImg, capture_w,
+            capture_h, crop_xoffs, crop_yoffs, crop_w, crop_h);
 
   if (ioctl(fd, VIDIOC_QBUF, &buf) == -1) {
     fprintf(stderr, "VIDIOC_QBUF (cam_get)error\n");
