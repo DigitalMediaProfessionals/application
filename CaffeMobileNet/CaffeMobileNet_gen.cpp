@@ -66,10 +66,6 @@ bool CCaffeMobileNet::Initialize() {
   Layer_28();
   Layer_29();
 
-  if (!GenerateCommandLists()) {
-    return false;
-  }
-
   return true;
 }
 

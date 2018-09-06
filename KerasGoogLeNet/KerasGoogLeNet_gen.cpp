@@ -54,10 +54,6 @@ bool CKerasGoogLeNet::Initialize() {
   Layer_16();
   Layer_17();
 
-  if (!GenerateCommandLists()) {
-    return false;
-  }
-
   return true;
 }
 

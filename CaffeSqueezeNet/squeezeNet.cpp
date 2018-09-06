@@ -147,7 +147,17 @@ int main(int argc, char** argv) {
   if (!network.Initialize()) {
     return -1;
   }
+  // As input images in the example are 224x224, while trained network expects 227x227
+  // set input to 224x224 and set padding-left=3 and padding-top=3
+  network.get_layer(0).conv_conf.w = 224;
+  network.get_layer(0).conv_conf.h = 224;
+  network.get_layer(0).conv_conf.run[0].conv_pad = 0x03000300;
+  network.get_layer(0).input_dim[0] = 224;
+  network.get_layer(0).input_dim[1] = 224;
   if (!network.LoadWeights(FILENAME_WEIGHTS)) {
+    return -1;
+  }
+  if (!network.Commit()) {
     return -1;
   }
 
