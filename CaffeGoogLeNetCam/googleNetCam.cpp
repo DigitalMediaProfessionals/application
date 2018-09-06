@@ -139,9 +139,9 @@ int main(int argc, char** argv) {
     democonf_num = count;
   }
 
-  dmp::util::open_cam(CAM_CAPTURE_W, CAM_CAPTURE_H,
-                      20);  // fps = 0 means as fast as possible
-
+  if (dmp::util::open_cam(CAM_CAPTURE_W, CAM_CAPTURE_H, 20)) {  // fps = 0 means as fast as possible
+    return -1;
+  }
   dmp::util::set_inputImageSize(IMAGE_W, IMAGE_H);
   dmp::util::createBackgroundImage();
 
@@ -194,9 +194,11 @@ int main(int argc, char** argv) {
     }
 
     if (!pause) {
-      dmp::util::capture_cam(imgView, CAM_CAPTURE_W, CAM_CAPTURE_H,
-                             (CAM_CAPTURE_W - IMAGE_W) / 2,
-                             (CAM_CAPTURE_H - IMAGE_H) / 2, IMAGE_W, IMAGE_H);
+      if (dmp::util::capture_cam(imgView, CAM_CAPTURE_W, CAM_CAPTURE_H,
+                                 (CAM_CAPTURE_W - IMAGE_W) / 2,
+                                 (CAM_CAPTURE_H - IMAGE_H) / 2, IMAGE_W, IMAGE_H)) {
+        break;
+      }
     }
     dmp::util::print_image_toDisplay((SCREEN_W - IMAGE_W) / 2, 185, imgView);
 

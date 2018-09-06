@@ -26,10 +26,10 @@
 namespace dmp {
 namespace util {
 
-void open_cam(int capture_w, int capture_h, int fps);
+int open_cam(int capture_w, int capture_h, int fps);
 void close_cam();
-void capture_cam(uint32_t* vImg, int capture_w, int capture_h,
-                 int crop_xoffs, int crop_yoffs, int crop_w, int crop_h);
+int capture_cam(uint32_t* vImg, int capture_w, int capture_h,
+                int crop_xoffs, int crop_yoffs, int crop_w, int crop_h);
 
 /*! Utility function for returning all the filenames in a folder with specific
 * extension

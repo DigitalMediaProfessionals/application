@@ -310,7 +310,9 @@ int main(int argc, char **argv) {
     democonf_num = count;
   }
 
-  dmp::util::open_cam(CIMAGE_W, CIMAGE_H, 20);
+  if (dmp::util::open_cam(CIMAGE_W, CIMAGE_H, 20)) {
+    return -1;
+  }
   dmp::util::set_inputImageSize(CIMAGE_W, CIMAGE_H);
   dmp::util::createBackgroundImage();
 
@@ -414,8 +416,9 @@ int main(int argc, char **argv) {
       }
 
       if (!pause) {
-        dmp::util::capture_cam(imgView, CIMAGE_W, CIMAGE_H, 0, 0, CIMAGE_W,
-                               CIMAGE_H);
+        if (dmp::util::capture_cam(imgView, CIMAGE_W, CIMAGE_H, 0, 0, CIMAGE_W, CIMAGE_H)) {
+          break;
+        }
         dmp::util::preproc_image(imgView, imgProc, IMAGE_W, IMAGE_H, PIMAGE_W,
                                  PIMAGE_H, 0.0, 0.0, 0.0, 1.0 / 255.0, true,
                                  false);
@@ -442,6 +445,7 @@ int main(int argc, char **argv) {
   pthread_join(hwacc_thread, NULL);
 
   dmp::util::shutdown();
+  dmp::util::close_cam();
 
   return exit_code;
 }

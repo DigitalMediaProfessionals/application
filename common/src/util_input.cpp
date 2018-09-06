@@ -14,6 +14,8 @@
  *  limitations under the License.
  */
 
+#include <stdint.h>
+
 #include "util_input.h"
 #include "nanojpeg.h"
 #include "v4l2-cam.h"
@@ -21,9 +23,16 @@
 namespace dmp {
 namespace util {
 
-void open_cam(int capture_w, int capture_h, int fps) {
-  v4l2_cam_init(capture_w, capture_h, fps);
-  v4l2_cam_start();
+int open_cam(int capture_w, int capture_h, int fps) {
+  int res = v4l2_cam_init(capture_w, capture_h, fps);
+  if (res) {
+    return res;
+  }
+  res = v4l2_cam_start();
+  if (res) {
+    return res;
+  }
+  return 0;
 }
 
 void close_cam() {
@@ -31,10 +40,9 @@ void close_cam() {
   v4l2_cam_deinit();
 }
 
-void capture_cam(uint32_t *vImg, int capture_w, int capture_h,
+int capture_cam(uint32_t *vImg, int capture_w, int capture_h,
                  int crop_xoffs, int crop_yoffs, int crop_w, int crop_h) {
-  v4l2_cam_get(vImg, capture_w, capture_h, crop_xoffs, crop_yoffs, crop_w,
-               crop_h);
+  return v4l2_cam_get(vImg, capture_w, capture_h, crop_xoffs, crop_yoffs, crop_w, crop_h);
 }
 
 bool has_suffix(const std::string &str, const std::string &suffix) {
