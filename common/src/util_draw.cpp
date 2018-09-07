@@ -33,14 +33,6 @@
 namespace dmp {
 namespace util {
 
-static uint32_t* background_image = NULL;
-static uint32_t* barbuf = NULL;
-
-static uint32_t* imgTmp;
-
-static uint32_t IMAGE_W = 0;
-static uint32_t IMAGE_H = 0;
-
 static int g_fb_file = -1;
 static struct fb_fix_screeninfo g_fb_fix_info;
 static struct fb_var_screeninfo g_fb_var_info;
@@ -285,7 +277,6 @@ bool init_fb() {
 }
 
 void shutdown() {
-  deleteBackgroundImage();
   release_fb();
 }
 
@@ -304,28 +295,6 @@ bool swap_buffer() {
   }
 
   return set_pan(g_fb_var_info.xoffset, g_fb_var_info.yoffset ? 0 : g_fb_var_info.yres);
-}
-
-std::string centered(const std::string& original, int targetSize) {
-  std::string res;
-  int padding = targetSize - original.size();
-  if ((padding >> 1) <= 0) {
-    res = original;
-  }
-  else {
-    res = std::string(padding >> 1, ' ') + original + std::string(padding >> 1, ' ');
-  }
-  for (; (int)res.size() < targetSize; res += ' ') {
-    // Empty by design
-  }
-  if ((int)res.size() != targetSize) {
-    fflush(stdout);
-    fprintf(stderr, "Detected broken implementation of centered(): res.size=%d while targetSize=%d\n",
-            (int)res.size(), targetSize);
-    fflush(stderr);
-    _exit(-1);
-  }
-  return res;
 }
 
 void print_result(const std::vector<std::string>& catstr_vec,
@@ -434,392 +403,6 @@ std::vector<std::pair<float, int> > catrank(float* softmax, int count) {
   return r;
 }
 
-void set_inputImageSize(unsigned w, uint32_t h) {
-  IMAGE_W = w;
-  IMAGE_H = h;
-}
-
-bool createBackgroundImage() {
-  background_image = new uint32_t[SCREEN_W * SCREEN_H];
-  barbuf = new uint32_t[SCREEN_W];
-  imgTmp = new uint32_t[IMAGE_W * IMAGE_H];
-  if ((!background_image) || (!barbuf) || (!imgTmp)) {
-    ERR("Could not allocate memory for background of size %dx%d\n", SCREEN_W, SCREEN_H);
-    return false;
-  }
-  memset(background_image, 0, SCREEN_W * SCREEN_H * 4);
-  memset(barbuf, 0, SCREEN_W * 4);
-  memset(imgTmp, 0, IMAGE_W * IMAGE_H * 4);
-  return true;
-}
-
-bool load_background_image(std::string filename) {
-  char px[3];
-
-  std::ifstream dfs(filename.c_str());  //"fpgatitle_yolo.ppm");
-  if (!dfs.is_open()) {
-    std::cout << "Failed to open backgound image file." << std::endl;
-    return false;
-  } else {
-    for (uint32_t i = 0; i < 54 - 15; i++) dfs.read((char*)px, 1);
-    for (uint32_t j = 0; j < SCREEN_H; j++) {
-      for (uint32_t i = 0; i < SCREEN_W; i++) {
-        dfs.read((char*)px, 3);
-        background_image[j * SCREEN_W + i] =
-            (px[0] << 24) | (px[1] << 16) | (px[2] << 8);
-      }
-    }
-    dfs.close();
-    return true;
-  }
-}
-
-void deleteBackgroundImage() {
-  if (background_image) {
-    delete background_image;
-    background_image = NULL;
-  }
-  if (barbuf) {
-    delete barbuf;
-    barbuf = NULL;
-  }
-  if (imgTmp) {
-    delete imgTmp;
-    imgTmp = NULL;
-  }
-}
-
-int string2bitmap(std::string s, uint32_t* b, uint32_t fcol,
-                  uint32_t bcol, int x, int y) {
-  int n = 0;
-  while (s[n]) {
-    char c = s[n];
-    uint32_t* a = b;
-    for (int i = 0; i < 8; i++) {
-      char bits = c < 0xA0 ? font8x8_basic[short(c)][i]
-                           : font8x8_ext_latin[short(c - 0xA0)][i];
-      for (int j = 0; j < 8; j++) {
-        *a = (bits & 0x1)
-                 ? fcol
-                 : ((bcol & 0x1) ? (background_image[SCREEN_W * (8 * y + i) +
-                                                     (8 * (x + n) + j)])
-                                 : bcol);
-        a++;
-        bits = bits >> 1;
-      }
-      a += SCREEN_W - 8;
-    }
-    b += 8;
-    n++;
-  }
-  return n;
-}
-
-int string2bitmap_xy(std::string s, uint32_t* b, uint32_t fcol,
-                     uint32_t bcol, int x, int y) {
-  int n = 0;
-  while (s[n]) {
-    char c = s[n];
-    uint32_t* a = b;
-    for (int i = 0; i < 8; i++) {
-      char bits = c < 0xA0 ? font8x8_basic[short(c)][i]
-                           : font8x8_ext_latin[short(c - 0xA0)][i];
-      for (int j = 0; j < 8; j++) {
-        *a = (bits & 0x1) ? fcol : ((bcol & 0x1)
-                                        ? (background_image[SCREEN_W * (y + i) +
-                                                            ((x + 8 * n) + j)])
-                                        : bcol);
-        a++;
-        bits = bits >> 1;
-      }
-      a += SCREEN_W - 8;
-    }
-    b += 8;
-    n++;
-  }
-  return n;
-}
-
-int string2bitmap16x16(std::string s, uint32_t* b, uint32_t fcol,
-                       uint32_t bcol, int x, int y) {
-  int n = 0;
-  while (s[n]) {
-    uint16_t c = (uint16_t)(s[n]) - 0x20;
-    uint32_t* a = b;
-    for (int i = 0; i < 16; i++) {
-      uint16_t bits = font16x16[16 * 2 * c + 2 * i] << 8;
-      bits = bits | font16x16[16 * 2 * c + 2 * i + 1];
-      for (int j = 0; j < 16; j++) {
-        *a = (bits & 0x8000)
-                 ? fcol
-                 : ((bcol & 0x1) ? (background_image[SCREEN_W * (8 * y + i) +
-                                                     (8 * (x + 2 * n) + j)])
-                                 : bcol);
-        a++;
-        bits = bits << 1;
-      }
-      a += SCREEN_W - 16;
-    }
-    b += 16;
-    n++;
-  }
-  return n;
-}
-
-void print16x16_toDisplay(int x, int y, std::string s, uint32_t fcol,
-                          uint32_t bcol) {
-  uint8_t *frame = get_frame_ptr();
-  uint32_t textbuf[SCREEN_W * 16];
-
-  int n = string2bitmap16x16(s, textbuf, fcol, bcol, x, y);
-
-  for (int i = 0; i < 16; ++i) {
-    const int i_offs = i * SCREEN_W;
-    int o_offs = (x * 8 + (y * 8 + i) * SCREEN_W) * 3;
-    for (int j = 0; j < 2 * n * 8; ++j, o_offs += 3) {
-      uint32_t rgba = textbuf[i_offs + j];
-      frame[o_offs] = (rgba >> 8) & 0xFF;
-      frame[o_offs + 1] = (rgba >> 16) & 0xFF;
-      frame[o_offs + 2] = (rgba >> 24) & 0xFF;
-    }
-  }
-}
-
-void print16x24_toDisplay(int x, int y, std::string s, uint32_t fcol,
-                          uint32_t bcol) {
-  uint8_t *frame = get_frame_ptr();
-  uint32_t textbuf[SCREEN_W * 24];
-
-  int n = string2bitmap16x24(s, textbuf, fcol, bcol, x, y);
-
-  for (int i = 0; i < 24; ++i) {
-    const int i_offs = i * SCREEN_W;
-    int o_offs = (2 * x * 8 + (3 * y * 8 + i) * SCREEN_W) * 3;
-    for (int j = 0; j < 2 * n * 8; ++j, o_offs += 3) {
-      uint32_t rgba = textbuf[i_offs + j];
-      frame[o_offs] = (rgba >> 8) & 0xFF;
-      frame[o_offs + 1] = (rgba >> 16) & 0xFF;
-      frame[o_offs + 2] = (rgba >> 24) & 0xFF;
-    }
-  }
-}
-
-void print8x8_toDisplay(int x, int y, std::string s, uint32_t fcol,
-                        uint32_t bcol) {
-  uint8_t *frame = get_frame_ptr();
-  uint32_t textbuf[SCREEN_W * 8];
-
-  int n = string2bitmap(s, textbuf, fcol, bcol, x, y);
-
-  for (int i = 0; i < 8; ++i) {
-    const int i_offs = i * 8 * (SCREEN_W / 8);
-    int o_offs = (x * 8 + (y * 8 + i) * SCREEN_W) * 3;
-    for (int j = 0; j < n * 8; ++j, o_offs += 3) {
-      uint32_t rgba = textbuf[i_offs + j];
-      frame[o_offs] = (rgba >> 8) & 0xFF;
-      frame[o_offs + 1] = (rgba >> 16) & 0xFF;
-      frame[o_offs + 2] = (rgba >> 24) & 0xFF;
-    }
-  }
-}
-
-void print24x48_toDisplay(int x, int y, std::string s, uint32_t fcol,
-                          uint32_t bcol) {
-  uint8_t *frame = get_frame_ptr();
-  uint32_t textbuf[SCREEN_W * 48];
-
-  int n = string2bitmap24x48(s, textbuf, fcol, bcol, x, y);
-
-  for (int i = 0; i < 48; ++i) {
-    const int i_offs = i * SCREEN_W;
-    int o_offs = (x * 8 + (y * 8 + i) * SCREEN_W) * 3;
-    for (int j = 0; j < 3 * n * 8; ++j, o_offs += 3) {
-      uint32_t rgba = textbuf[i_offs + j];
-      frame[o_offs] = (rgba >> 8) & 0xFF;
-      frame[o_offs + 1] = (rgba >> 16) & 0xFF;
-      frame[o_offs + 2] = (rgba >> 24) & 0xFF;
-    }
-  }
-}
-
-void print_time_toDisplay(int x, int y, std::string label, long int t,
-                          long int t_max, uint32_t fcol,
-                          uint32_t bcol) {
-  std::stringstream ss;
-  std::string s;
-  //  if ((t <= t_max) && (t >= 0)) {
-  if (t >= 0) {
-    ss.str("");
-    ss << std::fixed << std::setprecision(3) << (t / 1000.0) << " ms";
-    s = label + ss.str();
-    print16x16_toDisplay(x, y, s, fcol, bcol);
-  }
-}
-
-void print_background_image_toDisplay() {
-  uint8_t *frame = get_frame_ptr();
-  const uint32_t n = SCREEN_H * SCREEN_W;
-  for (uint32_t i = 0, j = 0; i < n; ++i, j += 3) {
-    const uint32_t rgba = background_image[i];
-    frame[j] = (rgba >> 8) & 0xFF;
-    frame[j + 1] = (rgba >> 16) & 0xFF;
-    frame[j + 2] = (rgba >> 24) & 0xFF;
-  }
-}
-
-void print_image_toDisplay(int x, int y, uint32_t* img, int crop_left) {
-  uint8_t *frame = get_frame_ptr();
-
-  for (uint32_t i = 0; i < IMAGE_H; i++) {
-    const int i_offs = i * IMAGE_W + crop_left;
-    int o_offs = (x + (y + i) * SCREEN_W) * 3;
-    const int n = IMAGE_W - crop_left;
-    for (int j = 0; j < n; ++j, o_offs += 3) {
-      uint32_t rgba = img[i_offs + j];
-      frame[o_offs] = (rgba >> 8) & 0xFF;
-      frame[o_offs + 1] = (rgba >> 16) & 0xFF;
-      frame[o_offs + 2] = (rgba >> 24) & 0xFF;
-    }
-  }
-}
-
-void draw_box(int x, int y, int w, int h, uint32_t fcol,
-              uint32_t* img) {
-  // Top
-  for (int xx = x; xx < x + w; xx++) {
-    img[IMAGE_W * y + xx] = fcol;
-  }
-  // Bottom
-  for (int xx = x; xx < x + w; xx++) {
-    img[IMAGE_W * (y + h - 1) + xx] = fcol;
-  }
-  // Left
-  for (int yy = y; yy < y + h; yy++) {
-    img[IMAGE_W * yy + x] = fcol;
-  }
-  // Right
-  for (int yy = y; yy < y + h; yy++) {
-    img[IMAGE_W * yy + (x + w - 1)] = fcol;
-  }
-}
-
-int string2bitmap_bbox(std::string s, uint32_t* b, uint32_t fcol,
-                       uint32_t bcol, int x, int y, uint32_t* img) {
-  int n = 0;
-  while (s[n]) {
-    char c = s[n];
-    uint32_t* a = b;
-    for (int i = 0; i < 8; i++) {
-      char bits = c < 0xA0 ? font8x8_basic[short(c)][i]
-                           : font8x8_ext_latin[short(c - 0xA0)][i];
-      for (int j = 0; j < 8; j++) {
-        //*a = (bits & 0x1) ? fcol : ((bcol & 0x1) ? (img[IMAGE_W * (y + i) +
-        //((x + 8 * n) + j)]) : bcol);
-        *a = (bits & 0x1) ? bcol : fcol;
-        a++;
-        bits = bits >> 1;
-      }
-      a += IMAGE_W - 8;
-    }
-    b += 8;
-    n++;
-  }
-  return n;
-}
-
-void draw_box_text(int x, int y, std::string s, uint32_t fcol,
-                   uint32_t* img) {
-  uint32_t textbuf[SCREEN_W * 8];
-
-  int n = string2bitmap_bbox(s, textbuf, fcol, 0, x, y, img);
-
-  for (int i = 0; i < 8; i++) {
-    for (int j = 0; j < 8 * n; j++) {
-      img[IMAGE_W * (y + i) + (x + j)] = textbuf[i * IMAGE_W + j];
-    }
-  }
-}
-
-void print_xy(int x, int y, std::string s, uint32_t fcol,
-              uint32_t bcol) {
-  uint32_t textbuf[SCREEN_W * 8];
-
-  int n = string2bitmap_xy(s, textbuf, 0x00ff0000, 0x1, x, y);
-
-  for (int i = 0; i < 8; i++) {
-    for (int j = 0; j < 8 * n; j++) {
-      background_image[SCREEN_W * (y + i) + (x + j)] =
-          textbuf[i * SCREEN_W + j];
-    }
-  }
-}
-
-int string2bitmap16x24(std::string s, uint32_t* b, uint32_t fcol,
-                       uint32_t bcol, int x, int y) {
-  int n = 0;
-  while (s[n]) {
-    uint16_t c = (uint16_t)(s[n]) - 0x20;
-    uint32_t* a = b;
-    for (int i = 0; i < 24; i++) {
-      uint16_t bits = Arial_round_16x24[24 * 2 * c + 2 * i] << 8;
-      bits = bits | Arial_round_16x24[24 * 2 * c + 2 * i + 1];
-      for (int j = 0; j < 16; j++) {
-        *a =
-            (bits & 0x8000)
-                ? fcol
-                : ((bcol & 0x1) ? (background_image[SCREEN_W * (3 * 8 * y + i) +
-                                                    (2 * 8 * (x + n) + j)])
-                                : bcol);
-        a++;
-        bits = bits << 1;
-      }
-      a += SCREEN_W - 16;
-    }
-    b += 16;
-    n++;
-  }
-  return n;
-}
-
-int string2bitmap24x48(std::string s, uint32_t* b, uint32_t fcol,
-                       uint32_t bcol, int x, int y) {
-  int n = 0;
-  while (s[n]) {
-    uint16_t c = (uint16_t)(s[n]) - 0x20;
-    uint32_t* a = b;
-    for (int i = 0; i < 48; i++) {
-      unsigned long bits = GroteskBold24x48[48 * 3 * c + 3 * i] << 16;
-      bits = bits | (GroteskBold24x48[48 * 3 * c + 3 * i + 1] << 8);
-      bits = bits | GroteskBold24x48[48 * 3 * c + 3 * i + 2];
-      for (int j = 0; j < 24; j++) {
-        *a = (bits & 0x800000)
-                 ? fcol
-                 : ((bcol & 0x1) ? (background_image[SCREEN_W * (8 * y + i) +
-                                                     (8 * (x + 3 * n) + j)])
-                                 : bcol);
-        a++;
-        bits = bits << 1;
-      }
-      a += SCREEN_W - 24;
-    }
-    b += 24;
-    n++;
-  }
-  return n;
-}
-
-void capture_screen(std::string filename) {
-  FILE *fout = fopen(filename.c_str(), "wb");
-  if (!fout) {
-    ERR("Could not open %s for writing\n", filename.c_str());
-    return;
-  }
-  if (fwrite(get_frame_ptr(), 3, SCREEN_W * SCREEN_H, fout) != SCREEN_W * SCREEN_H) {
-    ERR("Incomplete write to %s\n", filename.c_str());
-  }
-  fclose(fout);
-}
-
 COverlayRGB::COverlayRGB(uint32_t screen_width, uint32_t screen_height)
 {
 	if((screen_width > 0) && (screen_height > 0) )
@@ -851,7 +434,7 @@ void COverlayRGB::alloc_mem_overlay(uint32_t overlay_width,
 	}
 	else
 	{
-    fprintf(stderr, "failed to allocate memory for overlay\n" );
+    ERR("failed to allocate memory for overlay\n" );
 	}
 }
 
@@ -876,7 +459,7 @@ bool COverlayRGB::convert_to_overlay_pixel_format(uint32_t *imgview, uint32_t si
 	}
 	else
 	{
-    fprintf(stderr, "convert_to_overlay_pixel_format() failed\n" );
+    ERR("convert_to_overlay_pixel_format() failed\n" );
 	}
 	return false;
 }
@@ -906,7 +489,7 @@ bool COverlayRGB::set_pixel(uint32_t xpos, uint32_t ypos, uint8_t red, uint8_t g
 	}
 	else
 	{
-    fprintf(stderr, "set_pixel() failed\n" );
+    ERR("set_pixel() failed\n" );
 	}
 	return false;
 }
@@ -930,7 +513,7 @@ bool COverlayRGB::copy_overlay(COverlayRGB &src_overlay, uint32_t xpos, uint32_t
 	}
 	else
 	{
-    fprintf(stderr, "copy_overlay() failed\n" );
+    ERR("copy_overlay() failed\n" );
 	}
 	return false;
 }
@@ -986,7 +569,7 @@ void COverlayRGB::set_box_with_text(uint32_t x0pos, uint32_t y0pos, uint32_t x1p
 	}
 	else
 	{
-    fprintf(stderr, "set_box_with_text() failed\n" );
+    ERR("set_box_with_text() failed\n" );
 	}
 }
 
@@ -1019,7 +602,7 @@ void COverlayRGB::set_text(uint32_t xpos, uint32_t ypos, string text, uint32_t t
 	}
 	else
 	{
-    fprintf(stderr, "set_text() failed\n" );
+    ERR("set_text() failed\n" );
 	}
 }
 
@@ -1035,6 +618,7 @@ void COverlayRGB::calculate_boundary_text(string text, uint32_t text_size,
 		agg::conv_stroke<agg::gsv_text> stroke_text(text_style);
 		stroke_text.width(1.5);
 		width = text_style.text_width();
+    //height is double size due to some chareacters: g,q,y ...
 		height = 2*text_size;
 	}
 	else
@@ -1072,7 +656,7 @@ void COverlayRGB::set_box(uint32_t x0pos, uint32_t y0pos,
 	}
 	else
 	{
-    fprintf(stderr, "set_box() failed\n" );
+    ERR("set_box() failed\n" );
 	}
 }
 
@@ -1098,7 +682,7 @@ void COverlayRGB::blend_from(COverlayRGB &overlay, double alpha)
 	}
 	else
 	{
-    fprintf(stderr, "blend_from() failed\n" );
+    ERR("blend_from() failed\n" );
 	}
 }
 
@@ -1240,7 +824,7 @@ void COverlayRGB::print_to_display(uint32_t xpos, uint32_t ypos)
 	}
 	else
 	{
-    fprintf(stderr, "print_to_display() failed\n" );
+    ERR("print_to_display() failed\n" );
 	}
 }
 
@@ -1310,12 +894,12 @@ void COverlayRGB::draw_progress_bar(uint32_t x, uint32_t y, uint32_t w, uint32_t
 		}
 		else
 		{
-      fprintf(stderr, "draw_progress_bar() failed\n" );
+      ERR("draw_progress_bar() failed\n" );
 		}
 	}
 	else
 	{
-		fprintf(stderr, "draw_progress_bar() failed\n" );
+		ERR("draw_progress_bar() failed\n" );
 	}
 }
 

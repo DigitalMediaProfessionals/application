@@ -1,24 +1,18 @@
 SUBDIRS = common/src \
+	CaffeGoogLeNet \
+	CaffeGoogLeNetCam \
+	CaffeMobileNet \
+	CaffeSqueezeNet \
 	KerasGoogLeNet \
-	# CaffeGoogLeNetCam \
-	# CaffeGoogLeNet \
-	# CaffeMobileNet \
-	# CaffeSqueezeNet
-	# KerasMobileNet \
-	# KerasSqueezeNet \
-	# YOLOv3Camera \
-	# YOLOv3 \
-	# SegNetBasic \	
-	# CaffeSqueezeNet \
-	
-	
-	
-	
-	
+	KerasMobileNet \
+	KerasSqueezeNet \
+	SegNetBasic \
+	YOLOv3 \
+	YOLOv3Camera
 
 .PHONY: all clean
 
 all clean:
 	for dir in $(SUBDIRS); do \
 		$(MAKE) -C $$dir -f Makefile $@; \
-	done
+done
