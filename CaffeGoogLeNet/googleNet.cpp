@@ -225,7 +225,7 @@ int main(int argc, char** argv) {
             fflush(stdout);
           }
           fflush(stderr);
-          _exit(0);
+          break;
         }
 
         dmp::util::swap_buffer();
