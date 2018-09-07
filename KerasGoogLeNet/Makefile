@@ -1,7 +1,7 @@
 include ../../env.mk
 
-INC = -I../../dv-user-driver/include -I../common/include
-LIB = -L../../dv-user-driver -ldmpdv -L../common/lib -ldv700_util
+INC = -I../../dv-user-driver/include -I../common/include -I/usr/include/agg2
+LIB = -L../../dv-user-driver -ldmpdv -L../common/lib -ldv700_util -lagg
 
 CFLAGS = -pthread -std=c++11 $(OPT) -Wall -Werror -c  $(INC)
 LFLAGS = -pthread -std=c++11 $(OPT)

@@ -329,8 +329,7 @@ std::string centered(const std::string& original, int targetSize) {
 }
 
 void print_result(const std::vector<std::string>& catstr_vec,
-                  int x, int y, const std::vector<std::pair<float, int> >& f, uint32_t wcol,
-                  uint32_t fcol, uint32_t bcol) {
+                  int xpos, int ypos, const std::vector<std::pair<float, int> >& f, COverlayRGB &bg_overlay) {
   std::vector<std::pair<std::string, float> > result;
   result.push_back(std::make_pair(catstr_vec[f[0].second], f[0].first));
   result.push_back(std::make_pair(catstr_vec[f[1].second], f[1].first));
@@ -348,16 +347,74 @@ void print_result(const std::vector<std::string>& catstr_vec,
     if (s.size() > 45) s = s.substr(0, 45 - 3) + "...";
     s.resize(45, ' ');
     if (i == 0)
-      dmp::util::print16x16_toDisplay(x, y + i, s, wcol, bcol);
+    {
+      unsigned text_size = 12;
+      unsigned w = 0;
+      unsigned h = 0;
+      COverlayRGB::calculate_boundary_text(s, text_size, w, h);
+      COverlayRGB predict_text(SCREEN_W, SCREEN_H);
+      predict_text.alloc_mem_overlay(w, h);
+
+      int x = xpos;
+      int y = ypos;
+
+      //clear previous text
+      COverlayRGB clear_bg(SCREEN_W, SCREEN_H);
+      clear_bg.alloc_mem_overlay(SCREEN_W, h);
+      clear_bg.copy_overlay(bg_overlay, 0, y);
+      clear_bg.print_to_display(0, y);
+
+      predict_text.copy_overlay(bg_overlay,x, y);
+      predict_text.set_text(0, 0, s, text_size, 0x0042f4eb);
+      predict_text.print_to_display(x, y);
+    }
     else
-      dmp::util::print16x16_toDisplay(x, y + 2 * i + 1, s, fcol, bcol);
-    if (i == 0) {
+    {
+      unsigned text_size = 12;
+      unsigned w = 0;
+      unsigned h = 0;
+      COverlayRGB::calculate_boundary_text(s, text_size, w, h);
+      COverlayRGB predict_text(SCREEN_W, SCREEN_H);
+      predict_text.alloc_mem_overlay(w, h);
+
+      int x = xpos;
+      int y = ypos + 30*i;
+
+      //clear previous text
+      COverlayRGB clear_bg(SCREEN_W, SCREEN_H);
+      clear_bg.alloc_mem_overlay(SCREEN_W, h);
+      clear_bg.copy_overlay(bg_overlay, 0, y);
+      clear_bg.print_to_display(0, y);
+
+      predict_text.copy_overlay(bg_overlay,x, y);
+      predict_text.set_text(0, 0, s, text_size, 0x00c8f442);
+      predict_text.print_to_display(x, y);
+    }
+    if (i == 0) 
+    {
       std::string all_words = p.first;
       std::string word = all_words.substr(0, all_words.find(","));
       if (word.size() > 32) word = word.substr(0, 32 - 3) + "...";
-      word = centered(word, 32);
-      dmp::util::print24x48_toDisplay(((SCREEN_W / 2) / 8 - 3 * 16), 54, word,
-                                      0xf17f1f00, 0x00000001);
+
+      unsigned text_size = 20;
+      unsigned w = 0;
+      unsigned h = 0;
+      COverlayRGB::calculate_boundary_text(word, text_size, w, h);
+      COverlayRGB predict_text(SCREEN_W, SCREEN_H);
+      predict_text.alloc_mem_overlay(w, h);
+
+      int x = ((SCREEN_W - w) / 2);
+      int y = ypos-40;
+
+      //clear previous text
+      COverlayRGB clear_bg(SCREEN_W, SCREEN_H);
+      clear_bg.alloc_mem_overlay(SCREEN_W, h);
+      clear_bg.copy_overlay(bg_overlay, 0, y);
+      clear_bg.print_to_display(0, y);
+
+      predict_text.copy_overlay(bg_overlay,x, y);
+      predict_text.set_text(0, 0, word, text_size, 0x00f9c252);
+      predict_text.print_to_display(x, y);
     }
   }
 }
@@ -758,6 +815,519 @@ void capture_screen(std::string filename) {
     return;
   }
   if (fwrite(get_frame_ptr(), 3, SCREEN_W * SCREEN_H, fout) != SCREEN_W * SCREEN_H) {
+    ERR("Incomplete write to %s\n", filename.c_str());
+  }
+  fclose(fout);
+}
+
+COverlayRGB::COverlayRGB(uint32_t screen_width, uint32_t screen_height)
+{
+	if((screen_width > 0) && (screen_height > 0) )
+	{
+		screen_width_ = screen_width;
+		screen_height_ = screen_height;
+		pixel_size_ = 3;//rgb24
+	}
+}
+
+void COverlayRGB::alloc_mem_overlay(uint32_t overlay_width,
+                                    uint32_t overlay_height)
+{
+  overlay_rgb_width_ = overlay_width;
+  overlay_rgb_height_ = overlay_height;
+	if(buff_rgb_ != NULL)
+	{
+		delete [] buff_rgb_;
+		buff_rgb_ = NULL;
+	}   
+   buff_rgb_ = new unsigned char[overlay_rgb_width_*overlay_rgb_height_*pixel_size_];
+	if(buff_rgb_ != NULL)
+	{
+		memset(buff_rgb_, 0, overlay_rgb_width_*overlay_rgb_height_*pixel_size_);
+		render_buf_overlay_rgb_.attach(buff_rgb_,
+                                    overlay_rgb_width_,
+                                    overlay_rgb_height_,
+                                    overlay_rgb_width_ * pixel_size_);
+	}
+	else
+	{
+    fprintf(stderr, "failed to allocate memory for overlay\n" );
+	}
+}
+
+uint8_t* COverlayRGB::get_overlay_buf_ref(void)
+{
+    return buff_rgb_;
+}
+
+bool COverlayRGB::convert_to_overlay_pixel_format(uint32_t *imgview, uint32_t size_of_imgview)
+{
+	if((imgview != NULL) && (size_of_imgview == overlay_rgb_width_*overlay_rgb_height_)
+						&& (buff_rgb_ != NULL))
+	{
+		unsigned char *p = this->get_overlay_buf_ref();
+		for(unsigned int i = 0; i < size_of_imgview; i++)
+		{
+			p[pixel_size_*i] = (imgview[i]&0xff000000)>>24;
+			p[pixel_size_*i+1] = (imgview[i]&0x00ff0000)>>16;
+			p[pixel_size_*i+2] = (imgview[i]&0x0000ff00)>>8;
+		}
+		return true;
+	}
+	else
+	{
+    fprintf(stderr, "convert_to_overlay_pixel_format() failed\n" );
+	}
+	return false;
+}
+
+rbuf_type& COverlayRGB::get_ren_buf_ref(void)
+{
+    return render_buf_overlay_rgb_;
+}
+
+uint8_t* COverlayRGB::get_overlay_row_ptr_ref(uint32_t row)
+{
+    return render_buf_overlay_rgb_.row_ptr(row);
+}
+
+bool COverlayRGB::set_pixel(uint32_t xpos, uint32_t ypos, uint8_t red, uint8_t green, uint8_t blue)
+{
+	if((xpos <= overlay_rgb_width_) && (ypos <= overlay_rgb_height_) && (buff_rgb_ != NULL))
+	{
+		unsigned char *p = render_buf_overlay_rgb_.row_ptr(ypos);
+		unsigned int j = xpos * pixel_size_;
+		p[j] = red;
+    j++;
+		p[j] = green;
+    j++;
+		p[j] = blue;
+		return true;
+	}
+	else
+	{
+    fprintf(stderr, "set_pixel() failed\n" );
+	}
+	return false;
+}
+
+bool COverlayRGB::copy_overlay(COverlayRGB &src_overlay, uint32_t xpos, uint32_t ypos)
+{
+ 	uint32_t dst_row = 0;
+	uint32_t w = xpos + overlay_rgb_width_;
+	uint32_t h = ypos + overlay_rgb_height_;
+	if((w <= src_overlay.get_overlay_width()) && (h <= src_overlay.get_overlay_height()) && (buff_rgb_ != NULL))
+	{
+		for(uint32_t row = ypos; row < (h); row++)
+		{
+			uint8_t *p = render_buf_overlay_rgb_.row_ptr(dst_row);
+			uint8_t *psrc = src_overlay.get_overlay_row_ptr_ref(row);
+			psrc = psrc + xpos * pixel_size_;
+      memcpy(p, psrc, pixel_size_*(w-xpos));
+			dst_row++;
+		}
+		return true;
+	}
+	else
+	{
+    fprintf(stderr, "copy_overlay() failed\n" );
+	}
+	return false;
+}
+void COverlayRGB::set_box_with_text(uint32_t x0pos, uint32_t y0pos, uint32_t x1pos, 
+                                        uint32_t y1pos, uint32_t color, string text)
+{
+	typedef agg::pixfmt_rgb24 pixfmt;
+	typedef agg::renderer_base<pixfmt> renderer_base;
+	typedef agg::renderer_scanline_aa_solid<renderer_base> renderer_solid;
+	uint32_t text_size = 8;
+
+	if((x0pos < overlay_rgb_width_) && (y0pos < overlay_rgb_height_)  &&
+				(x1pos <= overlay_rgb_width_) && (y1pos <= overlay_rgb_height_)
+				&& (buff_rgb_ != NULL))
+	{
+		pixfmt pixf(render_buf_overlay_rgb_);
+		renderer_base rb(pixf);
+
+		agg::scanline_u8 scanLine;
+		agg::rasterizer_scanline_aa<> ras;
+
+		//draw big box
+		renderer_solid rs_box(rb);
+		rs_box.color(agg::rgba8((color & 0x00ff0000) >> 16,
+					(color & 0x0000ff00) >>  8 , (color & 0x000000ff)));
+		agg::rounded_rect rec(x0pos, y0pos, x1pos, y1pos, 0);
+		agg::conv_stroke<agg::rounded_rect> stroke(rec);
+		stroke.width(1.0);
+		ras.add_path(stroke);
+		agg::render_scanlines(ras, scanLine, rs_box);
+
+		//set text
+		agg::gsv_text text_style;
+		renderer_solid rs_text(rb);
+		//text color in black
+		rs_text.color(agg::rgba8(0, 0, 0));
+		text_style.size(text_size, text_size);
+		text_style.flip(true);
+		text_style.text(text.c_str());
+		agg::conv_stroke<agg::gsv_text> stroke_text(text_style);
+		stroke_text.width(0.8);
+
+		//draw background text
+		agg::rounded_rect rec_text(x0pos, y0pos, x0pos + text_style.text_width(), y0pos-text_size-2, 0);
+		ras.add_path(rec_text);
+		agg::render_scanlines_aa_solid(ras, scanLine, rb,
+			agg::rgba8((color&0x00ff0000)>>16, (color&0x0000ff00)>>8, (color&0x000000ff)));
+
+		//draw text
+		text_style.start_point(x0pos, y0pos-2);
+		ras.add_path(stroke_text);
+		agg::render_scanlines(ras, scanLine, rs_text);
+	}
+	else
+	{
+    fprintf(stderr, "set_box_with_text() failed\n" );
+	}
+}
+
+void COverlayRGB::set_text(uint32_t xpos, uint32_t ypos, string text, uint32_t text_size, uint32_t color)
+{
+	typedef agg::pixfmt_rgb24 pixfmt;
+	typedef agg::renderer_base<pixfmt> renderer_base;
+	typedef agg::renderer_scanline_aa_solid<renderer_base> renderer_solid;
+
+	if(!text.empty() && ((xpos + text_size) <= overlay_rgb_width_) && ((ypos + text_size) <= overlay_rgb_height_)
+							&& (buff_rgb_ != NULL))
+	{
+		pixfmt pixf(render_buf_overlay_rgb_);
+		renderer_base rb(pixf);
+		agg::scanline_u8 scanLine;
+		agg::rasterizer_scanline_aa<> ras;
+
+		//draw text
+		agg::gsv_text text_style;
+		renderer_solid rs_text(rb);
+		rs_text.color(agg::rgba8((color&0x00ff0000)>>16, (color&0x0000ff00)>>8, (color&0x000000ff)));
+		text_style.size(text_size, text_size);
+		text_style.flip(true);
+		text_style.start_point(xpos, ypos+text_size + 1);
+		text_style.text(text.c_str());
+		agg::conv_stroke<agg::gsv_text> stroke_text(text_style);
+		stroke_text.width(1.5);
+		ras.add_path(stroke_text);
+		agg::render_scanlines(ras, scanLine, rs_text);
+	}
+	else
+	{
+    fprintf(stderr, "set_text() failed\n" );
+	}
+}
+
+void COverlayRGB::calculate_boundary_text(string text, uint32_t text_size,
+											uint32_t &width, uint32_t &height)
+{
+	if(!text.empty())
+	{
+		agg::gsv_text text_style;
+		text_style.size(text_size, text_size);
+		text_style.flip(true);
+		text_style.text(text.c_str());
+		agg::conv_stroke<agg::gsv_text> stroke_text(text_style);
+		stroke_text.width(1.5);
+		width = text_style.text_width();
+		height = 2*text_size;
+	}
+	else
+	{
+		width = 0;
+		height = 0;
+	}
+}
+
+void COverlayRGB::set_box(uint32_t x0pos, uint32_t y0pos,
+					                uint32_t x1pos, uint32_t y1pos, uint32_t color)
+{
+	typedef agg::pixfmt_rgb24 pixfmt;
+	typedef agg::renderer_base<pixfmt> renderer_base;
+	typedef agg::renderer_scanline_aa_solid<renderer_base> renderer_solid;
+
+	if((x0pos < overlay_rgb_width_) && (y0pos < overlay_rgb_height_)  &&
+			(x1pos <= overlay_rgb_width_) && (y1pos <= overlay_rgb_height_)
+			&& (buff_rgb_ != NULL))
+	{
+		pixfmt pixf(render_buf_overlay_rgb_);
+		renderer_base rb(pixf);
+
+		agg::scanline_u8 scanLine;
+		agg::rasterizer_scanline_aa<> ras;
+		//draw big box
+		renderer_solid rs_box(rb);
+		rs_box.color(agg::rgba8((color & 0x00ff0000) >> 16,
+					(color & 0x0000ff00) >>  8 , (color & 0x000000ff)));
+		agg::rounded_rect rec(x0pos, y0pos, x1pos, y1pos, 0);
+		agg::conv_stroke<agg::rounded_rect> stroke(rec);
+		stroke.width(2.0);
+		ras.add_path(stroke);
+		agg::render_scanlines(ras, scanLine, rs_box);
+	}
+	else
+	{
+    fprintf(stderr, "set_box() failed\n" );
+	}
+}
+
+void COverlayRGB::blend_from(COverlayRGB &overlay, double alpha)
+{
+  typedef agg::rgba8 color_type;
+  typedef agg::order_rgba order_type;
+	typedef agg::blender_rgb<color_type, order_type> blender_type;
+	typedef agg::pixfmt_alpha_blend_rgb<blender_type, rbuf_type, 3> pixfmt_type;
+	typedef agg::renderer_base<pixfmt_type> ren_base_type;
+
+  uint32_t w = overlay.get_overlay_width();
+  uint32_t h = overlay.get_overlay_height();
+
+	if((screen_width_ >= w) && (screen_height_ >= h) && (buff_rgb_ != NULL))
+	{
+		pixfmt_type                      pix_format(overlay.get_ren_buf_ref());
+
+		pixfmt_type pixf(render_buf_overlay_rgb_);
+		ren_base_type rb(pixf);
+
+		rb.blend_from(pix_format, 0, 0, 0, unsigned(alpha * 255));
+	}
+	else
+	{
+    fprintf(stderr, "blend_from() failed\n" );
+	}
+}
+
+bool COverlayRGB::load_ppm_img(string filename_wo_ext)
+{
+    char buf[1024];
+    const char* file = filename_wo_ext.c_str();
+    strcpy(buf, file);
+    int len = strlen(buf);
+    if(len < 4 || strcasecmp(buf + len - 4, ".ppm") != 0)
+    {
+        strcat(buf, ".ppm");
+    }
+
+    FILE* fd = fopen(buf, "rb");
+    if(fd == 0) return false;
+
+    if((len = fread(buf, 1, 1022, fd)) == 0)
+    {
+        fclose(fd);
+        return false;
+    }
+    buf[len] = 0;
+
+    if(buf[0] != 'P' && buf[1] != '6')
+    {
+        fclose(fd);
+        return false;
+    }
+
+    char* ptr = buf + 2;
+
+    while(*ptr && !isdigit(*ptr)) ptr++;
+    if(*ptr == 0)
+    {
+        fclose(fd);
+        return false;
+    }
+
+    uint32_t width = atoi(ptr);
+    if(width == 0 || width > 4096)
+    {
+        fclose(fd);
+        return false;
+    }
+    while(*ptr && isdigit(*ptr)) ptr++;
+    while(*ptr && !isdigit(*ptr)) ptr++;
+    if(*ptr == 0)
+    {
+        fclose(fd);
+        return false;
+    }
+    uint32_t height = atoi(ptr);
+    if(height == 0 || height > 4096)
+    {
+        fclose(fd);
+        return false;
+    }
+    while(*ptr && isdigit(*ptr)) ptr++;
+    while(*ptr && !isdigit(*ptr)) ptr++;
+    if(atoi(ptr) != 255)
+    {
+        fclose(fd);
+        return false;
+    }
+    while(*ptr && isdigit(*ptr)) ptr++;
+    if(*ptr == 0)
+    {
+        fclose(fd);
+        return false;
+    }
+    ptr++;
+    fseek(fd, long(ptr - buf), SEEK_SET);
+    bool ret = true;
+    if(buff_rgb_ != NULL)
+    {
+      size_t read_len = fread(buff_rgb_, 1, width * height * 3, fd);
+      if(read_len < 0)
+      {
+        ret = false;
+      }
+    }
+    fclose(fd);
+    return ret;
+}
+
+bool COverlayRGB::save_as_ppm_img(string filename_wo_ext)
+{
+	char buf[1024];
+	const char* file = filename_wo_ext.c_str();
+	strcpy(buf, file);
+	int len = strlen(buf);
+	if(len < 4 || strcasecmp(buf + len - 4, ".ppm") != 0)
+	{
+		strcat(buf, ".ppm");
+	}
+
+	FILE* fd = fopen(buf, "wb");
+	if(fd == 0) return false;
+
+	uint32_t w = this->overlay_rgb_width_;
+	uint32_t h = this->overlay_rgb_height_;
+
+	fprintf(fd, "P6\n%d %d\n255\n", w, h);
+
+	uint32_t y;
+	for(y = 0; y < screen_height_; y++)
+	{
+		const uint8_t* src = render_buf_overlay_rgb_.row_ptr(y);
+		fwrite(src, 1, w * 3, fd);
+	}
+	fclose(fd);
+	return false;
+}
+
+void COverlayRGB::print_to_display(uint32_t xpos, uint32_t ypos)
+{
+	if(buff_rgb_ != NULL)
+	{
+		uint8_t *fbuf_addr = get_frame_ptr();
+		rbuf_type m_rbuf_overlay_bgr;
+		uint8_t *m_buff_bgr = new uint8_t[overlay_rgb_width_*overlay_rgb_height_*pixel_size_];
+		memset(m_buff_bgr, 0, overlay_rgb_width_*overlay_rgb_height_*pixel_size_);
+		m_rbuf_overlay_bgr.attach(m_buff_bgr,
+                              overlay_rgb_width_,
+                              overlay_rgb_height_,
+                              overlay_rgb_width_ * pixel_size_);
+
+		color_conv(&m_rbuf_overlay_bgr, &render_buf_overlay_rgb_, agg::color_conv_rgb24_to_bgr24());
+		for (uint32_t i = 0; i < overlay_rgb_height_; i++)
+		{
+			uint8_t* ptr = m_rbuf_overlay_bgr.row_ptr(i);
+			memcpy((void*)(fbuf_addr + xpos * pixel_size_ +
+						(ypos + i) * screen_width_ * pixel_size_),
+						(void*)(ptr), (overlay_rgb_width_) * pixel_size_);
+		}
+
+		delete [] m_buff_bgr;
+	}
+	else
+	{
+    fprintf(stderr, "print_to_display() failed\n" );
+	}
+}
+
+void COverlayRGB::delete_overlay_rgb()
+{
+	if(buff_rgb_ != NULL)
+	{
+    delete [] buff_rgb_;
+		buff_rgb_ = NULL;
+	}
+}
+
+COverlayRGB::~COverlayRGB()
+{
+	if(buff_rgb_ != NULL)
+	{
+    delete [] buff_rgb_;
+		buff_rgb_ = NULL;
+	}
+}
+
+string COverlayRGB::convert_time_to_text(string label, long int time)
+{
+    std::stringstream ss;
+    std::string s;
+    if (time >= 0)
+    {
+      ss.str("");
+      ss << std::fixed << std::setprecision(3) << (time / 1000.0) << " ms";
+      s = label + ss.str();
+    }
+    return s;
+}
+
+void COverlayRGB::draw_progress_bar(uint32_t x, uint32_t y, uint32_t w, uint32_t h,
+									uint32_t color, uint8_t prog_0_to_100) {
+
+	typedef agg::pixfmt_rgba32 pixfmt;
+	typedef agg::renderer_base<pixfmt> renderer_base;
+	typedef agg::renderer_scanline_aa_solid<renderer_base> renderer_solid;
+	
+	if((prog_0_to_100 >=0) && (prog_0_to_100 <= 100) && (buff_rgb_ != NULL))
+	{
+		pixfmt pixf(render_buf_overlay_rgb_);
+		renderer_base rb(pixf);
+
+		agg::scanline_u8 scanLine;
+		agg::rasterizer_scanline_aa<> ras;
+
+		uint32_t rec_w = (w*prog_0_to_100)/100;
+		if((rec_w <= w) && ((x+w) <= overlay_rgb_width_) && ((y+h) <= overlay_rgb_height_))
+		{
+			//draw boundary
+			renderer_solid rs_box(rb);
+			rs_box.color(agg::rgba8((color & 0x00ff0000) >> 16,
+						(color & 0x0000ff00) >>  8 , (color & 0x000000ff)));
+			agg::rounded_rect rec(x, y, x+w, y+h, 0);
+			agg::conv_stroke<agg::rounded_rect> stroke(rec);
+			stroke.width(1.0);
+			ras.add_path(stroke);
+			agg::render_scanlines(ras, scanLine, rs_box);
+			//draw progress
+			agg::rounded_rect rec_bar(x, y, x + rec_w, h, 0);
+			ras.add_path(rec_bar);
+			agg::render_scanlines_aa_solid(ras, scanLine, rb,
+				agg::rgba8((color&0x00ff0000)>>16, (color&0x0000ff00)>>8, (color&0x000000ff)));
+		}
+		else
+		{
+      fprintf(stderr, "draw_progress_bar() failed\n" );
+		}
+	}
+	else
+	{
+		fprintf(stderr, "draw_progress_bar() failed\n" );
+	}
+}
+
+void COverlayRGB::capture_screen(std::string filename, 
+                              uint32_t screen_width, uint32_t screen_height) {
+  FILE *fout = fopen(filename.c_str(), "wb");
+  if (!fout) {
+    ERR("Could not open %s for writing\n", filename.c_str());
+    return;
+  }
+  if (fwrite(get_frame_ptr(), 3, screen_width * screen_height, fout) != 
+                                                        screen_width * screen_height) {
     ERR("Incomplete write to %s\n", filename.c_str());
   }
   fclose(fout);

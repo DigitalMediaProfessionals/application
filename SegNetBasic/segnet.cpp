@@ -40,6 +40,8 @@ CSegNetBasic network;
 #define FILENAME_WEIGHTS "SegNetBasic_weights.bin"
 
 using namespace std;
+using namespace dmp;
+using namespace util;
 
 #define SCREEN_W (dmp::util::get_screen_width())
 #define SCREEN_H (dmp::util::get_screen_height())
@@ -48,9 +50,6 @@ using namespace std;
 #define IMAGE_H 240
 #define IMAGE_NUM 367
 #define CLASS_NUM 12
-
-#define TEXT_XOFS (((SCREEN_W - IMAGE_W) / 2) / 24 + 4)  // 8x8 characters
-#define TEXT_YOFS ((512 + 48) / 8 + 2 + 3 + 2)           // 8x8 characters
 
 uint32_t imgView[IMAGE_W * IMAGE_H];
 uint16_t imgProc[IMAGE_W * IMAGE_H * 3];
@@ -99,7 +98,7 @@ const uint32_t class_color[] = {
 };
 #endif
 
-void convertimage(uint16_t *imgProc, uint32_t *imgView) {
+void convertimage(uint16_t *imgProc, COverlayRGB& overlay) {
   unsigned char c[3];
   uint16_t t;
   for (int y = 0; y < IMAGE_H; y++) {
@@ -108,12 +107,12 @@ void convertimage(uint16_t *imgProc, uint32_t *imgView) {
         t = imgProc[(x * IMAGE_H + y) * 3 + i];
         c[i] = ((t & 0x3FF) + 0x400) >> (26 - ((t & 0xFC00) >> 10));
       }
-      imgView[y * IMAGE_W + x] = (c[2] << 25) | (c[1] << 17) | (c[0] << 9);
+      overlay.set_pixel(x, y, c[2]<<1, c[1]<<1, c[0]<<1);
     }
   }
 }
 
-void visualize(void *netoutCPU, uint32_t *imgView) {
+void visualize(void *netoutCPU, COverlayRGB& overlay) {
   short *networkOutput = reinterpret_cast<short *>(netoutCPU);
   for (int y = 0; y < IMAGE_H; y++) {
     for (int x = 0; x < IMAGE_W; x++) {
@@ -125,8 +124,9 @@ void visualize(void *netoutCPU, uint32_t *imgView) {
           maxIndex = i;
         }
       }
-      imgView[y * IMAGE_W + x] =
-          (imgView[y * IMAGE_W + x] >> 1) + class_color[maxIndex];
+      overlay.set_pixel(x, y, (class_color[maxIndex]>>24), 
+          ((class_color[maxIndex] & 0x00ff0000)>>16),
+    		  ((class_color[maxIndex] & 0x0000ff00)>>8));
     }
   }
 }
@@ -190,10 +190,13 @@ int main(int argc, char **argv) {
     democonf_num = count;
   }
 
-  dmp::util::set_inputImageSize(IMAGE_W, IMAGE_H);
-  dmp::util::createBackgroundImage();
-
-  if (!dmp::util::load_background_image("fpgatitle_yolo.ppm")) return 1;
+  COverlayRGB bg_overlay(SCREEN_W, SCREEN_H);
+  bg_overlay.alloc_mem_overlay(SCREEN_W, SCREEN_H);
+  bg_overlay.load_ppm_img("fpgatitle_yolo");
+  COverlayRGB overlay_movie(SCREEN_W, SCREEN_H);
+  overlay_movie.alloc_mem_overlay(IMAGE_W, IMAGE_H);
+  COverlayRGB overlay_result(SCREEN_W, SCREEN_H);
+  overlay_result.alloc_mem_overlay(IMAGE_W, IMAGE_H);
 
   network.Verbose(0);
   if (!network.Initialize()) {
@@ -222,7 +225,7 @@ int main(int argc, char **argv) {
   while (exit_code == -1) {
     // Static Images
     if (fc < 2) {
-      dmp::util::print_background_image_toDisplay();
+      bg_overlay.print_to_display(0, 0);
       dmp::util::swap_buffer();
       fc++;  // Frame Counter
       continue;
@@ -230,21 +233,38 @@ int main(int argc, char **argv) {
 
     // HW processing times
     if (conv_time_tot != 0) {
-      dmp::util::print_time_toDisplay(
-          TEXT_XOFS, TEXT_YOFS + 4,
-          "Convolution (" + conv_freq + " MHz HW ACC)     : ", conv_time_tot,
-          9999, 0xff00ff00, 0x00000001);
+      string text = COverlayRGB::convert_time_to_text("Convolution (" + 
+                            conv_freq + " MHz HW ACC)     : ", conv_time_tot);
+      unsigned text_size = 14;
+
+      unsigned w = 0;
+      unsigned h = 0;
+      COverlayRGB::calculate_boundary_text(text, text_size, w, h);
+
+      int x = ((SCREEN_W - w) / 2);
+      int y = 3*SCREEN_H/4;
+
+      COverlayRGB overlay_time(SCREEN_W, SCREEN_H);
+      overlay_time.alloc_mem_overlay(w, h);
+      overlay_time.copy_overlay(bg_overlay,x, y);
+      overlay_time.set_text(0, 0, text, text_size, 0x00f4419d);
+      overlay_time.print_to_display(x, y);
     }
 
     if (sync_cnn_out == sync_cnn_in) {
       if (sync_cnn_out != 0) {
         // network.get_final_output(networkOutput);
-        convertimage(imgProc, imgView);
-        dmp::util::print_image_toDisplay((SCREEN_W / 2 - IMAGE_W),
-                                         (293 - 128) + 20, imgView);
-        visualize(ddr_buf_b_cpu, imgView);
-        dmp::util::print_image_toDisplay(SCREEN_W / 2, (293 - 128) + 20,
-                                         imgView);
+        convertimage(imgProc, overlay_movie);
+        int x = (SCREEN_W / 2 - IMAGE_W);
+        int y = (293 - 128) + 20;
+        overlay_movie.print_to_display(x, y);
+
+        visualize(ddr_buf_b_cpu, overlay_result);
+        overlay_movie.blend_from(overlay_result, 0.5);
+
+        x = (SCREEN_W / 2);
+        y = (293 - 128) + 20;
+        overlay_movie.print_to_display(x, y);
         dmp::util::swap_buffer();
         fc++;
 
@@ -319,9 +339,19 @@ int main(int argc, char **argv) {
     if (democonf_display) {
       string s = democonf[democonf_sel].second;
       s.resize(democonf_string_max, ' ');
-      dmp::util::print8x8_toDisplay((SCREEN_W / 8 - democonf_string_max) / 2,
-                                    SCREEN_H / 8 - 1, s, 0x00ff0000,
-                                    0x00000001);
+      unsigned text_size = 12;
+      unsigned w = 0;
+      unsigned h = 0;
+      COverlayRGB::calculate_boundary_text(s, text_size, w, h);
+
+      int x = 7*SCREEN_W / 8;
+      int y = 7*SCREEN_H / 8;
+
+      COverlayRGB overlay_democonf(SCREEN_W, SCREEN_H);
+      overlay_democonf.alloc_mem_overlay(w, h);
+      overlay_democonf.copy_overlay(bg_overlay,x, y);
+      overlay_democonf.set_text(0, 0, s, text_size, 0x00f4419d);
+      overlay_democonf.print_to_display(x, y);
     }
   }
 

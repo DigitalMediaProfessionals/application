@@ -10,7 +10,7 @@ OBJ = $(SRC:.cpp=.o)
 OUT = ../lib/libdv700_util.a
 
 # include directories
-INCLUDES = -I. -I../include/ -I../../../dv-user-driver/include
+INCLUDES = -I. -I../include/ -I../../../dv-user-driver/include -I/usr/include/agg2
 
 # C++ compiler flags (-g -O2 -Wall)
 CCFLAGS =  -pthread -std=c++11 $(OPT) -Wall -Werror

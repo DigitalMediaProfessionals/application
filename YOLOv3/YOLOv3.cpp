@@ -37,6 +37,9 @@
 #include "util_input.h"
 CYOLOv3 network;
 
+using namespace dmp;
+using namespace util;
+
 #define FILENAME_WEIGHTS "YOLOv3_weights.bin"
 
 using namespace std;
@@ -205,7 +208,7 @@ const uint32_t class_color[] = {
     0xFF002600, 0xFF001300,
 };
 
-static void draw_bboxes(const vector<float> &boxes, uint32_t *img) {
+static void draw_bboxes(const vector<float> &boxes, COverlayRGB &overlay) {
   int num = boxes.size() / NUM_TENSOR;
   const float *box;
 
@@ -250,8 +253,8 @@ static void draw_bboxes(const vector<float> &boxes, uint32_t *img) {
     bool no_text =
         (x + 8 * s.length() >= IMAGE_W) || (y + 8 >= IMAGE_W) || (y - 9 < 0);
 
-    dmp::util::draw_box(x, y, w, h, color, img);
-    if (!no_text) dmp::util::draw_box_text(x, y - 9, s, color, img);
+    overlay.set_box(x0, y0, x1, y1, color);
+	  if (!no_text) overlay.set_box_with_text(x0, y0, x1, y1, color, s);
   }
 }
 
@@ -320,10 +323,11 @@ int main(int argc, char **argv) {
     democonf_num = count;
   }
 
-  dmp::util::set_inputImageSize(IMAGE_W, IMAGE_H);
-  dmp::util::createBackgroundImage();
-
-  if (!dmp::util::load_background_image("fpgatitle_yolo.ppm")) return 1;
+  COverlayRGB bg_overlay(SCREEN_W, SCREEN_H);
+  bg_overlay.alloc_mem_overlay(SCREEN_W, SCREEN_H);
+  bg_overlay.load_ppm_img("fpgatitle_yolo");
+  COverlayRGB cam_overlay(SCREEN_W, SCREEN_H);
+  cam_overlay.alloc_mem_overlay(IMAGE_W, IMAGE_H);
 
   network.Verbose(0);
   if (!network.Initialize()) {
@@ -349,7 +353,7 @@ int main(int argc, char **argv) {
   while (exit_code == -1) {
     // Static Images
     if (fc < 2) {
-      dmp::util::print_background_image_toDisplay();
+      bg_overlay.print_to_display(0, 0);
       dmp::util::swap_buffer();
       fc++;  // Frame Counter
       continue;
@@ -357,19 +361,33 @@ int main(int argc, char **argv) {
 
     // HW processing times
     if (conv_time_tot != 0) {
-      dmp::util::print_time_toDisplay(
-          TEXT_XOFS, TEXT_YOFS + 0,
-          "Convolution (" + conv_freq + " MHz HW ACC)     : ", conv_time_tot,
-          9999, 0xff00ff00, 0x00000001);
+      string text = COverlayRGB::convert_time_to_text("Convolution (" + conv_freq + " MHz HW ACC)     : ", conv_time_tot);
+      unsigned text_size = 14;
+
+      unsigned w = 0;
+      unsigned h = 0;
+      COverlayRGB::calculate_boundary_text(text, text_size, w, h);
+
+      int x = ((SCREEN_W - w) / 2);
+      int y = ((293 - 138) + IMAGE_H + 80);
+
+      COverlayRGB overlay_time(SCREEN_W, SCREEN_H);
+      overlay_time.alloc_mem_overlay(w, h);
+      overlay_time.copy_overlay(bg_overlay, x, y);
+      overlay_time.set_text(0, 0, text, text_size, 0x00f4419d);
+      overlay_time.print_to_display(x, y);
     }
 
     if (sync_cnn_out == sync_cnn_in) {
       if (sync_cnn_out != 0) {
         network.get_final_output(tensor);
         get_bboxes(tensor, boxes);
-        draw_bboxes(boxes, imgView);
-        dmp::util::print_image_toDisplay((SCREEN_W - IMAGE_W) / 2,
-                                         (293 - 128) + 20, imgView);
+        draw_bboxes(boxes, cam_overlay);
+
+        int x = ((SCREEN_W - IMAGE_W) / 2);
+        int y = ((293 - 128) + 20);
+        cam_overlay.print_to_display(x, y);
+
         dmp::util::swap_buffer();
         fc++;
 
@@ -423,6 +441,7 @@ int main(int argc, char **argv) {
       if (!pause) {
         dmp::util::decode_jpg_file(input_image_path + image_names[image_nr],
                                    imgView, IMAGE_W, IMAGE_H);
+        cam_overlay.convert_to_overlay_pixel_format(imgView, IMAGE_W*IMAGE_H);
         dmp::util::preproc_image(imgView, imgProc, IMAGE_W, IMAGE_H, 0.0f, 0.0f,
                                  0.0f, 1.0f / 255.0f, true, false);
         /*
@@ -455,9 +474,20 @@ int main(int argc, char **argv) {
     if (democonf_display) {
       string s = democonf[democonf_sel].second;
       s.resize(democonf_string_max, ' ');
-      dmp::util::print8x8_toDisplay((SCREEN_W / 8 - democonf_string_max) / 2,
-                                    SCREEN_H / 8 - 1, s, 0x00ff0000,
-                                    0x00000001);
+
+      unsigned text_size = 12;
+      unsigned w = 0;
+      unsigned h = 0;
+      COverlayRGB::calculate_boundary_text(s, text_size, w, h);
+
+      int x = 7*SCREEN_W / 8;
+      int y = 7*SCREEN_H / 8;
+
+      COverlayRGB overlay_democonf(SCREEN_W, SCREEN_H);
+      overlay_democonf.alloc_mem_overlay(w, h);
+      overlay_democonf.copy_overlay(bg_overlay,x, y);
+      overlay_democonf.set_text(0, 0, s, text_size, 0x00f4419d);
+      overlay_democonf.print_to_display(x, y);
     }
   }
 
