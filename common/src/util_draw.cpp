@@ -405,12 +405,12 @@ std::vector<std::pair<float, int> > catrank(float* softmax, int count) {
 
 COverlayRGB::COverlayRGB(uint32_t screen_width, uint32_t screen_height)
 {
-	if((screen_width > 0) && (screen_height > 0) )
-	{
-		screen_width_ = screen_width;
-		screen_height_ = screen_height;
-		pixel_size_ = 3;//rgb24
-	}
+  if((screen_width > 0) && (screen_height > 0) )
+  {
+    screen_width_ = screen_width;
+    screen_height_ = screen_height;
+    pixel_size_ = 3;//rgb24
+  }
 }
 
 void COverlayRGB::alloc_mem_overlay(uint32_t overlay_width,
@@ -418,24 +418,24 @@ void COverlayRGB::alloc_mem_overlay(uint32_t overlay_width,
 {
   overlay_rgb_width_ = overlay_width;
   overlay_rgb_height_ = overlay_height;
-	if(buff_rgb_ != NULL)
-	{
-		delete [] buff_rgb_;
-		buff_rgb_ = NULL;
-	}   
+  if(buff_rgb_ != NULL)
+  {
+    delete [] buff_rgb_;
+    buff_rgb_ = NULL;
+  }   
    buff_rgb_ = new unsigned char[overlay_rgb_width_*overlay_rgb_height_*pixel_size_];
-	if(buff_rgb_ != NULL)
-	{
-		memset(buff_rgb_, 0, overlay_rgb_width_*overlay_rgb_height_*pixel_size_);
-		render_buf_overlay_rgb_.attach(buff_rgb_,
+  if(buff_rgb_ != NULL)
+  {
+    memset(buff_rgb_, 0, overlay_rgb_width_*overlay_rgb_height_*pixel_size_);
+    render_buf_overlay_rgb_.attach(buff_rgb_,
                                     overlay_rgb_width_,
                                     overlay_rgb_height_,
                                     overlay_rgb_width_ * pixel_size_);
-	}
-	else
-	{
+  }
+  else
+  {
     ERR("failed to allocate memory for overlay\n" );
-	}
+  }
 }
 
 uint8_t* COverlayRGB::get_overlay_buf_ref(void)
@@ -445,23 +445,23 @@ uint8_t* COverlayRGB::get_overlay_buf_ref(void)
 
 bool COverlayRGB::convert_to_overlay_pixel_format(uint32_t *imgview, uint32_t size_of_imgview)
 {
-	if((imgview != NULL) && (size_of_imgview == overlay_rgb_width_*overlay_rgb_height_)
-						&& (buff_rgb_ != NULL))
-	{
-		unsigned char *p = this->get_overlay_buf_ref();
-		for(unsigned int i = 0; i < size_of_imgview; i++)
-		{
-			p[pixel_size_*i] = (imgview[i]&0xff000000)>>24;
-			p[pixel_size_*i+1] = (imgview[i]&0x00ff0000)>>16;
-			p[pixel_size_*i+2] = (imgview[i]&0x0000ff00)>>8;
-		}
-		return true;
-	}
-	else
-	{
+  if((imgview != NULL) && (size_of_imgview == overlay_rgb_width_*overlay_rgb_height_)
+            && (buff_rgb_ != NULL))
+  {
+    unsigned char *p = this->get_overlay_buf_ref();
+    for(unsigned int i = 0; i < size_of_imgview; i++)
+    {
+      p[pixel_size_*i] = (imgview[i]&0xff000000)>>24;
+      p[pixel_size_*i+1] = (imgview[i]&0x00ff0000)>>16;
+      p[pixel_size_*i+2] = (imgview[i]&0x0000ff00)>>8;
+    }
+    return true;
+  }
+  else
+  {
     ERR("convert_to_overlay_pixel_format() failed\n" );
-	}
-	return false;
+  }
+  return false;
 }
 
 rbuf_type& COverlayRGB::get_ren_buf_ref(void)
@@ -476,214 +476,214 @@ uint8_t* COverlayRGB::get_overlay_row_ptr_ref(uint32_t row)
 
 bool COverlayRGB::set_pixel(uint32_t xpos, uint32_t ypos, uint8_t red, uint8_t green, uint8_t blue)
 {
-	if((xpos <= overlay_rgb_width_) && (ypos <= overlay_rgb_height_) && (buff_rgb_ != NULL))
-	{
-		unsigned char *p = render_buf_overlay_rgb_.row_ptr(ypos);
-		unsigned int j = xpos * pixel_size_;
-		p[j] = red;
+  if((xpos <= overlay_rgb_width_) && (ypos <= overlay_rgb_height_) && (buff_rgb_ != NULL))
+  {
+    unsigned char *p = render_buf_overlay_rgb_.row_ptr(ypos);
+    unsigned int j = xpos * pixel_size_;
+    p[j] = red;
     j++;
-		p[j] = green;
+    p[j] = green;
     j++;
-		p[j] = blue;
-		return true;
-	}
-	else
-	{
+    p[j] = blue;
+    return true;
+  }
+  else
+  {
     ERR("set_pixel() failed\n" );
-	}
-	return false;
+  }
+  return false;
 }
 
 bool COverlayRGB::copy_overlay(COverlayRGB &src_overlay, uint32_t xpos, uint32_t ypos)
 {
- 	uint32_t dst_row = 0;
-	uint32_t w = xpos + overlay_rgb_width_;
-	uint32_t h = ypos + overlay_rgb_height_;
-	if((w <= src_overlay.get_overlay_width()) && (h <= src_overlay.get_overlay_height()) && (buff_rgb_ != NULL))
-	{
-		for(uint32_t row = ypos; row < (h); row++)
-		{
-			uint8_t *p = render_buf_overlay_rgb_.row_ptr(dst_row);
-			uint8_t *psrc = src_overlay.get_overlay_row_ptr_ref(row);
-			psrc = psrc + xpos * pixel_size_;
+  uint32_t dst_row = 0;
+  uint32_t w = xpos + overlay_rgb_width_;
+  uint32_t h = ypos + overlay_rgb_height_;
+  if((w <= src_overlay.get_overlay_width()) && (h <= src_overlay.get_overlay_height()) && (buff_rgb_ != NULL))
+  {
+    for(uint32_t row = ypos; row < (h); row++)
+    {
+      uint8_t *p = render_buf_overlay_rgb_.row_ptr(dst_row);
+      uint8_t *psrc = src_overlay.get_overlay_row_ptr_ref(row);
+      psrc = psrc + xpos * pixel_size_;
       memcpy(p, psrc, pixel_size_*(w-xpos));
-			dst_row++;
-		}
-		return true;
-	}
-	else
-	{
+      dst_row++;
+    }
+    return true;
+  }
+  else
+  {
     ERR("copy_overlay() failed\n" );
-	}
-	return false;
+  }
+  return false;
 }
 void COverlayRGB::set_box_with_text(uint32_t x0pos, uint32_t y0pos, uint32_t x1pos, 
                                         uint32_t y1pos, uint32_t color, string text)
 {
-	typedef agg::pixfmt_rgb24 pixfmt;
-	typedef agg::renderer_base<pixfmt> renderer_base;
-	typedef agg::renderer_scanline_aa_solid<renderer_base> renderer_solid;
-	uint32_t text_size = 8;
+  typedef agg::pixfmt_rgb24 pixfmt;
+  typedef agg::renderer_base<pixfmt> renderer_base;
+  typedef agg::renderer_scanline_aa_solid<renderer_base> renderer_solid;
+  uint32_t text_size = 8;
 
-	if((x0pos < overlay_rgb_width_) && (y0pos < overlay_rgb_height_)  &&
-				(x1pos <= overlay_rgb_width_) && (y1pos <= overlay_rgb_height_)
-				&& (buff_rgb_ != NULL))
-	{
-		pixfmt pixf(render_buf_overlay_rgb_);
-		renderer_base rb(pixf);
+  if((x0pos < overlay_rgb_width_) && (y0pos < overlay_rgb_height_)  &&
+        (x1pos <= overlay_rgb_width_) && (y1pos <= overlay_rgb_height_)
+        && (buff_rgb_ != NULL))
+  {
+    pixfmt pixf(render_buf_overlay_rgb_);
+    renderer_base rb(pixf);
 
-		agg::scanline_u8 scanLine;
-		agg::rasterizer_scanline_aa<> ras;
+    agg::scanline_u8 scanLine;
+    agg::rasterizer_scanline_aa<> ras;
 
-		//draw big box
-		renderer_solid rs_box(rb);
-		rs_box.color(agg::rgba8((color & 0x00ff0000) >> 16,
-					(color & 0x0000ff00) >>  8 , (color & 0x000000ff)));
-		agg::rounded_rect rec(x0pos, y0pos, x1pos, y1pos, 0);
-		agg::conv_stroke<agg::rounded_rect> stroke(rec);
-		stroke.width(1.0);
-		ras.add_path(stroke);
-		agg::render_scanlines(ras, scanLine, rs_box);
+    //draw big box
+    renderer_solid rs_box(rb);
+    rs_box.color(agg::rgba8((color & 0x00ff0000) >> 16,
+          (color & 0x0000ff00) >>  8 , (color & 0x000000ff)));
+    agg::rounded_rect rec(x0pos, y0pos, x1pos, y1pos, 0);
+    agg::conv_stroke<agg::rounded_rect> stroke(rec);
+    stroke.width(1.0);
+    ras.add_path(stroke);
+    agg::render_scanlines(ras, scanLine, rs_box);
 
-		//set text
-		agg::gsv_text text_style;
-		renderer_solid rs_text(rb);
-		//text color in black
-		rs_text.color(agg::rgba8(0, 0, 0));
-		text_style.size(text_size, text_size);
-		text_style.flip(true);
-		text_style.text(text.c_str());
-		agg::conv_stroke<agg::gsv_text> stroke_text(text_style);
-		stroke_text.width(0.8);
+    //set text
+    agg::gsv_text text_style;
+    renderer_solid rs_text(rb);
+    //text color in black
+    rs_text.color(agg::rgba8(0, 0, 0));
+    text_style.size(text_size, text_size);
+    text_style.flip(true);
+    text_style.text(text.c_str());
+    agg::conv_stroke<agg::gsv_text> stroke_text(text_style);
+    stroke_text.width(0.8);
 
-		//draw background text
-		agg::rounded_rect rec_text(x0pos, y0pos, x0pos + text_style.text_width(), y0pos-text_size-2, 0);
-		ras.add_path(rec_text);
-		agg::render_scanlines_aa_solid(ras, scanLine, rb,
-			agg::rgba8((color&0x00ff0000)>>16, (color&0x0000ff00)>>8, (color&0x000000ff)));
+    //draw background text
+    agg::rounded_rect rec_text(x0pos, y0pos, x0pos + text_style.text_width(), y0pos-text_size-2, 0);
+    ras.add_path(rec_text);
+    agg::render_scanlines_aa_solid(ras, scanLine, rb,
+      agg::rgba8((color&0x00ff0000)>>16, (color&0x0000ff00)>>8, (color&0x000000ff)));
 
-		//draw text
-		text_style.start_point(x0pos, y0pos-2);
-		ras.add_path(stroke_text);
-		agg::render_scanlines(ras, scanLine, rs_text);
-	}
-	else
-	{
+    //draw text
+    text_style.start_point(x0pos, y0pos-2);
+    ras.add_path(stroke_text);
+    agg::render_scanlines(ras, scanLine, rs_text);
+  }
+  else
+  {
     ERR("set_box_with_text() failed\n" );
-	}
+  }
 }
 
 void COverlayRGB::set_text(uint32_t xpos, uint32_t ypos, string text, uint32_t text_size, uint32_t color)
 {
-	typedef agg::pixfmt_rgb24 pixfmt;
-	typedef agg::renderer_base<pixfmt> renderer_base;
-	typedef agg::renderer_scanline_aa_solid<renderer_base> renderer_solid;
+  typedef agg::pixfmt_rgb24 pixfmt;
+  typedef agg::renderer_base<pixfmt> renderer_base;
+  typedef agg::renderer_scanline_aa_solid<renderer_base> renderer_solid;
 
-	if(!text.empty() && ((xpos + text_size) <= overlay_rgb_width_) && ((ypos + text_size) <= overlay_rgb_height_)
-							&& (buff_rgb_ != NULL))
-	{
-		pixfmt pixf(render_buf_overlay_rgb_);
-		renderer_base rb(pixf);
-		agg::scanline_u8 scanLine;
-		agg::rasterizer_scanline_aa<> ras;
+  if(!text.empty() && ((xpos + text_size) <= overlay_rgb_width_) && ((ypos + text_size) <= overlay_rgb_height_)
+              && (buff_rgb_ != NULL))
+  {
+    pixfmt pixf(render_buf_overlay_rgb_);
+    renderer_base rb(pixf);
+    agg::scanline_u8 scanLine;
+    agg::rasterizer_scanline_aa<> ras;
 
-		//draw text
-		agg::gsv_text text_style;
-		renderer_solid rs_text(rb);
-		rs_text.color(agg::rgba8((color&0x00ff0000)>>16, (color&0x0000ff00)>>8, (color&0x000000ff)));
-		text_style.size(text_size, text_size);
-		text_style.flip(true);
-		text_style.start_point(xpos, ypos+text_size + 1);
-		text_style.text(text.c_str());
-		agg::conv_stroke<agg::gsv_text> stroke_text(text_style);
-		stroke_text.width(1.5);
-		ras.add_path(stroke_text);
-		agg::render_scanlines(ras, scanLine, rs_text);
-	}
-	else
-	{
+    //draw text
+    agg::gsv_text text_style;
+    renderer_solid rs_text(rb);
+    rs_text.color(agg::rgba8((color&0x00ff0000)>>16, (color&0x0000ff00)>>8, (color&0x000000ff)));
+    text_style.size(text_size, text_size);
+    text_style.flip(true);
+    text_style.start_point(xpos, ypos+text_size + 1);
+    text_style.text(text.c_str());
+    agg::conv_stroke<agg::gsv_text> stroke_text(text_style);
+    stroke_text.width(1.5);
+    ras.add_path(stroke_text);
+    agg::render_scanlines(ras, scanLine, rs_text);
+  }
+  else
+  {
     ERR("set_text() failed\n" );
-	}
+  }
 }
 
 void COverlayRGB::calculate_boundary_text(string text, uint32_t text_size,
-											uint32_t &width, uint32_t &height)
+                    uint32_t &width, uint32_t &height)
 {
-	if(!text.empty())
-	{
-		agg::gsv_text text_style;
-		text_style.size(text_size, text_size);
-		text_style.flip(true);
-		text_style.text(text.c_str());
-		agg::conv_stroke<agg::gsv_text> stroke_text(text_style);
-		stroke_text.width(1.5);
-		width = text_style.text_width();
+  if(!text.empty())
+  {
+    agg::gsv_text text_style;
+    text_style.size(text_size, text_size);
+    text_style.flip(true);
+    text_style.text(text.c_str());
+    agg::conv_stroke<agg::gsv_text> stroke_text(text_style);
+    stroke_text.width(1.5);
+    width = text_style.text_width();
     //height is double size due to some chareacters: g,q,y ...
-		height = 2*text_size;
-	}
-	else
-	{
-		width = 0;
-		height = 0;
-	}
+    height = 2*text_size;
+  }
+  else
+  {
+    width = 0;
+    height = 0;
+  }
 }
 
 void COverlayRGB::set_box(uint32_t x0pos, uint32_t y0pos,
-					                uint32_t x1pos, uint32_t y1pos, uint32_t color)
+                        uint32_t x1pos, uint32_t y1pos, uint32_t color)
 {
-	typedef agg::pixfmt_rgb24 pixfmt;
-	typedef agg::renderer_base<pixfmt> renderer_base;
-	typedef agg::renderer_scanline_aa_solid<renderer_base> renderer_solid;
+  typedef agg::pixfmt_rgb24 pixfmt;
+  typedef agg::renderer_base<pixfmt> renderer_base;
+  typedef agg::renderer_scanline_aa_solid<renderer_base> renderer_solid;
 
-	if((x0pos < overlay_rgb_width_) && (y0pos < overlay_rgb_height_)  &&
-			(x1pos <= overlay_rgb_width_) && (y1pos <= overlay_rgb_height_)
-			&& (buff_rgb_ != NULL))
-	{
-		pixfmt pixf(render_buf_overlay_rgb_);
-		renderer_base rb(pixf);
+  if((x0pos < overlay_rgb_width_) && (y0pos < overlay_rgb_height_)  &&
+      (x1pos <= overlay_rgb_width_) && (y1pos <= overlay_rgb_height_)
+      && (buff_rgb_ != NULL))
+  {
+    pixfmt pixf(render_buf_overlay_rgb_);
+    renderer_base rb(pixf);
 
-		agg::scanline_u8 scanLine;
-		agg::rasterizer_scanline_aa<> ras;
-		//draw big box
-		renderer_solid rs_box(rb);
-		rs_box.color(agg::rgba8((color & 0x00ff0000) >> 16,
-					(color & 0x0000ff00) >>  8 , (color & 0x000000ff)));
-		agg::rounded_rect rec(x0pos, y0pos, x1pos, y1pos, 0);
-		agg::conv_stroke<agg::rounded_rect> stroke(rec);
-		stroke.width(2.0);
-		ras.add_path(stroke);
-		agg::render_scanlines(ras, scanLine, rs_box);
-	}
-	else
-	{
+    agg::scanline_u8 scanLine;
+    agg::rasterizer_scanline_aa<> ras;
+    //draw big box
+    renderer_solid rs_box(rb);
+    rs_box.color(agg::rgba8((color & 0x00ff0000) >> 16,
+          (color & 0x0000ff00) >>  8 , (color & 0x000000ff)));
+    agg::rounded_rect rec(x0pos, y0pos, x1pos, y1pos, 0);
+    agg::conv_stroke<agg::rounded_rect> stroke(rec);
+    stroke.width(2.0);
+    ras.add_path(stroke);
+    agg::render_scanlines(ras, scanLine, rs_box);
+  }
+  else
+  {
     ERR("set_box() failed\n" );
-	}
+  }
 }
 
 void COverlayRGB::blend_from(COverlayRGB &overlay, double alpha)
 {
   typedef agg::rgba8 color_type;
   typedef agg::order_rgba order_type;
-	typedef agg::blender_rgb<color_type, order_type> blender_type;
-	typedef agg::pixfmt_alpha_blend_rgb<blender_type, rbuf_type, 3> pixfmt_type;
-	typedef agg::renderer_base<pixfmt_type> ren_base_type;
+  typedef agg::blender_rgb<color_type, order_type> blender_type;
+  typedef agg::pixfmt_alpha_blend_rgb<blender_type, rbuf_type, 3> pixfmt_type;
+  typedef agg::renderer_base<pixfmt_type> ren_base_type;
 
   uint32_t w = overlay.get_overlay_width();
   uint32_t h = overlay.get_overlay_height();
 
-	if((screen_width_ >= w) && (screen_height_ >= h) && (buff_rgb_ != NULL))
-	{
-		pixfmt_type                      pix_format(overlay.get_ren_buf_ref());
+  if((screen_width_ >= w) && (screen_height_ >= h) && (buff_rgb_ != NULL))
+  {
+    pixfmt_type                      pix_format(overlay.get_ren_buf_ref());
 
-		pixfmt_type pixf(render_buf_overlay_rgb_);
-		ren_base_type rb(pixf);
+    pixfmt_type pixf(render_buf_overlay_rgb_);
+    ren_base_type rb(pixf);
 
-		rb.blend_from(pix_format, 0, 0, 0, unsigned(alpha * 255));
-	}
-	else
-	{
+    rb.blend_from(pix_format, 0, 0, 0, unsigned(alpha * 255));
+  }
+  else
+  {
     ERR("blend_from() failed\n" );
-	}
+  }
 }
 
 bool COverlayRGB::load_ppm_img(string filename_wo_ext)
@@ -771,79 +771,79 @@ bool COverlayRGB::load_ppm_img(string filename_wo_ext)
 
 bool COverlayRGB::save_as_ppm_img(string filename_wo_ext)
 {
-	char buf[1024];
-	const char* file = filename_wo_ext.c_str();
-	strcpy(buf, file);
-	int len = strlen(buf);
-	if(len < 4 || strcasecmp(buf + len - 4, ".ppm") != 0)
-	{
-		strcat(buf, ".ppm");
-	}
+  char buf[1024];
+  const char* file = filename_wo_ext.c_str();
+  strcpy(buf, file);
+  int len = strlen(buf);
+  if(len < 4 || strcasecmp(buf + len - 4, ".ppm") != 0)
+  {
+    strcat(buf, ".ppm");
+  }
 
-	FILE* fd = fopen(buf, "wb");
-	if(fd == 0) return false;
+  FILE* fd = fopen(buf, "wb");
+  if(fd == 0) return false;
 
-	uint32_t w = this->overlay_rgb_width_;
-	uint32_t h = this->overlay_rgb_height_;
+  uint32_t w = this->overlay_rgb_width_;
+  uint32_t h = this->overlay_rgb_height_;
 
-	fprintf(fd, "P6\n%d %d\n255\n", w, h);
+  fprintf(fd, "P6\n%d %d\n255\n", w, h);
 
-	uint32_t y;
-	for(y = 0; y < screen_height_; y++)
-	{
-		const uint8_t* src = render_buf_overlay_rgb_.row_ptr(y);
-		fwrite(src, 1, w * 3, fd);
-	}
-	fclose(fd);
+  uint32_t y;
+  for(y = 0; y < screen_height_; y++)
+  {
+    const uint8_t* src = render_buf_overlay_rgb_.row_ptr(y);
+    fwrite(src, 1, w * 3, fd);
+  }
+  fclose(fd);
 	return false;
 }
 
 void COverlayRGB::print_to_display(uint32_t xpos, uint32_t ypos)
 {
-	if(buff_rgb_ != NULL)
-	{
-		uint8_t *fbuf_addr = get_frame_ptr();
-		rbuf_type m_rbuf_overlay_bgr;
-		uint8_t *m_buff_bgr = new uint8_t[overlay_rgb_width_*overlay_rgb_height_*pixel_size_];
-		memset(m_buff_bgr, 0, overlay_rgb_width_*overlay_rgb_height_*pixel_size_);
-		m_rbuf_overlay_bgr.attach(m_buff_bgr,
+  if(buff_rgb_ != NULL)
+  {
+    uint8_t *fbuf_addr = get_frame_ptr();
+    rbuf_type m_rbuf_overlay_bgr;
+    uint8_t *m_buff_bgr = new uint8_t[overlay_rgb_width_*overlay_rgb_height_*pixel_size_];
+    memset(m_buff_bgr, 0, overlay_rgb_width_*overlay_rgb_height_*pixel_size_);
+    m_rbuf_overlay_bgr.attach(m_buff_bgr,
                               overlay_rgb_width_,
                               overlay_rgb_height_,
                               overlay_rgb_width_ * pixel_size_);
 
-		color_conv(&m_rbuf_overlay_bgr, &render_buf_overlay_rgb_, agg::color_conv_rgb24_to_bgr24());
-		for (uint32_t i = 0; i < overlay_rgb_height_; i++)
-		{
-			uint8_t* ptr = m_rbuf_overlay_bgr.row_ptr(i);
-			memcpy((void*)(fbuf_addr + xpos * pixel_size_ +
-						(ypos + i) * screen_width_ * pixel_size_),
-						(void*)(ptr), (overlay_rgb_width_) * pixel_size_);
-		}
+    color_conv(&m_rbuf_overlay_bgr, &render_buf_overlay_rgb_, agg::color_conv_rgb24_to_bgr24());
+    for (uint32_t i = 0; i < overlay_rgb_height_; i++)
+    {
+      uint8_t* ptr = m_rbuf_overlay_bgr.row_ptr(i);
+      memcpy((void*)(fbuf_addr + xpos * pixel_size_ +
+            (ypos + i) * screen_width_ * pixel_size_),
+            (void*)(ptr), (overlay_rgb_width_) * pixel_size_);
+    }
 
-		delete [] m_buff_bgr;
-	}
-	else
-	{
+    delete [] m_buff_bgr;
+  }
+  else
+  {
     ERR("print_to_display() failed\n" );
-	}
+  }
 }
 
 void COverlayRGB::delete_overlay_rgb()
 {
-	if(buff_rgb_ != NULL)
-	{
+  if(buff_rgb_ != NULL)
+  {
     delete [] buff_rgb_;
-		buff_rgb_ = NULL;
-	}
+    buff_rgb_ = NULL;
+  }
 }
 
 COverlayRGB::~COverlayRGB()
 {
-	if(buff_rgb_ != NULL)
-	{
+  if(buff_rgb_ != NULL)
+  {
     delete [] buff_rgb_;
-		buff_rgb_ = NULL;
-	}
+    buff_rgb_ = NULL;
+  }
 }
 
 string COverlayRGB::convert_time_to_text(string label, long int time)
@@ -860,47 +860,48 @@ string COverlayRGB::convert_time_to_text(string label, long int time)
 }
 
 void COverlayRGB::draw_progress_bar(uint32_t x, uint32_t y, uint32_t w, uint32_t h,
-									uint32_t color, uint8_t prog_0_to_100) {
+                  uint32_t color, uint8_t prog_0_to_100) 
+{
 
-	typedef agg::pixfmt_rgba32 pixfmt;
-	typedef agg::renderer_base<pixfmt> renderer_base;
-	typedef agg::renderer_scanline_aa_solid<renderer_base> renderer_solid;
-	
-	if((prog_0_to_100 >=0) && (prog_0_to_100 <= 100) && (buff_rgb_ != NULL))
-	{
-		pixfmt pixf(render_buf_overlay_rgb_);
-		renderer_base rb(pixf);
+  typedef agg::pixfmt_rgba32 pixfmt;
+  typedef agg::renderer_base<pixfmt> renderer_base;
+  typedef agg::renderer_scanline_aa_solid<renderer_base> renderer_solid;
 
-		agg::scanline_u8 scanLine;
-		agg::rasterizer_scanline_aa<> ras;
+  if((prog_0_to_100 >=0) && (prog_0_to_100 <= 100) && (buff_rgb_ != NULL))
+  {
+    pixfmt pixf(render_buf_overlay_rgb_);
+    renderer_base rb(pixf);
 
-		uint32_t rec_w = (w*prog_0_to_100)/100;
-		if((rec_w <= w) && ((x+w) <= overlay_rgb_width_) && ((y+h) <= overlay_rgb_height_))
-		{
-			//draw boundary
-			renderer_solid rs_box(rb);
-			rs_box.color(agg::rgba8((color & 0x00ff0000) >> 16,
-						(color & 0x0000ff00) >>  8 , (color & 0x000000ff)));
-			agg::rounded_rect rec(x, y, x+w, y+h, 0);
-			agg::conv_stroke<agg::rounded_rect> stroke(rec);
-			stroke.width(1.0);
-			ras.add_path(stroke);
-			agg::render_scanlines(ras, scanLine, rs_box);
-			//draw progress
-			agg::rounded_rect rec_bar(x, y, x + rec_w, h, 0);
-			ras.add_path(rec_bar);
-			agg::render_scanlines_aa_solid(ras, scanLine, rb,
-				agg::rgba8((color&0x00ff0000)>>16, (color&0x0000ff00)>>8, (color&0x000000ff)));
-		}
-		else
-		{
+    agg::scanline_u8 scanLine;
+    agg::rasterizer_scanline_aa<> ras;
+
+    uint32_t rec_w = (w*prog_0_to_100)/100;
+    if((rec_w <= w) && ((x+w) <= overlay_rgb_width_) && ((y+h) <= overlay_rgb_height_))
+    {
+      //draw boundary
+      renderer_solid rs_box(rb);
+      rs_box.color(agg::rgba8((color & 0x00ff0000) >> 16,
+            (color & 0x0000ff00) >>  8 , (color & 0x000000ff)));
+      agg::rounded_rect rec(x, y, x+w, y+h, 0);
+      agg::conv_stroke<agg::rounded_rect> stroke(rec);
+      stroke.width(1.0);
+      ras.add_path(stroke);
+      agg::render_scanlines(ras, scanLine, rs_box);
+      //draw progress
+      agg::rounded_rect rec_bar(x, y, x + rec_w, h, 0);
+      ras.add_path(rec_bar);
+      agg::render_scanlines_aa_solid(ras, scanLine, rb,
+        agg::rgba8((color&0x00ff0000)>>16, (color&0x0000ff00)>>8, (color&0x000000ff)));
+    }
+    else
+    {
       ERR("draw_progress_bar() failed\n" );
-		}
-	}
-	else
-	{
-		ERR("draw_progress_bar() failed\n" );
-	}
+    }
+  }
+  else
+  {
+    ERR("draw_progress_bar() failed\n" );
+  }
 }
 
 void COverlayRGB::capture_screen(std::string filename, 

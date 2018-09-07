@@ -68,18 +68,18 @@ volatile bool g_should_stop = false;
 
 #if 0
 const uint32_t class_color[] = {
-	0x80FFFF00,		//Sky
-	0x80808000,		//Bulding
-	0xC0C08000,		//Pole
-	0x80408000,		//Road
-	0x4030C000,		//Pavement
-	0x00C00000,		//Tree
-	0xC0808000,		//Sign_symbol
-	0x40408000,		//Fence
-	0xC0008000,		//Car
-	0x40400000,		//Pedestrian
-	0x0080C000,		//Bicyclist
-	0x00000000,		//Unlabelled
+  0x80FFFF00,		//Sky
+  0x80808000,		//Bulding
+  0xC0C08000,		//Pole
+  0x80408000,		//Road
+  0x4030C000,		//Pavement
+  0x00C00000,		//Tree
+  0xC0808000,		//Sign_symbol
+  0x40408000,		//Fence
+  0xC0008000,		//Car
+  0x40400000,		//Pedestrian
+  0x0080C000,		//Bicyclist
+  0x00000000,		//Unlabelled
 };
 #else
 const uint32_t class_color[] = {

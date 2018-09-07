@@ -226,13 +226,13 @@ static void draw_bboxes(const vector<float> &boxes, COverlayRGB &overlay) {
       }
     if (!has_obj) continue;
 #if 0
-		for (int j = 0; j < NUM_TENSOR; j += 5)
-		{
-			for (int k = 0; k < 5; k++)
-				printf("%.2f  ", box[j + k]);
-			printf("\n");
-		}
-		printf("\n");
+    for (int j = 0; j < NUM_TENSOR; j += 5)
+    {
+      for (int k = 0; k < 5; k++)
+        printf("%.2f  ", box[j + k]);
+      printf("\n");
+    }
+    printf("\n");
 #endif
     int x = IMAGE_W * box[0];
     int y = IMAGE_H * box[1];
