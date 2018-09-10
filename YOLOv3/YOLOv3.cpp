@@ -48,7 +48,7 @@ using namespace std;
 #define SCREEN_H (dmp::util::get_screen_height())
 
 #define IMAGE_W 512
-#define IMAGE_H 320
+#define IMAGE_H 288
 
 #define TEXT_XOFS (((SCREEN_W - IMAGE_W) / 2) / 24 + 4)  // 8x8 characters
 #define TEXT_YOFS ((512 + 48) / 8 + 2 + 3 + 2)           // 8x8 characters
@@ -76,8 +76,8 @@ const int NUM_TENSOR = NUM_CLASS + 5;
 //                         10, 13, 16, 30, 33, 23 };
 const float ANCHOR[] = {81, 82, 135, 169, 344, 319, 23, 27, 37, 58, 81, 82};
 // const float DIM[] = { 10, 10, 20, 20, 40, 40 };
-const float DIM[] = {16, 10, 32, 20};
-const float NETDIM[] = {512, 320};
+const float DIM[] = {16, 9, 32, 18};
+const float NETDIM[] = {512, 288};
 const float SIG_THRES = -1.3863f;
 // const float SIG_THRES = 0.0f;
 const float THRESHOLD = 0.2f;
@@ -336,6 +336,9 @@ int main(int argc, char **argv) {
   if (!network.LoadWeights(FILENAME_WEIGHTS)) {
     return -1;
   }
+  if (!network.Commit()) {
+    return -1;
+  }
 
   string conv_freq, fc_freq;
   conv_freq = std::to_string(network.get_dv_info().conv_freq);
@@ -385,7 +388,7 @@ int main(int argc, char **argv) {
         draw_bboxes(boxes, cam_overlay);
 
         int x = ((SCREEN_W - IMAGE_W) / 2);
-        int y = ((293 - 128) + 20);
+        int y = ((293 - 128) + 36);
         cam_overlay.print_to_display(x, y);
 
         dmp::util::swap_buffer();

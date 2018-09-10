@@ -149,6 +149,9 @@ int main(int argc, char** argv) {
   if (!network.LoadWeights(FILENAME_WEIGHTS)) {
     return -1;
   }
+  if (!network.Commit()) {
+    return -1;
+  }
 
   string conv_freq, fc_freq;
   conv_freq = std::to_string(network.get_dv_info().conv_freq);

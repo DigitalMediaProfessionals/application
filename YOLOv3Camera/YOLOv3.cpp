@@ -309,7 +309,9 @@ int main(int argc, char **argv) {
     democonf_num = count;
   }
 
-  dmp::util::open_cam(CIMAGE_W, CIMAGE_H, 20);
+  if (dmp::util::open_cam(CIMAGE_W, CIMAGE_H, 20)) {
+    return -1;
+  }
   COverlayRGB bg_overlay(SCREEN_W, SCREEN_H);
   bg_overlay.alloc_mem_overlay(SCREEN_W, SCREEN_H);
   bg_overlay.load_ppm_img("fpgatitle_yolo");
@@ -321,6 +323,9 @@ int main(int argc, char **argv) {
     return -1;
   }
   if (!network.LoadWeights(FILENAME_WEIGHTS)) {
+    return -1;
+  }
+  if (!network.Commit()) {
     return -1;
   }
 
@@ -423,8 +428,10 @@ int main(int argc, char **argv) {
       }
 
       if (!pause) {
-        dmp::util::capture_cam(imgView, CIMAGE_W, CIMAGE_H, 0, 0, CIMAGE_W,
-                               CIMAGE_H);
+        if (dmp::util::capture_cam(imgView, CIMAGE_W, CIMAGE_H, 0, 0,
+                                   CIMAGE_W, CIMAGE_H)) {
+          break;
+        }
         cam_overlay.convert_to_overlay_pixel_format(imgView, CIMAGE_W*CIMAGE_H);
         dmp::util::preproc_image(imgView, imgProc, IMAGE_W, IMAGE_H, PIMAGE_W,
                                  PIMAGE_H, 0.0, 0.0, 0.0, 1.0 / 255.0, true,
@@ -463,6 +470,7 @@ int main(int argc, char **argv) {
   pthread_join(hwacc_thread, NULL);
 
   dmp::util::shutdown();
+  dmp::util::close_cam();
 
   return exit_code;
 }

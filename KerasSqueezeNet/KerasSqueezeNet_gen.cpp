@@ -57,10 +57,6 @@ bool CKerasSqueezeNet::Initialize() {
   Layer_19();
   Layer_20();
 
-  if (!GenerateCommandLists()) {
-    return false;
-  }
-
   return true;
 }
 
@@ -137,13 +133,6 @@ void CKerasSqueezeNet::Layer_0() {
   layer.is_output = false;
   layer.is_f32_output = false;
   layer.is_input_hw_layout = false;
-
-  // As input images in the example are 224x224, set input to this size and add paddings
-  conf.w = 224;
-  conf.h = 224;
-  conf.run[0].conv_pad = 0x03000300;
-  layer.input_dim[0] = 224;
-  layer.input_dim[1] = 224;
 }//end of  Layer_0
 
 //Layer_1: Convolution Layer

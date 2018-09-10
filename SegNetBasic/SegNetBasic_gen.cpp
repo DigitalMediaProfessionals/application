@@ -52,10 +52,6 @@ bool CSegNetBasic::Initialize() {
   Layer_14();
   Layer_15();
 
-  if (!GenerateCommandLists()) {
-    return false;
-  }
-
   return true;
 }
 

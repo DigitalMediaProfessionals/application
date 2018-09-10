@@ -57,10 +57,6 @@ bool CYOLOv3::Initialize() {
   Layer_19();
   Layer_20();
 
-  if (!GenerateCommandLists()) {
-    return false;
-  }
-
   return true;
 }
 

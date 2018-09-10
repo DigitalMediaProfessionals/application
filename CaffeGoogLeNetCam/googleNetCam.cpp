@@ -135,9 +135,9 @@ int main(int argc, char** argv) {
     democonf_num = count;
   }
 
-  dmp::util::open_cam(CAM_CAPTURE_W, CAM_CAPTURE_H,
-                      20);  // fps = 0 means as fast as possible
-
+  if (dmp::util::open_cam(CAM_CAPTURE_W, CAM_CAPTURE_H, 20)) {
+    return -1;
+  }
   COverlayRGB bg_overlay(SCREEN_W, SCREEN_H);
   bg_overlay.alloc_mem_overlay(SCREEN_W, SCREEN_H);
   bg_overlay.load_ppm_img("fpgatitle_googleNet");
@@ -149,6 +149,9 @@ int main(int argc, char** argv) {
     return -1;
   }
   if (!network.LoadWeights(FILENAME_WEIGHTS)) {
+    return -1;
+  }
+  if (!network.Commit()) {
     return -1;
   }
 
@@ -220,9 +223,11 @@ int main(int argc, char** argv) {
     }
 
     if (!pause) {
-      dmp::util::capture_cam(imgView, CAM_CAPTURE_W, CAM_CAPTURE_H,
-                             (CAM_CAPTURE_W - IMAGE_W) / 2,
-                             (CAM_CAPTURE_H - IMAGE_H) / 2, IMAGE_W, IMAGE_H);
+      if (dmp::util::capture_cam(imgView, CAM_CAPTURE_W, CAM_CAPTURE_H,
+                                 (CAM_CAPTURE_W - IMAGE_W) / 2,
+                                 (CAM_CAPTURE_H - IMAGE_H) / 2, IMAGE_W, IMAGE_H)) {
+        break;
+      }
       overlay_input.convert_to_overlay_pixel_format(imgView, CAM_CAPTURE_W*CAM_CAPTURE_H);
       int x = ((SCREEN_W - IMAGE_W) / 2);
       int y = 185;
