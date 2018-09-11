@@ -42,6 +42,8 @@ CCaffeGoogLeNet network;
 #define FILENAME_WEIGHTS "CaffeGoogLeNet_weights.bin"
 
 using namespace std;
+using namespace dmp;
+using namespace util;
 
 #define SCREEN_W (dmp::util::get_screen_width())
 #define SCREEN_H (dmp::util::get_screen_height())
@@ -51,12 +53,6 @@ using namespace std;
 
 #define IMAGE_W 224
 #define IMAGE_H 224
-
-#define TEXT_XOFS (((SCREEN_W - IMAGE_W) / 2) / 24 + 4)  // 8x8 characters
-#define TEXT_YOFS ((512 + 48) / 8 + 2 + 3 + 2)           // 8x8 characters
-
-#define BARS_XOFS (512)       // pixels
-#define BARS_YOFS (512 + 48)  // pixels
 
 std::vector<std::string> catstr_vec(categories, categories + 1000);
 
@@ -139,13 +135,14 @@ int main(int argc, char** argv) {
     democonf_num = count;
   }
 
-  if (dmp::util::open_cam(CAM_CAPTURE_W, CAM_CAPTURE_H, 20)) {  // fps = 0 means as fast as possible
+  if (dmp::util::open_cam(CAM_CAPTURE_W, CAM_CAPTURE_H, 20)) {
     return -1;
   }
-  dmp::util::set_inputImageSize(IMAGE_W, IMAGE_H);
-  dmp::util::createBackgroundImage();
-
-  if (!dmp::util::load_background_image("fpgatitle_googleNet.ppm")) return 1;
+  COverlayRGB bg_overlay(SCREEN_W, SCREEN_H);
+  bg_overlay.alloc_mem_overlay(SCREEN_W, SCREEN_H);
+  bg_overlay.load_ppm_img("fpgatitle_googleNet");
+  COverlayRGB overlay_input(SCREEN_W, SCREEN_H);
+  overlay_input.alloc_mem_overlay(IMAGE_W, IMAGE_H);
 
   network.Verbose(0);
   if (!network.Initialize()) {
@@ -174,23 +171,55 @@ int main(int argc, char** argv) {
   while (exit_code == -1) {
     // Static Images
     if (fc < 2) {
-      dmp::util::print_background_image_toDisplay();
+      bg_overlay.print_to_display(0, 0);
+      dmp::util::swap_buffer();
+      fc++;  // Frame Counter
+      continue;
     }
 
     // HW processing times
     if (conv_time_tot != 0 && fc_time_tot != 0) {
-      dmp::util::print_time_toDisplay(
-          TEXT_XOFS, TEXT_YOFS + 0,
-          "Convolution (" + conv_freq + " MHz HW ACC)     : ", conv_time_tot,
-          9999, 0xff00ff00, 0x00000001);
-      dmp::util::print_time_toDisplay(
-          TEXT_XOFS, TEXT_YOFS + 2,
-          "Fully Connected (" + fc_freq + " MHz HW ACC) : ", fc_time_tot, 9999,
-          0xff00ff00, 0x00000001);
-      dmp::util::print_time_toDisplay(
-          TEXT_XOFS, TEXT_YOFS + 4,
-          "Total Processing Time           : ", conv_time_tot + fc_time_tot,
-          9999, 0xffff0000, 0x00000001);
+      string text = COverlayRGB::convert_time_to_text(
+                  "Convolution (" + conv_freq + " MHz HW ACC)      : ", conv_time_tot);
+      unsigned text_size = 14;
+
+      unsigned w = 0;
+      unsigned h = 0;
+      COverlayRGB::calculate_boundary_text(text, text_size, w, h);
+
+      int x = ((SCREEN_W - w) / 2);
+      int y = 7*SCREEN_H/8;
+
+      COverlayRGB overlay_time(SCREEN_W, SCREEN_H);
+      overlay_time.alloc_mem_overlay(w, h);
+      overlay_time.copy_overlay(bg_overlay,x, y);
+      overlay_time.set_text(0, 0, text, text_size, 0x00f4419d);
+      overlay_time.print_to_display(x, y);
+
+      text = COverlayRGB::convert_time_to_text(
+                "Fully Connected (" + fc_freq + " MHz HW ACC) : ", fc_time_tot);
+      COverlayRGB::calculate_boundary_text(text, text_size, w, h);
+
+      y = 7*SCREEN_H/8 + 28;
+
+      COverlayRGB overlay_fc(SCREEN_W, SCREEN_H);
+      overlay_fc.alloc_mem_overlay(w, h);
+      overlay_fc.copy_overlay(bg_overlay,x, y);
+      overlay_fc.set_text(0, 0, text, text_size, 0x00f4419d);
+      overlay_fc.print_to_display(x, y);
+
+
+      text = COverlayRGB::convert_time_to_text(
+                "Total Processing Time           : ", conv_time_tot + fc_time_tot);
+      COverlayRGB::calculate_boundary_text(text, text_size, w, h);
+
+      y = 7*SCREEN_H/8 + 56;
+
+      COverlayRGB overlay_processingtime(SCREEN_W, SCREEN_H);
+      overlay_processingtime.alloc_mem_overlay(w, h);
+      overlay_processingtime.copy_overlay(bg_overlay,x, y);
+      overlay_processingtime.set_text(0, 0, text, text_size, 0x00f4419d);
+      overlay_processingtime.print_to_display(x, y);
     }
 
     if (!pause) {
@@ -199,8 +228,11 @@ int main(int argc, char** argv) {
                                  (CAM_CAPTURE_H - IMAGE_H) / 2, IMAGE_W, IMAGE_H)) {
         break;
       }
+      overlay_input.convert_to_overlay_pixel_format(imgView, CAM_CAPTURE_W*CAM_CAPTURE_H);
+      int x = ((SCREEN_W - IMAGE_W) / 2);
+      int y = 185;
+      overlay_input.print_to_display(x, y);                       
     }
-    dmp::util::print_image_toDisplay((SCREEN_W - IMAGE_W) / 2, 185, imgView);
 
     if (sync_cnn_out == sync_cnn_in) {
       if (sync_cnn_out != 0) network.get_final_output(networkOutput);
@@ -262,15 +294,30 @@ int main(int argc, char** argv) {
     }
 
     if (sync_cnn_out != 0)
-      dmp::util::print_result(catstr_vec, TEXT_XOFS, TEXT_YOFS - 13, dmp::util::catrank(&networkOutput.front()),
-                   0x88ff8800, 0x00ff0000, 0x00000001);
+    {
+      unsigned int x = (SCREEN_W / 5);
+      unsigned int y = (293 - 128) + IMAGE_W + 80;
+
+      print_result(catstr_vec, x, y,
+                    dmp::util::catrank(&networkOutput.front()), bg_overlay);
+    }
 
     if (democonf_display) {
       string s = democonf[democonf_sel].second;
       s.resize(democonf_string_max, ' ');
-      dmp::util::print8x8_toDisplay((SCREEN_W / 8 - democonf_string_max) / 2,
-                                    SCREEN_H / 8 - 1, s, 0x00ff0000,
-                                    0x00000001);
+      unsigned text_size = 12;
+      unsigned w = 0;
+      unsigned h = 0;
+      COverlayRGB::calculate_boundary_text(s, text_size, w, h);
+
+      int x = 7*SCREEN_W / 8;
+      int y = 7*SCREEN_H / 8;
+
+      COverlayRGB overlay_democonf(SCREEN_W, SCREEN_H);
+      overlay_democonf.alloc_mem_overlay(w, h);
+      overlay_democonf.copy_overlay(bg_overlay,x, y);
+      overlay_democonf.set_text(0, 0, s, text_size, 0x00f4419d);
+      overlay_democonf.print_to_display(x, y);
     }
 
     dmp::util::swap_buffer();

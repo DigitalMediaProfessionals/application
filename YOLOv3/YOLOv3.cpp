@@ -37,6 +37,9 @@
 #include "util_input.h"
 CYOLOv3 network;
 
+using namespace dmp;
+using namespace util;
+
 #define FILENAME_WEIGHTS "YOLOv3_weights.bin"
 
 using namespace std;
@@ -189,23 +192,23 @@ const char *class_name[] = {
 };
 
 const uint32_t class_color[] = {
-    0x00FF3F00, 0x003FFF00, 0xFF260000, 0xF200FF00, 0xFF4C0000, 0xA5FF0000,
-    0xFF720000, 0xFF850000, 0xFF990000, 0xFFAC0000, 0xFFBF0000, 0xFFD20000,
-    0xFFE50000, 0xFFF80000, 0xF2FF0000, 0xDFFF0000, 0xCBFF0000, 0xB8FF0000,
-    0xFF5F0000, 0x92FF0000, 0x7FFF0000, 0x6CFF0000, 0x59FF0000, 0x46FF0000,
-    0x33FF0000, 0x1FFF0000, 0x0CFF0000, 0x00FF0600, 0x00FF1900, 0x00FF2C00,
-    0xFF000000, 0x00FF5200, 0x00FF6600, 0x00FF7900, 0x00FF8C00, 0x00FF9F00,
-    0x00FFB200, 0x00FFC500, 0x00FFD800, 0x00FFEB00, 0x00FFFF00, 0x00EBFF00,
-    0x00D8FF00, 0x00C5FF00, 0x00B2FF00, 0x009FFF00, 0x008CFF00, 0x0079FF00,
-    0x0066FF00, 0x0052FF00, 0xFF130000, 0x002CFF00, 0x0019FF00, 0x0006FF00,
-    0x0C00FF00, 0x1F00FF00, 0x3200FF00, 0x4600FF00, 0x5900FF00, 0x6C00FF00,
-    0x7F00FF00, 0x9200FF00, 0xA500FF00, 0xB800FF00, 0xCC00FF00, 0xDF00FF00,
-    0xFF390000, 0xFF00F800, 0xFF00E500, 0xFF00D200, 0xFF00BF00, 0xFF00AC00,
-    0xFF009800, 0xFF008500, 0xFF007200, 0xFF005F00, 0xFF004C00, 0xFF003900,
-    0xFF002600, 0xFF001300,
+    0x00FF3F, 0x003FFF, 0xFF2600, 0xF200FF, 0xFF4C00, 0xA5FF00,
+    0xFF7200, 0xFF8500, 0xFF9900, 0xFFAC00, 0xFFBF00, 0xFFD200,
+    0xFFE500, 0xFFF800, 0xF2FF00, 0xDFFF00, 0xCBFF00, 0xB8FF00,
+    0xFF5F00, 0x92FF00, 0x7FFF00, 0x6CFF00, 0x59FF00, 0x46FF00,
+    0x33FF00, 0x1FFF00, 0x0CFF00, 0x00FF06, 0x00FF19, 0x00FF2C,
+    0xFF0000, 0x00FF52, 0x00FF66, 0x00FF79, 0x00FF8C, 0x00FF9F,
+    0x00FFB2, 0x00FFC5, 0x00FFD8, 0x00FFEB, 0x00FFFF, 0x00EBFF,
+    0x00D8FF, 0x00C5FF, 0x00B2FF, 0x009FFF, 0x008CFF, 0x0079FF,
+    0x0066FF, 0x0052FF, 0xFF1300, 0x002CFF, 0x0019FF, 0x0006FF,
+    0x0C00FF, 0x1F00FF, 0x3200FF, 0x4600FF, 0x5900FF, 0x6C00FF,
+    0x7F00FF, 0x9200FF, 0xA500FF, 0xB800FF, 0xCC00FF, 0xDF00FF,
+    0xFF3900, 0xFF00F8, 0xFF00E5, 0xFF00D2, 0xFF00BF, 0xFF00AC,
+    0xFF0098, 0xFF0085, 0xFF0072, 0xFF005F, 0xFF004C, 0xFF0039,
+    0xFF0026, 0xFF0013,
 };
 
-static void draw_bboxes(const vector<float> &boxes, uint32_t *img) {
+static void draw_bboxes(const vector<float> &boxes, COverlayRGB &overlay) {
   int num = boxes.size() / NUM_TENSOR;
   const float *box;
 
@@ -223,13 +226,13 @@ static void draw_bboxes(const vector<float> &boxes, uint32_t *img) {
       }
     if (!has_obj) continue;
 #if 0
-		for (int j = 0; j < NUM_TENSOR; j += 5)
-		{
-			for (int k = 0; k < 5; k++)
-				printf("%.2f  ", box[j + k]);
-			printf("\n");
-		}
-		printf("\n");
+    for (int j = 0; j < NUM_TENSOR; j += 5)
+    {
+      for (int k = 0; k < 5; k++)
+        printf("%.2f  ", box[j + k]);
+      printf("\n");
+    }
+    printf("\n");
 #endif
     int x = IMAGE_W * box[0];
     int y = IMAGE_H * box[1];
@@ -250,8 +253,8 @@ static void draw_bboxes(const vector<float> &boxes, uint32_t *img) {
     bool no_text =
         (x + 8 * s.length() >= IMAGE_W) || (y + 8 >= IMAGE_W) || (y - 9 < 0);
 
-    dmp::util::draw_box(x, y, w, h, color, img);
-    if (!no_text) dmp::util::draw_box_text(x, y - 9, s, color, img);
+    overlay.set_box(x0, y0, x1, y1, color);
+	  if (!no_text) overlay.set_box_with_text(x0, y0, x1, y1, color, s);
   }
 }
 
@@ -320,10 +323,11 @@ int main(int argc, char **argv) {
     democonf_num = count;
   }
 
-  dmp::util::set_inputImageSize(IMAGE_W, IMAGE_H);
-  dmp::util::createBackgroundImage();
-
-  if (!dmp::util::load_background_image("fpgatitle_yolo.ppm")) return 1;
+  COverlayRGB bg_overlay(SCREEN_W, SCREEN_H);
+  bg_overlay.alloc_mem_overlay(SCREEN_W, SCREEN_H);
+  bg_overlay.load_ppm_img("fpgatitle_yolo");
+  COverlayRGB cam_overlay(SCREEN_W, SCREEN_H);
+  cam_overlay.alloc_mem_overlay(IMAGE_W, IMAGE_H);
 
   network.Verbose(0);
   if (!network.Initialize()) {
@@ -352,7 +356,7 @@ int main(int argc, char **argv) {
   while (exit_code == -1) {
     // Static Images
     if (fc < 2) {
-      dmp::util::print_background_image_toDisplay();
+      bg_overlay.print_to_display(0, 0);
       dmp::util::swap_buffer();
       fc++;  // Frame Counter
       continue;
@@ -360,19 +364,33 @@ int main(int argc, char **argv) {
 
     // HW processing times
     if (conv_time_tot != 0) {
-      dmp::util::print_time_toDisplay(
-          TEXT_XOFS, TEXT_YOFS + 0,
-          "Convolution (" + conv_freq + " MHz HW ACC)     : ", conv_time_tot,
-          9999, 0xff00ff00, 0x00000001);
+      string text = COverlayRGB::convert_time_to_text("Convolution (" + conv_freq + " MHz HW ACC)     : ", conv_time_tot);
+      unsigned text_size = 14;
+
+      unsigned w = 0;
+      unsigned h = 0;
+      COverlayRGB::calculate_boundary_text(text, text_size, w, h);
+
+      int x = ((SCREEN_W - w) / 2);
+      int y = ((293 - 138) + IMAGE_H + 80);
+
+      COverlayRGB overlay_time(SCREEN_W, SCREEN_H);
+      overlay_time.alloc_mem_overlay(w, h);
+      overlay_time.copy_overlay(bg_overlay, x, y);
+      overlay_time.set_text(0, 0, text, text_size, 0x00f4419d);
+      overlay_time.print_to_display(x, y);
     }
 
     if (sync_cnn_out == sync_cnn_in) {
       if (sync_cnn_out != 0) {
         network.get_final_output(tensor);
         get_bboxes(tensor, boxes);
-        draw_bboxes(boxes, imgView);
-        dmp::util::print_image_toDisplay((SCREEN_W - IMAGE_W) / 2,
-                                         (293 - 128) + 36, imgView);
+        draw_bboxes(boxes, cam_overlay);
+
+        int x = ((SCREEN_W - IMAGE_W) / 2);
+        int y = ((293 - 128) + 36);
+        cam_overlay.print_to_display(x, y);
+
         dmp::util::swap_buffer();
         fc++;
 
@@ -426,6 +444,7 @@ int main(int argc, char **argv) {
       if (!pause) {
         dmp::util::decode_jpg_file(input_image_path + image_names[image_nr],
                                    imgView, IMAGE_W, IMAGE_H);
+        cam_overlay.convert_to_overlay_pixel_format(imgView, IMAGE_W*IMAGE_H);
         dmp::util::preproc_image(imgView, imgProc, IMAGE_W, IMAGE_H, 0.0f, 0.0f,
                                  0.0f, 1.0f / 255.0f, true, false);
         /*
@@ -458,9 +477,20 @@ int main(int argc, char **argv) {
     if (democonf_display) {
       string s = democonf[democonf_sel].second;
       s.resize(democonf_string_max, ' ');
-      dmp::util::print8x8_toDisplay((SCREEN_W / 8 - democonf_string_max) / 2,
-                                    SCREEN_H / 8 - 1, s, 0x00ff0000,
-                                    0x00000001);
+
+      unsigned text_size = 12;
+      unsigned w = 0;
+      unsigned h = 0;
+      COverlayRGB::calculate_boundary_text(s, text_size, w, h);
+
+      int x = 7*SCREEN_W / 8;
+      int y = 7*SCREEN_H / 8;
+
+      COverlayRGB overlay_democonf(SCREEN_W, SCREEN_H);
+      overlay_democonf.alloc_mem_overlay(w, h);
+      overlay_democonf.copy_overlay(bg_overlay,x, y);
+      overlay_democonf.set_text(0, 0, s, text_size, 0x00f4419d);
+      overlay_democonf.print_to_display(x, y);
     }
   }
 
