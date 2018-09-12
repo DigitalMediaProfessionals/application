@@ -311,7 +311,7 @@ int main(int argc, char** argv) {
       if (!pause) {
         dmp::util::decode_jpg_file(input_image_path + image_names[image_nr],
                                    imgView, IMAGE_W, IMAGE_H);
-        overlay_input.convert_to_overlay_pixel_format(imgView, IMAGE_W*IMAGE_H);                            
+        overlay_input.convert_to_overlay_pixel_format(imgView, IMAGE_W*IMAGE_H);
         dmp::util::preproc_image(imgView, imgProc, IMAGE_W, IMAGE_H, -128.0,
                                  -128.0, -128.0, 1.0, true);
 
