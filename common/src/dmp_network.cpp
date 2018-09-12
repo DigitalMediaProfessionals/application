@@ -634,14 +634,22 @@ bool CDMP_Network::GenerateCommandLists() {
         }
         layers_[j].cmdlist_size = last_pos;
       }
-      last_pos = 0;
-      if (layer.cmdlist) {
-        layer.cmdlist_pos = last_pos++;
+      if (i == n_layers - 1) {
+        layer.cmdlist_size = last_pos;
+      }
+      else {
+        last_pos = 0;
+        if (layer.cmdlist) {
+          layer.cmdlist_pos = last_pos++;
+        }
       }
     }
     else if ((!last_cmdlist) && (layer.cmdlist)) {
       last_pos = 0;
       layer.cmdlist_pos = last_pos++;
+      if (i == n_layers - 1) {
+        layer.cmdlist_size = last_pos;
+      }
     }
     last_cmdlist = layer.cmdlist;
   }
