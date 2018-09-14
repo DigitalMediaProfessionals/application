@@ -100,7 +100,7 @@ int main(int argc, char** argv) {
     return 1;
   }
 
-  const std::string input_image_path = "images/depthmap/";
+  const std::string input_image_path = "./images_depthmap/";
   const std::vector<std::string> input_image_suffix = {".png", ".PNG"};
 
   vector<string> image_names =
@@ -194,11 +194,11 @@ int main(int argc, char** argv) {
         // network.get_layer(0).output
         __fp16 outp = 0;
         for (int i=0; i<32; i++){
-          outp = network.get_layer(0).output[i*IMAGE_RZ_H];
+          outp = network.get_layer(32).output[i*IMAGE_RZ_H];
           printf("%0.3f ",outp);
         }
 
-        printf("\nNetwork output length: %ld\n", network.get_layer(0).output.size());
+        printf("\nNetwork output length: %ld\n", network.get_layer(32).output.size());
 
         int x = (SCREEN_W - IMAGE_W) / 2;
         int y = (293 - 128) + 20;
@@ -226,6 +226,14 @@ int main(int argc, char** argv) {
         frame2rawUInt( overlay_input, imgView );
         overlay_input_debug.convert_to_overlay_pixel_format(imgView, IMAGE_RZ_W*IMAGE_RZ_H);
         dmp::util::preproc_image(imgView, imgProc, IMAGE_RZ_W, IMAGE_RZ_H, 0, 0, 0, 0.003921569, true);
+        // __fp16 outp = 0;
+        // for (int i=0; i<32; i++){
+        //   outp = imgProc[i];
+        //   printf("%0.3f ",outp);
+        // }
+
+        // int improc_size = sizeof(imgProc)/sizeof(__fp16);
+        // printf("\nimgProc length: %d\n", improc_size);
 
         if (image_nr == num_images - 1) {
           image_nr = 0;
