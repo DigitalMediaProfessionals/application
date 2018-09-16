@@ -112,6 +112,7 @@ int main(int argc, char** argv) {
   }
 
   std::vector<float> networkOutput;
+  std::vector<float> networkOutput_transposed;
 
   COverlayRGB bg_overlay(SCREEN_W, SCREEN_H);
   bg_overlay.alloc_mem_overlay(SCREEN_W, SCREEN_H);
@@ -190,7 +191,15 @@ int main(int argc, char** argv) {
 
     if (sync_cnn_out == sync_cnn_in) {
       if (sync_cnn_out != 0) {
-        // network.get_final_output(networkOutput);
+        network.get_final_output(networkOutput);
+
+        // The values returned from get_final_output() is still transposed (height first) format.
+        // So it is actually a width=128, height=512 image
+        // need to transpose the output before you can compare to the Keras output.
+        for(int y = 0 ; x < IMAGE_RZ_H; y++)
+          for(int x = 0 ; x < IMAGE_RZ_W; x++)
+            networkOutput_transposed[x+y*IMAGE_RZ_W] = networkOutput[y+x*IMAGE_RZ_H];
+
         // network.get_layer(0).output
         __fp16 outp = 0;
         for (int i=0; i<32; i++){
