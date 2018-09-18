@@ -85,6 +85,35 @@ void* hwacc_thread_func(void* targ) {
   return NULL;
 }
 
+void print_demo_title(COverlayRGB &bg_overlay)
+{
+  unsigned text_size = 30;
+  string normal = "arial.ttf";
+  string text = "CNN - GoogleNet";
+  unsigned w = 0;
+  unsigned h = 0;
+  
+  COverlayRGB::calculate_boundary_text_with_font(normal, text, text_size, w, h);
+  int x = ((SCREEN_W - w) / 2);
+  int y = 25;
+  COverlayRGB bg_text(SCREEN_W, SCREEN_H);
+  bg_text.alloc_mem_overlay(w, h);
+  bg_text.copy_overlay(bg_overlay, x, y);
+  bg_text.set_text_with_font(normal, text, 0, 3*h/4, text_size, 0x00ffffff);
+  bg_text.print_to_display(x, y);
+
+  
+  text = "FPGA Demonstration";
+  COverlayRGB::calculate_boundary_text_with_font(normal, text, text_size, w, h);
+  x = ((SCREEN_W - w) / 2);
+  y = 65;
+  bg_text.delete_overlay();
+  bg_text.alloc_mem_overlay(w, h);
+  bg_text.copy_overlay(bg_overlay, x, y);
+  bg_text.set_text_with_font(normal, text, 0, 3*h/4, text_size, 0x00ffffff);
+  bg_text.print_to_display(x, y);
+}
+
 int main(int argc, char** argv) {
   if (!dmp::util::init_fb()) {
     fprintf(stderr, "dmp::util::init_fb() failed\n");
@@ -172,6 +201,7 @@ int main(int argc, char** argv) {
     // Static Images
     if (fc < 2) {
       bg_overlay.print_to_display(0, 0);
+      print_demo_title(bg_overlay);
       dmp::util::swap_buffer();
       fc++;  // Frame Counter
       continue;
@@ -311,7 +341,7 @@ int main(int argc, char** argv) {
       if (!pause) {
         dmp::util::decode_jpg_file(input_image_path + image_names[image_nr],
                                    imgView, IMAGE_W, IMAGE_H);
-        overlay_input.convert_to_overlay_pixel_format(imgView, IMAGE_W*IMAGE_H);                            
+        overlay_input.convert_to_overlay_pixel_format(imgView, IMAGE_W*IMAGE_H);
         dmp::util::preproc_image(imgView, imgProc, IMAGE_W, IMAGE_H, -128.0,
                                  -128.0, -128.0, 1.0, true);
 

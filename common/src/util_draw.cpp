@@ -298,7 +298,8 @@ bool swap_buffer() {
 }
 
 void print_result(const std::vector<std::string>& catstr_vec,
-                  int xpos, int ypos, const std::vector<std::pair<float, int> >& f, COverlayRGB &bg_overlay) {
+                  int xpos, int ypos, const std::vector<std::pair<float, int> >& f, 
+                  COverlayRGB &bg_overlay) {
   std::vector<std::pair<std::string, float> > result;
   result.push_back(std::make_pair(catstr_vec[f[0].second], f[0].first));
   result.push_back(std::make_pair(catstr_vec[f[1].second], f[1].first));
@@ -423,7 +424,7 @@ void COverlayRGB::alloc_mem_overlay(uint32_t overlay_width,
     delete [] buff_rgb_;
     buff_rgb_ = NULL;
   }   
-   buff_rgb_ = new unsigned char[overlay_rgb_width_*overlay_rgb_height_*pixel_size_];
+  buff_rgb_ = new unsigned char[overlay_rgb_width_*overlay_rgb_height_*pixel_size_];
   if(buff_rgb_ != NULL)
   {
     memset(buff_rgb_, 0, overlay_rgb_width_*overlay_rgb_height_*pixel_size_);
@@ -499,7 +500,8 @@ bool COverlayRGB::copy_overlay(COverlayRGB &src_overlay, uint32_t xpos, uint32_t
   uint32_t dst_row = 0;
   uint32_t w = xpos + overlay_rgb_width_;
   uint32_t h = ypos + overlay_rgb_height_;
-  if((w <= src_overlay.get_overlay_width()) && (h <= src_overlay.get_overlay_height()) && (buff_rgb_ != NULL))
+  if((w <= src_overlay.get_overlay_width()) &&
+        (h <= src_overlay.get_overlay_height()) && (buff_rgb_ != NULL))
   {
     for(uint32_t row = ypos; row < (h); row++)
     {
@@ -520,17 +522,12 @@ bool COverlayRGB::copy_overlay(COverlayRGB &src_overlay, uint32_t xpos, uint32_t
 void COverlayRGB::set_box_with_text(uint32_t x0pos, uint32_t y0pos, uint32_t x1pos, 
                                         uint32_t y1pos, uint32_t color, string text)
 {
-  typedef agg::pixfmt_rgb24 pixfmt;
-  typedef agg::renderer_base<pixfmt> renderer_base;
-  typedef agg::renderer_scanline_aa_solid<renderer_base> renderer_solid;
   uint32_t text_size = 8;
 
-  if((x0pos < overlay_rgb_width_) && (y0pos < overlay_rgb_height_)  &&
-        (x1pos <= overlay_rgb_width_) && (y1pos <= overlay_rgb_height_)
-        && (buff_rgb_ != NULL))
+  if(buff_rgb_ != NULL)
   {
-    pixfmt pixf(render_buf_overlay_rgb_);
-    renderer_base rb(pixf);
+    pixfmt_type pixf(render_buf_overlay_rgb_);
+    base_ren_type rb(pixf);
 
     agg::scanline_u8 scanLine;
     agg::rasterizer_scanline_aa<> ras;
@@ -555,13 +552,11 @@ void COverlayRGB::set_box_with_text(uint32_t x0pos, uint32_t y0pos, uint32_t x1p
     text_style.text(text.c_str());
     agg::conv_stroke<agg::gsv_text> stroke_text(text_style);
     stroke_text.width(0.8);
-
     //draw background text
     agg::rounded_rect rec_text(x0pos, y0pos, x0pos + text_style.text_width(), y0pos-text_size-2, 0);
     ras.add_path(rec_text);
     agg::render_scanlines_aa_solid(ras, scanLine, rb,
       agg::rgba8((color&0x00ff0000)>>16, (color&0x0000ff00)>>8, (color&0x000000ff)));
-
     //draw text
     text_style.start_point(x0pos, y0pos-2);
     ras.add_path(stroke_text);
@@ -570,39 +565,6 @@ void COverlayRGB::set_box_with_text(uint32_t x0pos, uint32_t y0pos, uint32_t x1p
   else
   {
     ERR("set_box_with_text() failed\n" );
-  }
-}
-
-void COverlayRGB::set_text(uint32_t xpos, uint32_t ypos, string text, uint32_t text_size, uint32_t color)
-{
-  typedef agg::pixfmt_rgb24 pixfmt;
-  typedef agg::renderer_base<pixfmt> renderer_base;
-  typedef agg::renderer_scanline_aa_solid<renderer_base> renderer_solid;
-
-  if(!text.empty() && ((xpos + text_size) <= overlay_rgb_width_) && ((ypos + text_size) <= overlay_rgb_height_)
-              && (buff_rgb_ != NULL))
-  {
-    pixfmt pixf(render_buf_overlay_rgb_);
-    renderer_base rb(pixf);
-    agg::scanline_u8 scanLine;
-    agg::rasterizer_scanline_aa<> ras;
-
-    //draw text
-    agg::gsv_text text_style;
-    renderer_solid rs_text(rb);
-    rs_text.color(agg::rgba8((color&0x00ff0000)>>16, (color&0x0000ff00)>>8, (color&0x000000ff)));
-    text_style.size(text_size, text_size);
-    text_style.flip(true);
-    text_style.start_point(xpos, ypos+text_size + 1);
-    text_style.text(text.c_str());
-    agg::conv_stroke<agg::gsv_text> stroke_text(text_style);
-    stroke_text.width(1.5);
-    ras.add_path(stroke_text);
-    agg::render_scanlines(ras, scanLine, rs_text);
-  }
-  else
-  {
-    ERR("set_text() failed\n" );
   }
 }
 
@@ -615,8 +577,6 @@ void COverlayRGB::calculate_boundary_text(string text, uint32_t text_size,
     text_style.size(text_size, text_size);
     text_style.flip(true);
     text_style.text(text.c_str());
-    agg::conv_stroke<agg::gsv_text> stroke_text(text_style);
-    stroke_text.width(1.5);
     width = text_style.text_width();
     //height is double size due to some chareacters: g,q,y ...
     height = 2*text_size;
@@ -628,6 +588,142 @@ void COverlayRGB::calculate_boundary_text(string text, uint32_t text_size,
   }
 }
 
+void COverlayRGB::set_text(uint32_t xpos, uint32_t ypos, string text, 
+                              uint32_t text_size, uint32_t color, double stroke_size)
+{
+  if(!text.empty() && buff_rgb_ != NULL)
+  {
+    pixfmt_type pixf(render_buf_overlay_rgb_);
+    base_ren_type rb(pixf);
+    agg::scanline_u8 scanLine;
+    agg::rasterizer_scanline_aa<> ras;
+    //draw text
+    agg::gsv_text text_style;
+    renderer_solid rs_text(rb);
+    rs_text.color(agg::rgba8((color&0x00ff0000)>>16, (color&0x0000ff00)>>8, (color&0x000000ff)));
+    text_style.size(text_size, text_size);
+    text_style.flip(true);
+    text_style.start_point(xpos, ypos+text_size + 1);
+    text_style.text(text.c_str());
+    agg::conv_stroke<agg::gsv_text> stroke_text(text_style);
+    stroke_text.width(stroke_size);
+    ras.add_path(stroke_text);
+    agg::render_scanlines(ras, scanLine, rs_text);
+  }
+  else
+  {
+    ERR("set_text() failed\n" );
+  }
+}
+
+void COverlayRGB::calculate_boundary_text_with_font(string path_to_ttf, string text, 
+                                          uint32_t text_size, uint32_t &w, uint32_t &h)
+{
+  font_engine_type             feng;
+  font_manager_type            fman(feng);
+  double x = 0; 
+  double y = text_size;
+  agg::glyph_rendering gren = agg::glyph_ren_outline;
+  if(!path_to_ttf.empty() && !text.empty() && feng.load_font(path_to_ttf.c_str(), 0, gren))
+  {
+    feng.height(text_size);
+    feng.width(text_size);
+    feng.hinting(true);
+    feng.flip_y(true);
+    const char* p = text.c_str();
+    double start_x = x;
+    while(*p)
+    {
+      if(*p == '\n')
+      {
+        x = start_x;
+        y -= text_size;
+        ++p;
+        continue;
+      }
+      const agg::glyph_cache* glyph = fman.glyph(*p);
+      if(glyph != NULL)
+      {
+        // increment pen position
+        x += glyph->advance_x;
+        y += glyph->advance_y;
+      }
+      ++p;
+    }
+  }
+  else
+  {
+    ERR("calculate_boundary_text_with_font() failed\n" );
+  }
+  //4/3 is boundary
+  h = 4*y/3;
+  w = x;
+}
+
+void COverlayRGB::set_text_with_font(string path_to_ttf, string text, 
+                            double x, double y, uint32_t height, uint32_t color)
+{
+  font_engine_type             feng;
+  font_manager_type            fman(feng);
+  agg::trans_affine mtx;
+  agg::conv_curve<font_manager_type::path_adaptor_type> curves(fman.path_adaptor());
+  agg::conv_transform<agg::conv_curve<font_manager_type::path_adaptor_type> > trans(curves, mtx);
+
+  pixfmt_type pf(render_buf_overlay_rgb_);
+  base_ren_type ren_base(pf);
+  renderer_solid ren_solid(ren_base);
+  agg::scanline_u8 sl;
+  agg::rasterizer_scanline_aa<> ras;
+  agg::rgba8 c(agg::rgba8((color&0x00ff0000)>>16, (color&0x0000ff00)>>8, (color&0x000000ff)));
+  agg::glyph_rendering gren = agg::glyph_ren_outline;
+
+  if(!path_to_ttf.empty() && !text.empty() && feng.load_font(path_to_ttf.c_str(), 0, gren))
+  {
+    feng.height(height);
+    feng.width(height);
+    feng.hinting(true);
+    feng.flip_y(true);
+    const char* p = text.c_str();
+    double start_x = x;
+    while(*p)
+    {
+      if(*p == '\n')
+      {
+        x = start_x;
+        y -= height;
+        ++p;
+        continue;
+      }
+      const agg::glyph_cache* glyph = fman.glyph(*p);
+      if(glyph != NULL)
+      {
+        fman.add_kerning(&x, &y);
+        fman.init_embedded_adaptors(glyph, 0, 0);
+        if(glyph->data_type == agg::glyph_data_outline)
+        {
+          double ty = y;
+          ras.reset();
+          mtx.reset();
+          mtx *= agg::trans_affine_translation(start_x + x, ty);
+          ras.add_path(trans);
+          
+          ren_solid.color(c);
+          agg::render_scanlines(ras, sl, ren_solid);
+        }
+
+        // increment pen position
+        x += glyph->advance_x;
+        y += glyph->advance_y;
+      }
+      ++p;
+    }
+  }
+  else
+  {
+    ERR("set_text_with_font() failed\n" );
+  }
+}
+
 void COverlayRGB::set_box(uint32_t x0pos, uint32_t y0pos,
                         uint32_t x1pos, uint32_t y1pos, uint32_t color)
 {
@@ -635,9 +731,7 @@ void COverlayRGB::set_box(uint32_t x0pos, uint32_t y0pos,
   typedef agg::renderer_base<pixfmt> renderer_base;
   typedef agg::renderer_scanline_aa_solid<renderer_base> renderer_solid;
 
-  if((x0pos < overlay_rgb_width_) && (y0pos < overlay_rgb_height_)  &&
-      (x1pos <= overlay_rgb_width_) && (y1pos <= overlay_rgb_height_)
-      && (buff_rgb_ != NULL))
+  if(buff_rgb_ != NULL)
   {
     pixfmt pixf(render_buf_overlay_rgb_);
     renderer_base rb(pixf);
@@ -828,7 +922,7 @@ void COverlayRGB::print_to_display(uint32_t xpos, uint32_t ypos)
   }
 }
 
-void COverlayRGB::delete_overlay_rgb()
+void COverlayRGB::delete_overlay()
 {
   if(buff_rgb_ != NULL)
   {

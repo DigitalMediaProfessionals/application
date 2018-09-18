@@ -56,6 +56,15 @@
 #include "agg_embedded_raster_fonts.h"
 #include "agg_glyph_raster_bin.h"
 #include "agg_renderer_raster_text.h"
+#include "agg_scanline_bin.h"
+#include "agg_renderer_primitives.h"
+#include "agg_conv_curve.h"
+#include "agg_conv_contour.h"
+#include "agg_font_freetype.h"
+#include "agg_gamma_lut.h"
+#include "ctrl/agg_slider_ctrl.h"
+#include "ctrl/agg_cbox_ctrl.h"
+#include "ctrl/agg_rbox_ctrl.h"
 
 using namespace std;
 
@@ -63,6 +72,11 @@ namespace dmp {
 namespace util {
 
 typedef agg::rendering_buffer rbuf_type;
+typedef agg::pixfmt_rgb24 pixfmt_type;
+typedef agg::renderer_base<pixfmt_type> base_ren_type;
+typedef agg::renderer_scanline_aa_solid<base_ren_type> renderer_solid;
+typedef agg::font_engine_freetype_int32 font_engine_type;
+typedef agg::font_cache_manager<font_engine_type> font_manager_type;
 
 class COverlayRGB
 {
@@ -178,7 +192,21 @@ class COverlayRGB
     * @param[in] text_size size of text
     * @param[in] color color of text
     */
-    void set_text(uint32_t xpos, uint32_t ypos, string text, uint32_t text_size, uint32_t color);
+    void set_text(uint32_t xpos, uint32_t ypos, string text, 
+                        uint32_t text_size, uint32_t color, double stroke_size = 1.5);
+
+    /*! Utility function to draw text when using font, color is argb format.
+     * This function depends on calculate_boundary_text_with_font()
+    * @param[in] path_to_ttf path to font file 
+    * @param[in] x0pos top-left x position of text in overlay
+    * @param[in] y0pos top-left y position of text in overlay
+    * @param[in] text text content
+    * @param[in] text_size size of text
+    * @param[in] color color of text
+    * @param[in] italic set italic text
+    */
+    void set_text_with_font(string path_to_ttf, string text, 
+                              double x, double y, uint32_t text_size, uint32_t color);
 
     /*! Utility function to draw box without text, color is argb format
     * @param[in] x0pos top-left x position of box in overlay
@@ -227,7 +255,7 @@ class COverlayRGB
 
     /*! Utility function to delete a overlay
     */
-    void delete_overlay_rgb();
+    void delete_overlay();
 
         /*! destructor to delete a overlay
     */
@@ -239,7 +267,7 @@ class COverlayRGB
     */
     static string convert_time_to_text(string label, long int time);
 
-    /*! Utility function to cLCULte boundary of text
+    /*! Utility function to calculate boundary of text
     * @param[in] text text content
     * @param[in] text_size size of text
     * @param[out] width width of boundary
@@ -247,6 +275,16 @@ class COverlayRGB
     */
     static void calculate_boundary_text(string text, uint32_t text_size,
                       uint32_t &width, uint32_t &height);
+
+    /*! Utility function to calculate boundary of text whe using font
+    * @param[in] path_to_ttf path to font file
+    * @param[in] text text content
+    * @param[in] text_size size of text
+    * @param[out] width width of boundary
+    * @param[out] height height of boundary
+    */
+    static void calculate_boundary_text_with_font(string path_to_ttf, string text, 
+                                    uint32_t text_size, uint32_t &w, uint32_t &h);                  
 
     /*! Utility function to capture the screen
     */
