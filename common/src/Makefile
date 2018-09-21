@@ -3,14 +3,14 @@ include ../../../env.mk
 INC = -I../include
 
 # source files.
-SRC =  	dmp_network.cpp util_draw.cpp util_input.cpp nanojpeg.cpp v4l2-cam.cpp
+SRC =  	dmp_network.cpp util_draw.cpp util_input.cpp nanojpeg.cpp v4l2-cam.cpp agg_font_freetype.cpp
 
 OBJ = $(SRC:.cpp=.o)
 
 OUT = ../lib/libdv700_util.a
 
 # include directories
-INCLUDES = -I. -I../include/ -I../../../dv-user-driver/include -I/usr/include/agg2
+INCLUDES = -I. -I../include/ -I../../../dv-user-driver/include -I/usr/include/agg2 `freetype-config --cflags`
 
 # C++ compiler flags (-g -O2 -Wall)
 CCFLAGS =  -pthread -std=c++11 $(OPT) -Wall -Werror
