@@ -1,5 +1,4 @@
 SUBDIRS = common/src \
-	SegNetBasic \
 	CaffeGoogLeNet \
 	CaffeGoogLeNetCam \
 	CaffeMobileNet \
@@ -7,12 +6,9 @@ SUBDIRS = common/src \
 	KerasGoogLeNet \
 	KerasMobileNet \
 	KerasSqueezeNet \
-	YOLOv3Camera \
-	YOLOv3
-	# cnn \
-	# cat \
-	# segnet \
-	
+	SegNetBasic \
+	YOLOv3 \
+	YOLOv3Camera
 
 .PHONY: all clean
 
