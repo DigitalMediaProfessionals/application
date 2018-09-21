@@ -63,6 +63,8 @@ void opencv2dmp(cv::Mat& input_frm, COverlayRGB& output_frm, bool isColor = true
 
 CKerasDepthMap network;
 
+#define DUMP_OUTPUT
+
 // Frame counter
 uint32_t fc = 0;
 
@@ -133,7 +135,9 @@ int main(int argc, char** argv) {
     return -1;
   }
 
+  #ifdef DUMP_OUTPUT
   network.WantLayerOutputs();
+  #endif
 
   string conv_freq, fc_freq;
   conv_freq = std::to_string(network.get_dv_info().conv_freq);
@@ -196,28 +200,45 @@ int main(int argc, char** argv) {
         // The values returned from get_final_output() is still transposed (height first) format.
         // So it is actually a width=128, height=512 image
         // need to transpose the output before you can compare to the Keras output.
-        for(int y = 0 ; x < IMAGE_RZ_H; y++)
+        for(int y = 0 ; y < IMAGE_RZ_H; y++)
           for(int x = 0 ; x < IMAGE_RZ_W; x++)
             networkOutput_transposed[x+y*IMAGE_RZ_W] = networkOutput[y+x*IMAGE_RZ_H];
 
-        // network.get_layer(0).output
-        __fp16 outp = 0;
-        for (int i=0; i<32; i++){
-          outp = network.get_layer(32).output[i*IMAGE_RZ_H];
-          printf("%0.3f ",outp);
-        }
-
-        printf("\nNetwork output length: %ld\n", network.get_layer(32).output.size());
-
-        int x = (SCREEN_W - IMAGE_W) / 2;
-        int y = (293 - 128) + 20;
-        overlay_input_debug.print_to_display(x, y);
-
-        x = (SCREEN_W / 5);
-        y = (293 - 128) + IMAGE_W + 80;
-
         dmp::util::swap_buffer();
         fc++;
+
+        #ifdef DUMP_OUTPUT
+        const int n_layers = network.get_total_layer_count();
+        for (int i_layer = 0; i_layer < n_layers; ++i_layer) {
+          fprintf(stdout, "layer dumping -- %d \n", i_layer);
+
+          fpga_layer& layer = network.get_layer(i_layer);
+          char fnme[256];
+          snprintf(fnme, sizeof(fnme), "layer%02d.bin", i_layer);
+          FILE *fout = fopen(fnme, "wb");
+          if (!fout) {
+            fprintf(stderr, "fopen() failed for %s\n", fnme);
+            fflush(stderr);
+            return -1;
+          }
+          fwrite(layer.output.data(), sizeof(layer.output[0]), layer.output.size(), fout);
+          fclose(fout);
+          fprintf(stdout, "Saved %s\n", fnme);
+          fflush(stdout);
+        }
+        fflush(stderr);
+
+        FILE *fout = fopen("layer_input.bin", "wb");
+        if (fout) {
+          fwrite(ddr_buf_a_cpu, 2, IMAGE_W * IMAGE_H * 3, fout);
+          fclose(fout);
+          fprintf(stdout, "Saved input.bin\n");
+          fflush(stdout);
+        }
+
+        break;
+
+        #endif
 
         int key = getchar();
         if(key == 27)
@@ -235,14 +256,6 @@ int main(int argc, char** argv) {
         frame2rawUInt( overlay_input, imgView );
         overlay_input_debug.convert_to_overlay_pixel_format(imgView, IMAGE_RZ_W*IMAGE_RZ_H);
         dmp::util::preproc_image(imgView, imgProc, IMAGE_RZ_W, IMAGE_RZ_H, 0, 0, 0, 0.003921569, true);
-        // __fp16 outp = 0;
-        // for (int i=0; i<32; i++){
-        //   outp = imgProc[i];
-        //   printf("%0.3f ",outp);
-        // }
-
-        // int improc_size = sizeof(imgProc)/sizeof(__fp16);
-        // printf("\nimgProc length: %d\n", improc_size);
 
         if (image_nr == num_images - 1) {
           image_nr = 0;
