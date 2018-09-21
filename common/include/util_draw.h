@@ -206,7 +206,7 @@ class COverlayRGB
     * @param[in] italic set italic text
     */
     void set_text_with_font(string path_to_ttf, string text, 
-                              double x, double y, uint32_t text_size, uint32_t color);
+                          double x, double y, uint32_t text_size, uint32_t color);
 
     /*! Utility function to draw box without text, color is argb format
     * @param[in] x0pos top-left x position of box in overlay

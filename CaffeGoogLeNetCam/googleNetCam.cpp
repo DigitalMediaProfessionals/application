@@ -115,6 +115,17 @@ void print_demo_title(COverlayRGB &bg_overlay)
   bg_text.copy_overlay(bg_overlay, x, y);
   bg_text.set_text_with_font(font_file, text, 0, 3*h/4, text_size, 0x00ffffff);
   bg_text.print_to_display(x, y);
+
+  text_size = 11;
+  text = "Copyright 2018. Digital Media Professionals Inc.";
+  COverlayRGB::calculate_boundary_text_with_font(font_file, text, text_size, w, h);
+  x = 5;
+  y = SCREEN_H - 20;
+  bg_text.delete_overlay();
+  bg_text.alloc_mem_overlay(w, h);
+  bg_text.copy_overlay(bg_overlay, x, y);
+  bg_text.set_text_with_font(font_file, text, 0, 3*h/4, text_size, 0x00ffffff);
+  bg_text.print_to_display(x, y);
 }
 
 int main(int argc, char** argv) {
@@ -169,7 +180,7 @@ int main(int argc, char** argv) {
   }
   COverlayRGB bg_overlay(SCREEN_W, SCREEN_H);
   bg_overlay.alloc_mem_overlay(SCREEN_W, SCREEN_H);
-  bg_overlay.load_ppm_img("fpgatitle_googleNet");
+  bg_overlay.load_ppm_img("fpgatitle");
   COverlayRGB overlay_input(SCREEN_W, SCREEN_H);
   overlay_input.alloc_mem_overlay(IMAGE_W, IMAGE_H);
 
