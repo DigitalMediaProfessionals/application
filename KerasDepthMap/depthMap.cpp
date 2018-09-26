@@ -63,7 +63,7 @@ void opencv2dmp(cv::Mat& input_frm, COverlayRGB& output_frm, bool isColor = true
 
 CKerasDepthMap network;
 
-#define DUMP_OUTPUT
+// #define DUMP_OUTPUT
 
 // Frame counter
 uint32_t fc = 0;
@@ -204,12 +204,18 @@ int main(int argc, char** argv) {
           for(int x = 0 ; x < IMAGE_RZ_W; x++)
             networkOutput_transposed[x+y*IMAGE_RZ_W] = networkOutput[y+x*IMAGE_RZ_H];
 
+        #ifdef DUMP_OUTPUT
         for (int i=0; i< 32; i++)
         {
           printf("%f ",network.get_layer(0).output.data()[i]);
           if(i%3 == 0&&i>0)
             printf("\n");
         }
+        #endif
+
+        int x = ((SCREEN_W - IMAGE_RZ_W) / 2);
+        int y = ((SCREEN_H - IMAGE_RZ_H) / 2);
+        overlay_input_debug.print_to_display(x, y);
 
         dmp::util::swap_buffer();
         fc++;
