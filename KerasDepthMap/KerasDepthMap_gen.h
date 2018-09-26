@@ -408,7 +408,7 @@ class CKerasDepthMap : public CDMP_Network {
 
   | ID | Layers | Type | Dim In | Dim Out | Param | Mem |
   | :- | :- | :-: | :-: | :-: | :-: | :-: |
-  | 35 | FPGA-Layer | CopyConcatenate | (128, 32, 129) | (128, 32, 129) | - | - |
+  | 35 | FPGA-Layer | Concatenate | (128, 32, 129) | (128, 32, 129) | - | - |
 
   */
   void Layer_35();
@@ -484,7 +484,7 @@ class CKerasDepthMap : public CDMP_Network {
 
   | ID | Layers | Type | Dim In | Dim Out | Param | Mem |
   | :- | :- | :-: | :-: | :-: | :-: | :-: |
-  | 42 | FPGA-Layer | CopyConcatenate | (256, 64, 65) | (256, 64, 65) | - | - |
+  | 42 | FPGA-Layer | Concatenate | (256, 64, 65) | (256, 64, 65) | - | - |
 
   */
   void Layer_42();
@@ -560,7 +560,7 @@ class CKerasDepthMap : public CDMP_Network {
 
   | ID | Layers | Type | Dim In | Dim Out | Param | Mem |
   | :- | :- | :-: | :-: | :-: | :-: | :-: |
-  | 49 | FPGA-Layer | CopyConcatenate | (512, 128, 17) | (512, 128, 17) | - | - |
+  | 49 | FPGA-Layer | Concatenate | (512, 128, 17) | (512, 128, 17) | - | - |
 
   */
   void Layer_49();

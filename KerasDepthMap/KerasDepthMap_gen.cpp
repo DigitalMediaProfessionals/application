@@ -28,7 +28,7 @@ CKerasDepthMap::~CKerasDepthMap() {
 }
 
 bool CKerasDepthMap::Initialize() {
-  if (!ReserveMemory(63395296, 7766016)) {
+  if (!ReserveMemory(63395296, 7471104)) {
     return false;
   }
 
@@ -193,7 +193,7 @@ void CKerasDepthMap::Layer_1() {
 
   // Output Configuration:
   conf.output_buf.mem = io_mem_;
-  conf.output_buf.offs = 1441792;
+  conf.output_buf.offs = 2490368;
 
   conf.eltwise_buf.mem = NULL;
   conf.eltwise_buf.offs = 0;  // Input byte address for elementwise add (0 = UBUF Input Buffer)
@@ -231,7 +231,7 @@ void CKerasDepthMap::Layer_1() {
   fpga_layer& layer = get_layer(1);
   layer.type = LT_CONV;
   layer.input_offs = 393216;
-  layer.output_offs = 1441792;
+  layer.output_offs = 2490368;
   layer.output_size = 1048576;
   layer.input_dim[0] = 256;
   layer.input_dim[1] = 64;
@@ -266,7 +266,7 @@ void CKerasDepthMap::Layer_2() {
   conf.z = 1;  // Input Depth
   conf.c = 32;  // Input Channels
   conf.input_buf.mem = io_mem_;
-  conf.input_buf.offs = 1441792;
+  conf.input_buf.offs = 2490368;
 
   // Output Configuration:
   conf.output_buf.mem = io_mem_;
@@ -307,7 +307,7 @@ void CKerasDepthMap::Layer_2() {
 
   fpga_layer& layer = get_layer(2);
   layer.type = LT_CONV;
-  layer.input_offs = 1441792;
+  layer.input_offs = 2490368;
   layer.output_offs = 0;
   layer.output_size = 524288;
   layer.input_dim[0] = 256;
@@ -347,7 +347,7 @@ void CKerasDepthMap::Layer_3() {
 
   // Output Configuration:
   conf.output_buf.mem = io_mem_;
-  conf.output_buf.offs = 524288;
+  conf.output_buf.offs = 4096000;
 
   conf.eltwise_buf.mem = NULL;
   conf.eltwise_buf.offs = 0;  // Input byte address for elementwise add (0 = UBUF Input Buffer)
@@ -385,7 +385,7 @@ void CKerasDepthMap::Layer_3() {
   fpga_layer& layer = get_layer(3);
   layer.type = LT_CONV;
   layer.input_offs = 0;
-  layer.output_offs = 524288;
+  layer.output_offs = 4096000;
   layer.output_size = 524288;
   layer.input_dim[0] = 128;
   layer.input_dim[1] = 32;
@@ -420,7 +420,7 @@ void CKerasDepthMap::Layer_4() {
   conf.z = 1;  // Input Depth
   conf.c = 64;  // Input Channels
   conf.input_buf.mem = io_mem_;
-  conf.input_buf.offs = 524288;
+  conf.input_buf.offs = 4096000;
 
   // Output Configuration:
   conf.output_buf.mem = io_mem_;
@@ -461,7 +461,7 @@ void CKerasDepthMap::Layer_4() {
 
   fpga_layer& layer = get_layer(4);
   layer.type = LT_CONV;
-  layer.input_offs = 524288;
+  layer.input_offs = 4096000;
   layer.output_offs = 0;
   layer.output_size = 262144;
   layer.input_dim[0] = 128;
@@ -501,7 +501,7 @@ void CKerasDepthMap::Layer_5() {
 
   // Output Configuration:
   conf.output_buf.mem = io_mem_;
-  conf.output_buf.offs = 2752512;
+  conf.output_buf.offs = 524288;
 
   conf.eltwise_buf.mem = NULL;
   conf.eltwise_buf.offs = 0;  // Input byte address for elementwise add (0 = UBUF Input Buffer)
@@ -539,7 +539,7 @@ void CKerasDepthMap::Layer_5() {
   fpga_layer& layer = get_layer(5);
   layer.type = LT_CONV;
   layer.input_offs = 0;
-  layer.output_offs = 2752512;
+  layer.output_offs = 524288;
   layer.output_size = 262144;
   layer.input_dim[0] = 64;
   layer.input_dim[1] = 16;
@@ -574,7 +574,7 @@ void CKerasDepthMap::Layer_6() {
   conf.z = 1;  // Input Depth
   conf.c = 128;  // Input Channels
   conf.input_buf.mem = io_mem_;
-  conf.input_buf.offs = 2752512;
+  conf.input_buf.offs = 524288;
 
   // Output Configuration:
   conf.output_buf.mem = io_mem_;
@@ -615,7 +615,7 @@ void CKerasDepthMap::Layer_6() {
 
   fpga_layer& layer = get_layer(6);
   layer.type = LT_CONV;
-  layer.input_offs = 2752512;
+  layer.input_offs = 524288;
   layer.output_offs = 0;
   layer.output_size = 131072;
   layer.input_dim[0] = 64;
@@ -655,7 +655,7 @@ void CKerasDepthMap::Layer_7() {
 
   // Output Configuration:
   conf.output_buf.mem = io_mem_;
-  conf.output_buf.offs = 262144;
+  conf.output_buf.offs = 917504;
 
   conf.eltwise_buf.mem = NULL;
   conf.eltwise_buf.offs = 0;  // Input byte address for elementwise add (0 = UBUF Input Buffer)
@@ -693,7 +693,7 @@ void CKerasDepthMap::Layer_7() {
   fpga_layer& layer = get_layer(7);
   layer.type = LT_CONV;
   layer.input_offs = 0;
-  layer.output_offs = 262144;
+  layer.output_offs = 917504;
   layer.output_size = 131072;
   layer.input_dim[0] = 32;
   layer.input_dim[1] = 8;
@@ -728,7 +728,7 @@ void CKerasDepthMap::Layer_8() {
   conf.z = 1;  // Input Depth
   conf.c = 256;  // Input Channels
   conf.input_buf.mem = io_mem_;
-  conf.input_buf.offs = 262144;
+  conf.input_buf.offs = 917504;
 
   // Output Configuration:
   conf.output_buf.mem = io_mem_;
@@ -769,7 +769,7 @@ void CKerasDepthMap::Layer_8() {
 
   fpga_layer& layer = get_layer(8);
   layer.type = LT_CONV;
-  layer.input_offs = 262144;
+  layer.input_offs = 917504;
   layer.output_offs = 0;
   layer.output_size = 65536;
   layer.input_dim[0] = 32;
@@ -809,7 +809,7 @@ void CKerasDepthMap::Layer_9() {
 
   // Output Configuration:
   conf.output_buf.mem = io_mem_;
-  conf.output_buf.offs = 458752;
+  conf.output_buf.offs = 131072;
 
   conf.eltwise_buf.mem = NULL;
   conf.eltwise_buf.offs = 0;  // Input byte address for elementwise add (0 = UBUF Input Buffer)
@@ -847,7 +847,7 @@ void CKerasDepthMap::Layer_9() {
   fpga_layer& layer = get_layer(9);
   layer.type = LT_CONV;
   layer.input_offs = 0;
-  layer.output_offs = 458752;
+  layer.output_offs = 131072;
   layer.output_size = 65536;
   layer.input_dim[0] = 16;
   layer.input_dim[1] = 4;
@@ -882,7 +882,7 @@ void CKerasDepthMap::Layer_10() {
   conf.z = 1;  // Input Depth
   conf.c = 512;  // Input Channels
   conf.input_buf.mem = io_mem_;
-  conf.input_buf.offs = 458752;
+  conf.input_buf.offs = 131072;
 
   // Output Configuration:
   conf.output_buf.mem = io_mem_;
@@ -923,7 +923,7 @@ void CKerasDepthMap::Layer_10() {
 
   fpga_layer& layer = get_layer(10);
   layer.type = LT_CONV;
-  layer.input_offs = 458752;
+  layer.input_offs = 131072;
   layer.output_offs = 0;
   layer.output_size = 16384;
   layer.input_dim[0] = 16;
@@ -1437,7 +1437,7 @@ void CKerasDepthMap::Layer_18() {
 
   // Output Configuration:
   conf.output_buf.mem = io_mem_;
-  conf.output_buf.offs = 16384;
+  conf.output_buf.offs = 196608;
 
   conf.eltwise_buf.mem = NULL;
   conf.eltwise_buf.offs = 0;  // Input byte address for elementwise add (0 = UBUF Input Buffer)
@@ -1472,7 +1472,7 @@ void CKerasDepthMap::Layer_18() {
   fpga_layer& layer = get_layer(18);
   layer.type = LT_CONV;
   layer.input_offs = 0;
-  layer.output_offs = 16384;
+  layer.output_offs = 196608;
   layer.output_size = 65536;
   layer.input_dim[0] = 8;
   layer.input_dim[1] = 2;
@@ -1507,11 +1507,11 @@ void CKerasDepthMap::Layer_19() {
   conf.z = 1;  // Input Depth
   conf.c = 512;  // Input Channels
   conf.input_buf.mem = io_mem_;
-  conf.input_buf.offs = 16384;
+  conf.input_buf.offs = 196608;
 
   // Output Configuration:
   conf.output_buf.mem = io_mem_;
-  conf.output_buf.offs = 393216;
+  conf.output_buf.offs = 65536;
 
   conf.eltwise_buf.mem = NULL;
   conf.eltwise_buf.offs = 0;  // Input byte address for elementwise add (0 = UBUF Input Buffer)
@@ -1548,8 +1548,8 @@ void CKerasDepthMap::Layer_19() {
 
   fpga_layer& layer = get_layer(19);
   layer.type = LT_CONV;
-  layer.input_offs = 16384;
-  layer.output_offs = 393216;
+  layer.input_offs = 196608;
+  layer.output_offs = 65536;
   layer.output_size = 65536;
   layer.input_dim[0] = 16;
   layer.input_dim[1] = 4;
@@ -1569,8 +1569,8 @@ void CKerasDepthMap::Layer_19() {
 void CKerasDepthMap::Layer_20() {
   fpga_layer& layer = get_layer(20);
   layer.type = LT_CONCAT;
-  layer.input_offs = 393216;
-  layer.output_offs = 393216;
+  layer.input_offs = 65536;
+  layer.output_offs = 65536;
   layer.output_size = 131072;
   layer.input_dim[0] = 16;
   layer.input_dim[1] = 4;
@@ -1605,7 +1605,7 @@ void CKerasDepthMap::Layer_21() {
   conf.z = 1;  // Input Depth
   conf.c = 1024;  // Input Channels
   conf.input_buf.mem = io_mem_;
-  conf.input_buf.offs = 393216;
+  conf.input_buf.offs = 65536;
 
   // Output Configuration:
   conf.output_buf.mem = io_mem_;
@@ -1646,7 +1646,7 @@ void CKerasDepthMap::Layer_21() {
 
   fpga_layer& layer = get_layer(21);
   layer.type = LT_CONV;
-  layer.input_offs = 393216;
+  layer.input_offs = 65536;
   layer.output_offs = 0;
   layer.output_size = 65536;
   layer.input_dim[0] = 16;
@@ -1757,7 +1757,7 @@ void CKerasDepthMap::Layer_23() {
 
   // Output Configuration:
   conf.output_buf.mem = io_mem_;
-  conf.output_buf.offs = 131072;
+  conf.output_buf.offs = 786432;
 
   conf.eltwise_buf.mem = NULL;
   conf.eltwise_buf.offs = 0;  // Input byte address for elementwise add (0 = UBUF Input Buffer)
@@ -1795,7 +1795,7 @@ void CKerasDepthMap::Layer_23() {
   fpga_layer& layer = get_layer(23);
   layer.type = LT_CONV;
   layer.input_offs = 1048576;
-  layer.output_offs = 131072;
+  layer.output_offs = 786432;
   layer.output_size = 131072;
   layer.input_dim[0] = 32;
   layer.input_dim[1] = 8;
@@ -1815,8 +1815,8 @@ void CKerasDepthMap::Layer_23() {
 void CKerasDepthMap::Layer_24() {
   fpga_layer& layer = get_layer(24);
   layer.type = LT_CONCAT;
-  layer.input_offs = 131072;
-  layer.output_offs = 131072;
+  layer.input_offs = 786432;
+  layer.output_offs = 786432;
   layer.output_size = 262144;
   layer.input_dim[0] = 32;
   layer.input_dim[1] = 8;
@@ -1851,7 +1851,7 @@ void CKerasDepthMap::Layer_25() {
   conf.z = 1;  // Input Depth
   conf.c = 512;  // Input Channels
   conf.input_buf.mem = io_mem_;
-  conf.input_buf.offs = 131072;
+  conf.input_buf.offs = 786432;
 
   // Output Configuration:
   conf.output_buf.mem = io_mem_;
@@ -1892,7 +1892,7 @@ void CKerasDepthMap::Layer_25() {
 
   fpga_layer& layer = get_layer(25);
   layer.type = LT_CONV;
-  layer.input_offs = 131072;
+  layer.input_offs = 786432;
   layer.output_offs = 0;
   layer.output_size = 131072;
   layer.input_dim[0] = 32;
@@ -1929,7 +1929,7 @@ void CKerasDepthMap::Layer_26() {
 
   // Output Configuration:
   conf.output_buf.mem = io_mem_;
-  conf.output_buf.offs = 3014656;
+  conf.output_buf.offs = 786432;
 
   conf.eltwise_buf.mem = NULL;
   conf.eltwise_buf.offs = 0;  // Input byte address for elementwise add (0 = UBUF Input Buffer)
@@ -1964,7 +1964,7 @@ void CKerasDepthMap::Layer_26() {
   fpga_layer& layer = get_layer(26);
   layer.type = LT_CONV;
   layer.input_offs = 0;
-  layer.output_offs = 3014656;
+  layer.output_offs = 786432;
   layer.output_size = 524288;
   layer.input_dim[0] = 32;
   layer.input_dim[1] = 8;
@@ -1999,11 +1999,11 @@ void CKerasDepthMap::Layer_27() {
   conf.z = 1;  // Input Depth
   conf.c = 256;  // Input Channels
   conf.input_buf.mem = io_mem_;
-  conf.input_buf.offs = 3014656;
+  conf.input_buf.offs = 786432;
 
   // Output Configuration:
   conf.output_buf.mem = io_mem_;
-  conf.output_buf.offs = 2490368;
+  conf.output_buf.offs = 262144;
 
   conf.eltwise_buf.mem = NULL;
   conf.eltwise_buf.offs = 0;  // Input byte address for elementwise add (0 = UBUF Input Buffer)
@@ -2040,8 +2040,8 @@ void CKerasDepthMap::Layer_27() {
 
   fpga_layer& layer = get_layer(27);
   layer.type = LT_CONV;
-  layer.input_offs = 3014656;
-  layer.output_offs = 2490368;
+  layer.input_offs = 786432;
+  layer.output_offs = 262144;
   layer.output_size = 262144;
   layer.input_dim[0] = 64;
   layer.input_dim[1] = 16;
@@ -2061,8 +2061,8 @@ void CKerasDepthMap::Layer_27() {
 void CKerasDepthMap::Layer_28() {
   fpga_layer& layer = get_layer(28);
   layer.type = LT_CONCAT;
-  layer.input_offs = 2490368;
-  layer.output_offs = 2490368;
+  layer.input_offs = 262144;
+  layer.output_offs = 262144;
   layer.output_size = 524288;
   layer.input_dim[0] = 64;
   layer.input_dim[1] = 16;
@@ -2097,7 +2097,7 @@ void CKerasDepthMap::Layer_29() {
   conf.z = 1;  // Input Depth
   conf.c = 256;  // Input Channels
   conf.input_buf.mem = io_mem_;
-  conf.input_buf.offs = 2490368;
+  conf.input_buf.offs = 262144;
 
   // Output Configuration:
   conf.output_buf.mem = io_mem_;
@@ -2138,7 +2138,7 @@ void CKerasDepthMap::Layer_29() {
 
   fpga_layer& layer = get_layer(29);
   layer.type = LT_CONV;
-  layer.input_offs = 2490368;
+  layer.input_offs = 262144;
   layer.output_offs = 0;
   layer.output_size = 262144;
   layer.input_dim[0] = 64;
@@ -2175,7 +2175,7 @@ void CKerasDepthMap::Layer_30() {
 
   // Output Configuration:
   conf.output_buf.mem = io_mem_;
-  conf.output_buf.offs = 2490368;
+  conf.output_buf.offs = 262144;
 
   conf.eltwise_buf.mem = NULL;
   conf.eltwise_buf.offs = 0;  // Input byte address for elementwise add (0 = UBUF Input Buffer)
@@ -2210,7 +2210,7 @@ void CKerasDepthMap::Layer_30() {
   fpga_layer& layer = get_layer(30);
   layer.type = LT_CONV;
   layer.input_offs = 0;
-  layer.output_offs = 2490368;
+  layer.output_offs = 262144;
   layer.output_size = 1048576;
   layer.input_dim[0] = 64;
   layer.input_dim[1] = 16;
@@ -2245,11 +2245,11 @@ void CKerasDepthMap::Layer_31() {
   conf.z = 1;  // Input Depth
   conf.c = 128;  // Input Channels
   conf.input_buf.mem = io_mem_;
-  conf.input_buf.offs = 2490368;
+  conf.input_buf.offs = 262144;
 
   // Output Configuration:
   conf.output_buf.mem = io_mem_;
-  conf.output_buf.offs = 3538944;
+  conf.output_buf.offs = 3571712;
 
   conf.eltwise_buf.mem = NULL;
   conf.eltwise_buf.offs = 0;  // Input byte address for elementwise add (0 = UBUF Input Buffer)
@@ -2286,8 +2286,8 @@ void CKerasDepthMap::Layer_31() {
 
   fpga_layer& layer = get_layer(31);
   layer.type = LT_CONV;
-  layer.input_offs = 2490368;
-  layer.output_offs = 3538944;
+  layer.input_offs = 262144;
+  layer.output_offs = 3571712;
   layer.output_size = 524288;
   layer.input_dim[0] = 128;
   layer.input_dim[1] = 32;
@@ -2467,7 +2467,7 @@ void CKerasDepthMap::Layer_34() {
 
   // Output Configuration:
   conf.output_buf.mem = io_mem_;
-  conf.output_buf.offs = 2048;
+  conf.output_buf.offs = 4620288;
 
   conf.eltwise_buf.mem = NULL;
   conf.eltwise_buf.offs = 0;  // Input byte address for elementwise add (0 = UBUF Input Buffer)
@@ -2502,7 +2502,7 @@ void CKerasDepthMap::Layer_34() {
   fpga_layer& layer = get_layer(34);
   layer.type = LT_CONV;
   layer.input_offs = 0;
-  layer.output_offs = 2048;
+  layer.output_offs = 4620288;
   layer.output_size = 8192;
   layer.input_dim[0] = 64;
   layer.input_dim[1] = 16;
@@ -2517,19 +2517,13 @@ void CKerasDepthMap::Layer_34() {
   layer.is_input_hw_layout = true;
 }//end of  Layer_34
 
-//Layer_35: CopyConcatenate Layer
+//Layer_35: Concatenate Layer
 //	->: concatenate_5
 void CKerasDepthMap::Layer_35() {
-  static fpga_layer *input_layers[] = {
-    &layers_[31],
-    &layers_[3],
-    &layers_[34],
-  };
-
   fpga_layer& layer = get_layer(35);
-  layer.type = LT_COPY_CONCAT;
-  layer.input_offs = 3538944;
-  layer.output_offs = 4063232;
+  layer.type = LT_CONCAT;
+  layer.input_offs = 3571712;
+  layer.output_offs = 3571712;
   layer.output_size = 1056768;
   layer.input_dim[0] = 128;
   layer.input_dim[1] = 32;
@@ -2542,8 +2536,6 @@ void CKerasDepthMap::Layer_35() {
   layer.is_output = false;
   layer.is_f32_output = false;
   layer.is_input_hw_layout = true;
-  layer.input_layer_num = 3;
-  layer.input_layers = input_layers;
 }//end of  Layer_35
 
 //Layer_36: Convolution Layer
@@ -2566,7 +2558,7 @@ void CKerasDepthMap::Layer_36() {
   conf.z = 1;  // Input Depth
   conf.c = 129;  // Input Channels
   conf.input_buf.mem = io_mem_;
-  conf.input_buf.offs = 4063232;
+  conf.input_buf.offs = 3571712;
 
   // Output Configuration:
   conf.output_buf.mem = io_mem_;
@@ -2607,7 +2599,7 @@ void CKerasDepthMap::Layer_36() {
 
   fpga_layer& layer = get_layer(36);
   layer.type = LT_CONV;
-  layer.input_offs = 4063232;
+  layer.input_offs = 3571712;
   layer.output_offs = 0;
   layer.output_size = 524288;
   layer.input_dim[0] = 128;
@@ -2644,7 +2636,7 @@ void CKerasDepthMap::Layer_37() {
 
   // Output Configuration:
   conf.output_buf.mem = io_mem_;
-  conf.output_buf.offs = 2490368;
+  conf.output_buf.offs = 3571712;
 
   conf.eltwise_buf.mem = NULL;
   conf.eltwise_buf.offs = 0;  // Input byte address for elementwise add (0 = UBUF Input Buffer)
@@ -2679,7 +2671,7 @@ void CKerasDepthMap::Layer_37() {
   fpga_layer& layer = get_layer(37);
   layer.type = LT_CONV;
   layer.input_offs = 0;
-  layer.output_offs = 2490368;
+  layer.output_offs = 3571712;
   layer.output_size = 2097152;
   layer.input_dim[0] = 128;
   layer.input_dim[1] = 32;
@@ -2714,11 +2706,11 @@ void CKerasDepthMap::Layer_38() {
   conf.z = 1;  // Input Depth
   conf.c = 64;  // Input Channels
   conf.input_buf.mem = io_mem_;
-  conf.input_buf.offs = 2490368;
+  conf.input_buf.offs = 3571712;
 
   // Output Configuration:
   conf.output_buf.mem = io_mem_;
-  conf.output_buf.offs = 4587520;
+  conf.output_buf.offs = 1441792;
 
   conf.eltwise_buf.mem = NULL;
   conf.eltwise_buf.offs = 0;  // Input byte address for elementwise add (0 = UBUF Input Buffer)
@@ -2755,8 +2747,8 @@ void CKerasDepthMap::Layer_38() {
 
   fpga_layer& layer = get_layer(38);
   layer.type = LT_CONV;
-  layer.input_offs = 2490368;
-  layer.output_offs = 4587520;
+  layer.input_offs = 3571712;
+  layer.output_offs = 1441792;
   layer.output_size = 1048576;
   layer.input_dim[0] = 256;
   layer.input_dim[1] = 64;
@@ -2936,7 +2928,7 @@ void CKerasDepthMap::Layer_41() {
 
   // Output Configuration:
   conf.output_buf.mem = io_mem_;
-  conf.output_buf.offs = 8192;
+  conf.output_buf.offs = 3538944;
 
   conf.eltwise_buf.mem = NULL;
   conf.eltwise_buf.offs = 0;  // Input byte address for elementwise add (0 = UBUF Input Buffer)
@@ -2971,7 +2963,7 @@ void CKerasDepthMap::Layer_41() {
   fpga_layer& layer = get_layer(41);
   layer.type = LT_CONV;
   layer.input_offs = 0;
-  layer.output_offs = 8192;
+  layer.output_offs = 3538944;
   layer.output_size = 32768;
   layer.input_dim[0] = 128;
   layer.input_dim[1] = 32;
@@ -2986,19 +2978,13 @@ void CKerasDepthMap::Layer_41() {
   layer.is_input_hw_layout = true;
 }//end of  Layer_41
 
-//Layer_42: CopyConcatenate Layer
+//Layer_42: Concatenate Layer
 //	->: concatenate_6
 void CKerasDepthMap::Layer_42() {
-  static fpga_layer *input_layers[] = {
-    &layers_[38],
-    &layers_[1],
-    &layers_[41],
-  };
-
   fpga_layer& layer = get_layer(42);
-  layer.type = LT_COPY_CONCAT;
-  layer.input_offs = 4587520;
-  layer.output_offs = 5636096;
+  layer.type = LT_CONCAT;
+  layer.input_offs = 1441792;
+  layer.output_offs = 1441792;
   layer.output_size = 2129920;
   layer.input_dim[0] = 256;
   layer.input_dim[1] = 64;
@@ -3011,8 +2997,6 @@ void CKerasDepthMap::Layer_42() {
   layer.is_output = false;
   layer.is_f32_output = false;
   layer.is_input_hw_layout = true;
-  layer.input_layer_num = 3;
-  layer.input_layers = input_layers;
 }//end of  Layer_42
 
 //Layer_43: Convolution Layer
@@ -3035,7 +3019,7 @@ void CKerasDepthMap::Layer_43() {
   conf.z = 1;  // Input Depth
   conf.c = 65;  // Input Channels
   conf.input_buf.mem = io_mem_;
-  conf.input_buf.offs = 5636096;
+  conf.input_buf.offs = 1441792;
 
   // Output Configuration:
   conf.output_buf.mem = io_mem_;
@@ -3076,7 +3060,7 @@ void CKerasDepthMap::Layer_43() {
 
   fpga_layer& layer = get_layer(43);
   layer.type = LT_CONV;
-  layer.input_offs = 5636096;
+  layer.input_offs = 1441792;
   layer.output_offs = 0;
   layer.output_size = 1048576;
   layer.input_dim[0] = 256;
@@ -3405,7 +3389,7 @@ void CKerasDepthMap::Layer_48() {
 
   // Output Configuration:
   conf.output_buf.mem = io_mem_;
-  conf.output_buf.offs = 32768;
+  conf.output_buf.offs = 7340032;
 
   conf.eltwise_buf.mem = NULL;
   conf.eltwise_buf.offs = 0;  // Input byte address for elementwise add (0 = UBUF Input Buffer)
@@ -3440,7 +3424,7 @@ void CKerasDepthMap::Layer_48() {
   fpga_layer& layer = get_layer(48);
   layer.type = LT_CONV;
   layer.input_offs = 0;
-  layer.output_offs = 32768;
+  layer.output_offs = 7340032;
   layer.output_size = 131072;
   layer.input_dim[0] = 256;
   layer.input_dim[1] = 64;
@@ -3455,18 +3439,13 @@ void CKerasDepthMap::Layer_48() {
   layer.is_input_hw_layout = true;
 }//end of  Layer_48
 
-//Layer_49: CopyConcatenate Layer
+//Layer_49: Concatenate Layer
 //	->: concatenate_7
 void CKerasDepthMap::Layer_49() {
-  static fpga_layer *input_layers[] = {
-    &layers_[45],
-    &layers_[48],
-  };
-
   fpga_layer& layer = get_layer(49);
-  layer.type = LT_COPY_CONCAT;
+  layer.type = LT_CONCAT;
   layer.input_offs = 5242880;
-  layer.output_offs = 163840;
+  layer.output_offs = 5242880;
   layer.output_size = 2228224;
   layer.input_dim[0] = 512;
   layer.input_dim[1] = 128;
@@ -3479,8 +3458,6 @@ void CKerasDepthMap::Layer_49() {
   layer.is_output = false;
   layer.is_f32_output = false;
   layer.is_input_hw_layout = true;
-  layer.input_layer_num = 2;
-  layer.input_layers = input_layers;
 }//end of  Layer_49
 
 //Layer_50: Convolution Layer
@@ -3503,11 +3480,11 @@ void CKerasDepthMap::Layer_50() {
   conf.z = 1;  // Input Depth
   conf.c = 17;  // Input Channels
   conf.input_buf.mem = io_mem_;
-  conf.input_buf.offs = 163840;
+  conf.input_buf.offs = 5242880;
 
   // Output Configuration:
   conf.output_buf.mem = io_mem_;
-  conf.output_buf.offs = 2392064;
+  conf.output_buf.offs = 0;
 
   conf.eltwise_buf.mem = NULL;
   conf.eltwise_buf.offs = 0;  // Input byte address for elementwise add (0 = UBUF Input Buffer)
@@ -3544,8 +3521,8 @@ void CKerasDepthMap::Layer_50() {
 
   fpga_layer& layer = get_layer(50);
   layer.type = LT_CONV;
-  layer.input_offs = 163840;
-  layer.output_offs = 2392064;
+  layer.input_offs = 5242880;
+  layer.output_offs = 0;
   layer.output_size = 2097152;
   layer.input_dim[0] = 512;
   layer.input_dim[1] = 128;
@@ -3578,11 +3555,11 @@ void CKerasDepthMap::Layer_51() {
   conf.z = 1;  // Input Depth
   conf.c = 16;  // Input Channels
   conf.input_buf.mem = io_mem_;
-  conf.input_buf.offs = 2392064;
+  conf.input_buf.offs = 0;
 
   // Output Configuration:
   conf.output_buf.mem = io_mem_;
-  conf.output_buf.offs = 0;
+  conf.output_buf.offs = 2097152;
 
   conf.eltwise_buf.mem = NULL;
   conf.eltwise_buf.offs = 0;  // Input byte address for elementwise add (0 = UBUF Input Buffer)
@@ -3617,8 +3594,8 @@ void CKerasDepthMap::Layer_51() {
 
   fpga_layer& layer = get_layer(51);
   layer.type = LT_CONV;
-  layer.input_offs = 2392064;
-  layer.output_offs = 0;
+  layer.input_offs = 0;
+  layer.output_offs = 2097152;
   layer.output_size = 131072;
   layer.input_dim[0] = 512;
   layer.input_dim[1] = 128;
@@ -3650,11 +3627,11 @@ void CKerasDepthMap::Layer_52() {
   conf.z = 1;  // Input Depth
   conf.c = 1;  // Input Channels
   conf.input_buf.mem = io_mem_;
-  conf.input_buf.offs = 0;
+  conf.input_buf.offs = 2097152;
 
   // Output Configuration:
   conf.output_buf.mem = io_mem_;
-  conf.output_buf.offs = 131072;
+  conf.output_buf.offs = 0;
 
   conf.eltwise_buf.mem = NULL;
   conf.eltwise_buf.offs = 0;  // Input byte address for elementwise add (0 = UBUF Input Buffer)
@@ -3688,8 +3665,8 @@ void CKerasDepthMap::Layer_52() {
 
   fpga_layer& layer = get_layer(52);
   layer.type = LT_CONV;
-  layer.input_offs = 0;
-  layer.output_offs = 131072;
+  layer.input_offs = 2097152;
+  layer.output_offs = 0;
   layer.output_size = 131072;
   layer.input_dim[0] = 512;
   layer.input_dim[1] = 128;

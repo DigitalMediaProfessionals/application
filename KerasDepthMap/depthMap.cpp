@@ -103,7 +103,7 @@ int main(int argc, char** argv) {
   }
 
   const std::string input_image_path = "./images_depthmap/";
-  const std::vector<std::string> input_image_suffix = {".png", ".PNG"};
+  const std::vector<std::string> input_image_suffix = {".png", ".PNG", ".jpg"};
 
   vector<string> image_names =
       dmp::util::get_input_image_names(input_image_path, input_image_suffix);
@@ -114,7 +114,7 @@ int main(int argc, char** argv) {
   }
 
   std::vector<float> networkOutput;
-  std::vector<float> networkOutput_transposed;
+  std::vector<float> networkOutput_transposed(IMAGE_RZ_H*IMAGE_RZ_W);
 
   COverlayRGB bg_overlay(SCREEN_W, SCREEN_H);
   bg_overlay.alloc_mem_overlay(SCREEN_W, SCREEN_H);
@@ -204,6 +204,13 @@ int main(int argc, char** argv) {
           for(int x = 0 ; x < IMAGE_RZ_W; x++)
             networkOutput_transposed[x+y*IMAGE_RZ_W] = networkOutput[y+x*IMAGE_RZ_H];
 
+        for (int i=0; i< 32; i++)
+        {
+          printf("%f ",network.get_layer(0).output.data()[i]);
+          if(i%3 == 0&&i>0)
+            printf("\n");
+        }
+
         dmp::util::swap_buffer();
         fc++;
 
@@ -248,14 +255,15 @@ int main(int argc, char** argv) {
       if (!pause) {
         // Read input image from jpg file
         cv::Mat colorMat = cv::imread(input_image_path + image_names[image_nr], CV_LOAD_IMAGE_COLOR);
-        cv::Mat resizedMat;
+        // cv::Mat resizedMat = colorMat;
         // Resize image into 512x128 before feeding through network 
-        cv::resize( colorMat , resizedMat , cv::Size( IMAGE_RZ_W, IMAGE_RZ_H ), 0, 0, CV_INTER_LINEAR);
-        printf("Resized image %dx%d into %dx%d\n", colorMat.cols, colorMat.rows, IMAGE_RZ_W, IMAGE_RZ_H);
-        opencv2dmp( resizedMat, overlay_input );
+        //cv::resize( colorMat , resizedMat , cv::Size( IMAGE_RZ_W, IMAGE_RZ_H ), 0, 0, CV_INTER_LINEAR);
+        // printf("Resized image %dx%d into %dx%d\n", colorMat.cols, colorMat.rows, IMAGE_RZ_W, IMAGE_RZ_H);
+        opencv2dmp( colorMat, overlay_input );
         frame2rawUInt( overlay_input, imgView );
         overlay_input_debug.convert_to_overlay_pixel_format(imgView, IMAGE_RZ_W*IMAGE_RZ_H);
         dmp::util::preproc_image(imgView, imgProc, IMAGE_RZ_W, IMAGE_RZ_H, 0, 0, 0, 0.003921569, true);
+        printf("preproc_image done\n");
 
         if (image_nr == num_images - 1) {
           image_nr = 0;
