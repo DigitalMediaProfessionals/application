@@ -1012,5 +1012,166 @@ void COverlayRGB::capture_screen(std::string filename,
   fclose(fout);
 }
 
+void COverlayRGB::set_mouse_cursor( unsigned int m_color)
+{
+
+  if( buff_rgb_ != NULL)
+  {
+    pixfmt_type pixf( render_buf_overlay_rgb_);
+    base_ren_type ren(pixf);
+    agg::scanline_u8 sl;
+    agg::rasterizer_scanline_aa<> ras;
+
+    ras.gamma(agg::gamma_power( 1));
+    renderer_solid ren_sl(ren);
+    agg::rgba8 color = agg::rgba8(( m_color&0x00ff0000)>>16,
+        (m_color&0x0000ff00)>>8, (m_color&0x000000ff), (m_color&0xff000000)>>24);
+
+    ras.reset();
+        ras.move_to_d( 0, 0);
+        ras.line_to_d( 0, 9);
+        ras.line_to_d( 3, 6);
+        ras.line_to_d( 6, 6);
+        ras.close_polygon();
+        ren_sl.color(color);
+    agg::render_scanlines(ras, sl, ren_sl);
+
+    ras.gamma(agg::gamma_none());
+
+    agg::path_storage ps;
+    agg::conv_stroke<agg::path_storage> pg(ps);
+    pg.width( 1.2);
+
+    ps.remove_all();
+    ps.move_to( 2.3, 6);
+    ps.line_to( 4, 9);
+    ras.add_path(pg);
+    agg::render_scanlines_aa_solid(ras, sl, ren, color);
+
+  }
+  else
+  {
+    fprintf(stderr, "set_mouse_cursor() failed\n" );
+  }
+}
+
+void COverlayRGB::set_background_to_color( unsigned int m_color){
+  if( buff_rgb_ != NULL){
+    pixfmt_type pixf( render_buf_overlay_rgb_);
+    base_ren_type ren(pixf);
+    agg::rgba8 color = agg::rgba8(( m_color&0x00ff0000)>>16,
+          (m_color&0x0000ff00)>>8, (m_color&0x000000ff), (m_color&0xff000000)>>24);
+    ren.clear( color);
+  }
+  else{
+    ERR( "set_background_to_color() failed\n" );
+  }
+}
+
+void COverlayRGB::draw_ctrlBox_with_fonts(unsigned int x0pos, unsigned int y0pos, unsigned int x1pos, unsigned int y1pos,
+    unsigned int box_color, unsigned int outline_color,
+    string path_to_ttf, string txt, unsigned txt_size, unsigned int text_color, double c_radius)
+{
+
+  x0pos = ( x0pos >= overlay_rgb_width_) ? (overlay_rgb_width_ - 1) : (( x0pos < 0) ? 0 : x0pos);
+  x1pos = ( x1pos >= overlay_rgb_width_) ? (overlay_rgb_width_ - 1) : (( x1pos < 0) ? 0 : x1pos);
+  y0pos = ( y0pos >= overlay_rgb_width_) ? (overlay_rgb_width_ - 1) : (( y0pos < 0) ? 0 : y0pos);
+  y1pos = ( y1pos >= overlay_rgb_width_) ? (overlay_rgb_width_ - 1) : (( y1pos < 0) ? 0 : y1pos);
+
+  if( buff_rgb_ != NULL) {
+
+	pixfmt_type pixf( render_buf_overlay_rgb_);
+    agg::scanline_u8 scanLine;
+    agg::rasterizer_scanline_aa<> ras;
+
+    base_ren_type rb(pixf);
+    renderer_solid rs_box(rb);
+
+    rs_box.color(agg::rgba8((box_color & 0x00ff0000) >> 16,
+          (box_color & 0x0000ff00) >>  8, (box_color & 0x000000ff), (box_color & 0xff000000) >> 24));
+    agg::rounded_rect rec(x0pos, y0pos, x1pos, y1pos, c_radius);
+    rec.normalize_radius();
+        ras.add_path( rec);
+    agg::render_scanlines(ras, scanLine, rs_box);
+
+    rs_box.color(agg::rgba8((outline_color & 0x00ff0000) >> 16,
+              (outline_color & 0x0000ff00) >>  8 , (outline_color & 0x000000ff), (outline_color & 0xff000000) >> 24));
+    agg::conv_stroke<agg::rounded_rect> stroke(rec);
+    stroke.width( 2.0);
+    ras.add_path(stroke);
+    agg::render_scanlines(ras, scanLine, rs_box);
+
+    if( txt != ""){
+      font_engine_type             feng;
+      font_manager_type            fman(feng);
+      agg::trans_affine mtx;
+      agg::conv_curve<font_manager_type::path_adaptor_type> curves(fman.path_adaptor());
+      agg::conv_transform<agg::conv_curve<font_manager_type::path_adaptor_type> > trans(curves, mtx);
+      agg::glyph_rendering gren = agg::glyph_ren_outline;
+
+      unsigned w = 0;
+      unsigned h = 0;
+      // Text size that input to funtions in font engine are required in 100*inch unit.
+      // That is why we need to change to pixel
+      double txt_height = double( txt_size)*100/64; // 64DPI
+      COverlayRGB::calculate_boundary_text_with_font( path_to_ttf, txt, txt_height, w, h);
+
+      rs_box.color(agg::rgba8((text_color & 0x00ff0000) >> 16,
+                    (text_color & 0x0000ff00) >>  8 , (text_color & 0x000000ff), (text_color & 0xff000000) >> 24));
+
+      // Render each by each letter in the string
+      if(!path_to_ttf.empty() && !txt.empty() && feng.load_font(path_to_ttf.c_str(), 0, gren)){
+
+        feng.height( txt_height);
+        feng.width( txt_height);
+        feng.hinting(true);
+        feng.flip_y(true);
+        const char* p = txt.c_str();
+        double x = 0;
+        double y = 0;
+        double start_x = x0pos + (x1pos - x0pos)/2 - w/2;
+        double start_y = y0pos + (y1pos - y0pos)/2 + txt_size/2 + txt_size/15;
+        while(*p)
+        {
+          // This block is for further development when new line is needed in the text
+          /*if(*p == '\n')
+          {
+          start_y += txt_size*2;
+          ++p;
+          x = 0;
+          y = 0;
+          continue;
+          }*/
+          const agg::glyph_cache* glyph = fman.glyph(*p);
+          if(glyph != NULL)
+          {
+          fman.add_kerning(&x, &y);
+          fman.init_embedded_adaptors(glyph, 0, 0);
+          if(glyph->data_type == agg::glyph_data_outline)
+          {
+            ras.reset();
+            mtx.reset();
+            mtx *= agg::trans_affine_translation( start_x + x, start_y + y);
+            ras.add_path(trans);
+
+            agg::render_scanlines(ras, scanLine, rs_box);
+          }
+          // increment pen position
+          x += glyph->advance_x;
+          y += glyph->advance_y;
+          }
+          ++p;
+        }
+      }
+      else{
+        ERR("set_text_with_font() failed\n" );
+      }
+    }
+  }
+  else{
+    fprintf(stderr, "draw_ctrlBox() failed\n" );
+  }
+}
+
 };  // end of namespace util
 };  // end of namespace dmp

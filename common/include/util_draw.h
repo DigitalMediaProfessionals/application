@@ -290,6 +290,34 @@ class COverlayRGB
     */
     static void capture_screen(std::string filename,
             uint32_t screen_width, uint32_t screen_height);
+
+	/*! Utility function to draw mouse cursor with a specific color onto screen
+	* @param[in] m_color color of the mouse cursor
+	*/
+    void set_mouse_cursor( unsigned int m_color);
+
+	/*! Utility function to set color to the buffer
+	* @param[in] m_color color of background
+	*/
+    void set_background_to_color( unsigned int m_color);
+
+	/*! Utility function to draw a control box with text in the case of using specific font
+	* @param[in] x0pos top-left x position of the box in overlay
+	* @param[in] y0pos top-left y position of the box in overlay
+	* @param[in] x1pos bottom-right x position of the box in overlay
+	* @param[in] y1pos bottom-right y position of the box in overlay
+	* @param[in] box_color background color of the box
+	* @param[in] outline_color color for the outline of the box
+	* @param[in] path_to_ttf path of font in string
+	* @param[in] txt input text that display inside the box, if no text, put ""
+	* @param[in] txt_size size of the text
+	* @param[in] text_color color of the text
+	* @param[in] c_radius radius of square corners of the box
+	*/
+    void draw_ctrlBox_with_fonts(unsigned int x0pos, unsigned int y0pos, unsigned int x1pos, unsigned int y1pos,
+        unsigned int box_color, unsigned int outline_color,
+        string path_to_ttf, string txt, unsigned txt_size, unsigned int text_color, double c_radius);
+
 };
 
 /// @brief Initializes the framebuffer (/dev/fb0).
