@@ -602,7 +602,7 @@ int main(int argc, char **argv) {
   }
 
   // Initialize Mouse and DMP Modules
-  mouse_init(m_cur, 0, 0);
+  mouse_init(m_cur, SCREEN_W/2, SCREEN_H/2);
 
   // Set overlay for background
   bg_overlay.alloc_mem_overlay(SCREEN_W, SCREEN_H);
@@ -620,10 +620,6 @@ int main(int argc, char **argv) {
   // Thread for setting up screen reload time and checking stopping signal from buttons
   pthread_t hwacc_thread;
   pthread_create( &hwacc_thread, NULL, hwacc_thread_func, NULL);
-
-  // Set mouse event
-  char event[] = "/dev/input/event1";
-  set_mouse_event( event);
 
   // Open mouse event
   if (mouse_open() == EXIT_FAILURE) return 0;

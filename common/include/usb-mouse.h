@@ -23,6 +23,11 @@
 #include <sys/ioctl.h>
 #include <linux/input.h>
 #include <sys/inotify.h>
+#include <libudev.h>
+#include <sys/stat.h>
+#include <inttypes.h>
+#include <dirent.h>
+
 #include "util_draw.h"
 
 using namespace std;
@@ -48,6 +53,8 @@ struct box{
 	int y2;
 };
 
+void scan4mouse( string &event_path, string &mouse_name);
+
 void mouse_config(unsigned int m_refresh_rate, unsigned int m_resolution);
 
 void screen_config(unsigned int screen_width, unsigned int screen_height, unsigned int screen_resolution);
@@ -64,17 +71,6 @@ int mouse_read(mouse_infor &m_infor);
 
 int mouse2pointer(signed int virtual_count);
 
-/*int mouseCursor2bitmap(unsigned int* b, unsigned int fcol,unsigned int bcol, int x, int y);
-
-void printCursor_toDisplay(int x, int y, unsigned int fcol, unsigned int bcol);
-
-void set_color2background_image(unsigned int fcol);
-
-void create_button(box &button, unsigned int x1, unsigned int y1, unsigned int x2, unsigned int y2);
-
-void draw_button2background_image( box button, unsigned int fcol);
-
-bool button_is_pressed( mouse_infor m, box bt);*/
 
 
 
