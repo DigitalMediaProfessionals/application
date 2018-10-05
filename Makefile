@@ -1,4 +1,5 @@
 SUBDIRS = common/src \
+	MouseDemo \
 	CaffeGoogLeNet \
 	CaffeGoogLeNetCam \
 	CaffeMobileNet \
