@@ -65,8 +65,8 @@ bool CDMP_Network::ReserveMemory(size_t weights_size, size_t io_size) {
   }
 
   memset(&dv_info_, 0, sizeof(dv_info_));
-  dv_info_.size = sizeof(dv_info_);
-  dv_info_.version = 0;
+  dv_info_.header.size = sizeof(dv_info_);
+  dv_info_.header.version = 0;
   if (dmp_dv_context_get_info(ctx_, (dmp_dv_info*)&dv_info_)) {
     ERR("Unable to get information about DV context: %s\n", dmp_dv_get_last_error_message());
     return false;
