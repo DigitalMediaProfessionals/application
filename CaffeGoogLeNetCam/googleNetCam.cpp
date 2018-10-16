@@ -48,11 +48,11 @@ using namespace util;
 #define SCREEN_W (dmp::util::get_screen_width())
 #define SCREEN_H (dmp::util::get_screen_height())
 
-#define CAM_CAPTURE_W 640
-#define CAM_CAPTURE_H 480
-
 #define IMAGE_W 224
 #define IMAGE_H 224
+
+#define CIMAGE_W 640
+#define CIMAGE_H 480
 
 std::vector<std::string> catstr_vec(categories, categories + 1000);
 
@@ -95,7 +95,7 @@ void print_demo_title(COverlayRGB &bg_overlay)
   string text = "CNN - GoogleNet";
   unsigned w = 0;
   unsigned h = 0;
-  
+
   COverlayRGB::calculate_boundary_text_with_font(font_file, text, text_size, w, h);
   int x = ((SCREEN_W - w) / 2);
   int y = 25;
@@ -105,7 +105,7 @@ void print_demo_title(COverlayRGB &bg_overlay)
   bg_text.set_text_with_font(font_file, text, 0, 3*h/4, text_size, 0x00ffffff);
   bg_text.print_to_display(x, y);
 
-  
+
   text = "FPGA Demonstration";
   COverlayRGB::calculate_boundary_text_with_font(font_file, text, text_size, w, h);
   x = ((SCREEN_W - w) / 2);
@@ -131,18 +131,6 @@ void print_demo_title(COverlayRGB &bg_overlay)
 int main(int argc, char** argv) {
   if (!dmp::util::init_fb()) {
     fprintf(stderr, "dmp::util::init_fb() failed\n");
-    return 1;
-  }
-
-  const std::string input_image_path = "./images/";
-  const std::vector<std::string> input_image_suffix = {".jpg", ".jpeg", ".JPG",
-                                                       ".JPEG"};
-
-  vector<string> image_names =
-      dmp::util::get_input_image_names(input_image_path, input_image_suffix);
-  int num_images = image_names.size();
-  if (num_images == 0) {
-    cout << "No input images." << endl;
     return 1;
   }
 
@@ -175,7 +163,7 @@ int main(int argc, char** argv) {
     democonf_num = count;
   }
 
-  if (dmp::util::open_cam(CAM_CAPTURE_W, CAM_CAPTURE_H, 20)) {
+  if (dmp::util::open_cam(CIMAGE_W, CIMAGE_H, 20)) {
     return -1;
   }
   COverlayRGB bg_overlay(SCREEN_W, SCREEN_H);
@@ -185,6 +173,10 @@ int main(int argc, char** argv) {
   overlay_input.alloc_mem_overlay(IMAGE_W, IMAGE_H);
 
   network.Verbose(0);
+  const bool dump_outputs = false;
+  if (dump_outputs) {
+    network.WantLayerOutputs();
+  }
   if (!network.Initialize()) {
     return -1;
   }
@@ -218,129 +210,163 @@ int main(int argc, char** argv) {
       continue;
     }
 
-    // HW processing times
-    if (conv_time_tot != 0 && fc_time_tot != 0) {
-      string text = COverlayRGB::convert_time_to_text(
-                  "Convolution (" + conv_freq + " MHz HW ACC)      : ", conv_time_tot);
-      unsigned text_size = 14;
-
-      unsigned w = 0;
-      unsigned h = 0;
-      COverlayRGB::calculate_boundary_text(text, text_size, w, h);
-
-      int x = ((SCREEN_W - w) / 2);
-      int y = 7*SCREEN_H/8;
-
-      COverlayRGB overlay_time(SCREEN_W, SCREEN_H);
-      overlay_time.alloc_mem_overlay(w, h);
-      overlay_time.copy_overlay(bg_overlay,x, y);
-      overlay_time.set_text(0, 0, text, text_size, 0x00f4419d);
-      overlay_time.print_to_display(x, y);
-
-      text = COverlayRGB::convert_time_to_text(
-                "Fully Connected (" + fc_freq + " MHz HW ACC) : ", fc_time_tot);
-      COverlayRGB::calculate_boundary_text(text, text_size, w, h);
-
-      y = 7*SCREEN_H/8 + 28;
-
-      COverlayRGB overlay_fc(SCREEN_W, SCREEN_H);
-      overlay_fc.alloc_mem_overlay(w, h);
-      overlay_fc.copy_overlay(bg_overlay,x, y);
-      overlay_fc.set_text(0, 0, text, text_size, 0x00f4419d);
-      overlay_fc.print_to_display(x, y);
-
-
-      text = COverlayRGB::convert_time_to_text(
-                "Total Processing Time           : ", conv_time_tot + fc_time_tot);
-      COverlayRGB::calculate_boundary_text(text, text_size, w, h);
-
-      y = 7*SCREEN_H/8 + 56;
-
-      COverlayRGB overlay_processingtime(SCREEN_W, SCREEN_H);
-      overlay_processingtime.alloc_mem_overlay(w, h);
-      overlay_processingtime.copy_overlay(bg_overlay,x, y);
-      overlay_processingtime.set_text(0, 0, text, text_size, 0x00f4419d);
-      overlay_processingtime.print_to_display(x, y);
-    }
-
-    if (!pause) {
-      if (dmp::util::capture_cam(imgView, CAM_CAPTURE_W, CAM_CAPTURE_H,
-                                 (CAM_CAPTURE_W - IMAGE_W) / 2,
-                                 (CAM_CAPTURE_H - IMAGE_H) / 2, IMAGE_W, IMAGE_H)) {
-        break;
-      }
-      overlay_input.convert_to_overlay_pixel_format(imgView, CAM_CAPTURE_W*CAM_CAPTURE_H);
-      int x = ((SCREEN_W - IMAGE_W) / 2);
-      int y = 185;
-      overlay_input.print_to_display(x, y);                       
-    }
-
     if (sync_cnn_out == sync_cnn_in) {
-      if (sync_cnn_out != 0) network.get_final_output(networkOutput);
+      if (sync_cnn_out != 0) {
+        // HW processing times
+        if (conv_time_tot != 0 && fc_time_tot != 0) {
+          string text = COverlayRGB::convert_time_to_text(
+                  "Convolution (" + conv_freq + " MHz HW ACC)      : ", conv_time_tot);
+          unsigned text_size = 14;
 
-      // Preprocess and copy image to FPGA memory
-      dmp::util::preproc_image(imgView, imgProc, IMAGE_W, IMAGE_H, -128.0,
-                               -128.0, -128.0, 1.0, true);
-      memcpy(ddr_buf_a_cpu, (void*)imgProc, IMAGE_W * IMAGE_H * 3 * 2);
+          unsigned w = 0;
+          unsigned h = 0;
+          COverlayRGB::calculate_boundary_text(text, text_size, w, h);
 
-      int key = getchar();
-      switch (key) {
-        case 27:  // ESC
-        {
-          int next_key = getchar();
-          switch (next_key) {
-            case 91:  // there are more value to read: UP/DOWN/LEFT/RIGHT pressed
-              break;
-            case 79:  // F3 pressed
-              break;
-            default:  // nothing special was pressed, will exit
-              exit_code = 0;
-              break;
+          int x = ((SCREEN_W - w) / 2);
+          int y = 7*SCREEN_H/8;
+
+          COverlayRGB overlay_time(SCREEN_W, SCREEN_H);
+          overlay_time.alloc_mem_overlay(w, h);
+          overlay_time.copy_overlay(bg_overlay,x, y);
+          overlay_time.set_text(0, 0, text, text_size, 0x00f4419d);
+          overlay_time.print_to_display(x, y);
+
+          text = COverlayRGB::convert_time_to_text(
+                    "Fully Connected (" + fc_freq + " MHz HW ACC) : ", fc_time_tot);
+          COverlayRGB::calculate_boundary_text(text, text_size, w, h);
+
+          y = 7*SCREEN_H/8 + 28;
+
+          COverlayRGB overlay_fc(SCREEN_W, SCREEN_H);
+          overlay_fc.alloc_mem_overlay(w, h);
+          overlay_fc.copy_overlay(bg_overlay,x, y);
+          overlay_fc.set_text(0, 0, text, text_size, 0x00f4419d);
+          overlay_fc.print_to_display(x, y);
+
+
+          text = COverlayRGB::convert_time_to_text(
+                    "Total Processing Time           : ", conv_time_tot + fc_time_tot);
+          COverlayRGB::calculate_boundary_text(text, text_size, w, h);
+
+          y = 7*SCREEN_H/8 + 56;
+
+          COverlayRGB overlay_processingtime(SCREEN_W, SCREEN_H);
+          overlay_processingtime.alloc_mem_overlay(w, h);
+          overlay_processingtime.copy_overlay(bg_overlay,x, y);
+          overlay_processingtime.set_text(0, 0, text, text_size, 0x00f4419d);
+          overlay_processingtime.print_to_display(x, y);
+        }
+
+        network.get_final_output(networkOutput);
+
+        int x = (SCREEN_W - IMAGE_W) / 2;
+        int y = (293 - 128) + 20;
+        overlay_input.print_to_display(x, y);
+
+        x = (SCREEN_W / 5);
+        y = (293 - 128) + IMAGE_W + 80;
+
+        print_result(catstr_vec, x, y,
+                    dmp::util::catrank(&networkOutput.front()), bg_overlay);
+
+        if (dump_outputs) {
+          const int n_layers = network.get_total_layer_count();
+          for (int i_layer = 0; i_layer < n_layers; ++i_layer) {
+            fpga_layer& layer = network.get_layer(i_layer);
+            char fnme[256];
+            snprintf(fnme, sizeof(fnme), "%02d.%dx%dx%d.bin", i_layer,
+                     layer.output_dim[0], layer.output_dim[1], layer.output_dim[2]);
+            FILE *fout = fopen(fnme, "wb");
+            if (!fout) {
+              fprintf(stderr, "fopen() failed for %s\n", fnme);
+              fflush(stderr);
+              return -1;
+            }
+            fwrite(layer.output.data(), sizeof(layer.output[0]), layer.output.size(), fout);
+            fclose(fout);
+            fprintf(stdout, "Saved %s\n", fnme);
+            fflush(stdout);
           }
+          fflush(stderr);
           break;
         }
-        case '3':  // exit demo with exit code of selected next demo
-          if (has_democonf) {
-            int sel_num = democonf[democonf_sel].first;
-            if (sel_num != my_number) {
-              exit_code = sel_num;
-            }
-            else {
-              exit_code = my_number;
-            }
-          }
-          break;
 
-        case '2':  // cycle through demo configuratom list
-          if (has_democonf) {
-            democonf_display = true;
-            if (democonf_sel == democonf_num - 1) {
-              democonf_sel = 0;
-            }
-            else {
-              democonf_sel++;
-            }
-          }
-          break;
+        dmp::util::swap_buffer();
+        fc++;
 
-        case '1':
-        case 32:  // SPACE
-          pause = !pause;
-          break;
+        int key = getchar();
+        switch (key) {
+          case 27:  // ESC
+          {
+            int next_key = getchar();
+            switch (next_key) {
+              case 91:  // there are more value to read: UP/DOWN/LEFT/RIGHT pressed
+                break;
+              case 79:  // F3 pressed
+                break;
+              default:  // nothing special was pressed, will exit
+                exit_code = 0;
+                break;
+            }
+            break;
+          }
+          case '3':  // exit demo with exit code of selected next demo
+            if (has_democonf) {
+              int sel_num = democonf[democonf_sel].first;
+              if (sel_num != my_number) {
+                exit_code = sel_num;
+              }
+              else {
+                exit_code = my_number;
+              }
+            }
+            break;
+
+          case '2':  // cycle through demo configuratom list
+            if (has_democonf) {
+              democonf_display = true;
+              if (democonf_sel == democonf_num - 1) {
+                democonf_sel = 0;
+              }
+              else {
+                democonf_sel++;
+              }
+            }
+            break;
+
+          case '1':
+          case 32:  // SPACE
+            pause = !pause;
+            break;
+        }
       }
 
-      if (exit_code == -1) {  // do not start new HW ACC runs if about to exit...
+      if (!pause) {
+        if (dmp::util::capture_cam(imgView, CIMAGE_W, CIMAGE_H,
+                                   (CIMAGE_W - IMAGE_W) >> 1, (CIMAGE_H - IMAGE_H) >> 1,
+                                   IMAGE_W, IMAGE_H)) {
+          break;
+        }
+        overlay_input.convert_to_overlay_pixel_format(imgView, IMAGE_W*IMAGE_H);
+        dmp::util::preproc_image(imgView, imgProc, IMAGE_W, IMAGE_H, -128.0,
+                                 -128.0, -128.0, 1.0, true);
+      }
+
+      // Copy image to FPGA memory
+      memcpy(ddr_buf_a_cpu, imgProc, IMAGE_W * IMAGE_H * 3 * 2);
+
+      if (dump_outputs) {
+        FILE *fout = fopen("input.bin", "wb");
+        if (fout) {
+          fwrite(ddr_buf_a_cpu, 2, IMAGE_W * IMAGE_H * 3, fout);
+          fclose(fout);
+          fprintf(stdout, "Saved input.bin\n");
+          fflush(stdout);
+        }
+      }
+
+      if (exit_code == -1)  // do not start new HW ACC runs if about to exit...
         sync_cnn_in++;
-      }
-    }
-
-    if (sync_cnn_out != 0)
-    {
-      unsigned int x = (SCREEN_W / 5);
-      unsigned int y = (293 - 128) + IMAGE_W + 80;
-
-      print_result(catstr_vec, x, y,
-                    dmp::util::catrank(&networkOutput.front()), bg_overlay);
     }
 
     if (democonf_display) {
@@ -360,16 +386,11 @@ int main(int argc, char** argv) {
       overlay_democonf.set_text(0, 0, s, text_size, 0x00f4419d);
       overlay_democonf.print_to_display(x, y);
     }
-
-    dmp::util::swap_buffer();
-    fc++;
   }
 
   g_should_stop = true;
   pthread_join(hwacc_thread, NULL);
-
   dmp::util::shutdown();
-  dmp::util::close_cam();
 
   return exit_code;
 }
