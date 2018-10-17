@@ -214,6 +214,8 @@ int main(int argc, char** argv) {
       if (sync_cnn_out != 0) {
         network.get_final_output(networkOutput);
 
+        clock_t start = clock();
+
         // The values returned from get_final_output() is still transposed (height first) format.
         // So it is actually a width=128, height=512 image
         // need to transpose the output before you can compare to the Keras output.
@@ -222,15 +224,17 @@ int main(int argc, char** argv) {
             networkOutput_transposed[x+y*IMAGE_RZ_W] = networkOutput[y+x*IMAGE_RZ_H]*255;
 
         cv::Mat matDepth(IMAGE_RZ_H, IMAGE_RZ_W, CV_32FC1, networkOutput_transposed.data());
-        printf("matDepth done\n");
         cv::Mat matDepth_8UC1;
         matDepth.convertTo(matDepth_8UC1, CV_8U);
         cv::Mat matDepth_8UC3;
         cv::cvtColor(matDepth_8UC1,matDepth_8UC3,CV_GRAY2RGB);
         //imwrite("test.png", imageF_8UC1);
         opencv2dmp( matDepth_8UC3, overlay_input );
-        frame2rawUInt( overlay_input, imgView );
-        overlay_input_debug.convert_to_overlay_pixel_format(imgView, IMAGE_RZ_W*IMAGE_RZ_H);
+
+        clock_t stop = clock();
+
+        double elapsed = (double)(stop - start) * 1000.0 / CLOCKS_PER_SEC;
+        printf("Transpose image and opencv processing in ms: %f\n", elapsed);
 
         #ifdef DUMP_OUTPUT
         std::string dt = DateTime();
@@ -245,7 +249,7 @@ int main(int argc, char** argv) {
 
         int x = ((SCREEN_W - IMAGE_RZ_W) / 2);
         int y = ((SCREEN_H - IMAGE_RZ_H) / 2);
-        overlay_input_debug.print_to_display(x, y);
+        overlay_input.print_to_display(x, y);
 
         dmp::util::swap_buffer();
         fc++;
@@ -290,6 +294,7 @@ int main(int argc, char** argv) {
       }
 
       if (!pause) {
+        #ifdef OPEN_CV_LOAD_IMG
         // Read input image from jpg file
         cv::Mat colorMat = cv::imread(input_image_path + image_names[image_nr], CV_LOAD_IMAGE_COLOR);
         // cv::Mat resizedMat = colorMat;
@@ -298,7 +303,10 @@ int main(int argc, char** argv) {
         // printf("Resized image %dx%d into %dx%d\n", colorMat.cols, colorMat.rows, IMAGE_RZ_W, IMAGE_RZ_H);
         opencv2dmp( colorMat, overlay_input );
         frame2rawUInt( overlay_input, imgView );
-        overlay_input_debug.convert_to_overlay_pixel_format(imgView, IMAGE_RZ_W*IMAGE_RZ_H);
+        #else
+        dmp::util::decode_jpg_file(input_image_path + image_names[image_nr],
+                                   imgView, IMAGE_RZ_W, IMAGE_RZ_H);
+        #endif
         dmp::util::preproc_image(imgView, imgProc, IMAGE_RZ_W, IMAGE_RZ_H, 0, 0, 0, 0.003921569, true);
         printf("preproc_image done\n");
 
@@ -337,8 +345,6 @@ void opencv2dmp(cv::Mat& input_frm, COverlayRGB& output_frm, bool isColor)
 {
   if( input_frm.cols != IMAGE_RZ_W && input_frm.rows != IMAGE_RZ_H ){
       output_frm.alloc_mem_overlay(input_frm.cols, input_frm.rows);
-      printf("image height %d ", output_frm.get_overlay_height());
-      printf("image width %d\n", output_frm.get_overlay_width());
   }
   // int i = 0;
   for (unsigned int h=0;h<output_frm.get_overlay_height();h++) {
