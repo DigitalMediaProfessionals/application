@@ -35,6 +35,7 @@
 #include <opencv2/imgproc/imgproc.hpp>
 #include <opencv2/highgui/highgui.hpp>
 #include <opencv2/imgcodecs/imgcodecs.hpp>
+#include <ctime>
 
 #include "imagenet_1000_categories.h"
 
@@ -47,6 +48,7 @@ using namespace std;
 using namespace dmp;
 using namespace util;
 
+// Take model file from https://dmprofs-my.sharepoint.com/:u:/g/personal/long_pthai_dmprof_com/EUdNbUrjya5Anw3KofWrL0kBB4hE4bmHVZoIUZKZLQvthQ?e=ae7T0P due to file size is more than 100 MB, so cannot be uploaded to github
 #define FILENAME_WEIGHTS "KerasDepthMap_weights.bin"
 
 #define SCREEN_W (dmp::util::get_screen_width())
@@ -63,7 +65,7 @@ void opencv2dmp(cv::Mat& input_frm, COverlayRGB& output_frm, bool isColor = true
 
 CKerasDepthMap network;
 
-// #define DUMP_OUTPUT
+//#define DUMP_OUTPUT
 
 // Frame counter
 uint32_t fc = 0;
@@ -94,6 +96,21 @@ void* hwacc_thread_func(void* targ) {
     sync_cnn_out++;
   }
   return NULL;
+}
+
+std::string DateTime()
+{
+  time_t rawtime;
+  struct tm * timeinfo;
+  char buffer[80];
+
+  time (&rawtime);
+  timeinfo = localtime(&rawtime);
+
+  strftime(buffer,sizeof(buffer),"%d%m%Y_%H%M%S",timeinfo);
+  std::string str(buffer);
+
+  return str;
 }
 
 int main(int argc, char** argv) {
@@ -202,15 +219,28 @@ int main(int argc, char** argv) {
         // need to transpose the output before you can compare to the Keras output.
         for(int y = 0 ; y < IMAGE_RZ_H; y++)
           for(int x = 0 ; x < IMAGE_RZ_W; x++)
-            networkOutput_transposed[x+y*IMAGE_RZ_W] = networkOutput[y+x*IMAGE_RZ_H];
+            networkOutput_transposed[x+y*IMAGE_RZ_W] = networkOutput[y+x*IMAGE_RZ_H]*255;
+
+        cv::Mat matDepth(IMAGE_RZ_H, IMAGE_RZ_W, CV_32FC1, networkOutput_transposed.data());
+        printf("matDepth done\n");
+        cv::Mat matDepth_8UC1;
+        matDepth.convertTo(matDepth_8UC1, CV_8U);
+        cv::Mat matDepth_8UC3;
+        cv::cvtColor(matDepth_8UC1,matDepth_8UC3,CV_GRAY2RGB);
+        //imwrite("test.png", imageF_8UC1);
+        opencv2dmp( matDepth_8UC3, overlay_input );
+        frame2rawUInt( overlay_input, imgView );
+        overlay_input_debug.convert_to_overlay_pixel_format(imgView, IMAGE_RZ_W*IMAGE_RZ_H);
 
         #ifdef DUMP_OUTPUT
-        for (int i=0; i< 32; i++)
-        {
-          printf("%f ",network.get_layer(0).output.data()[i]);
-          if(i%3 == 0&&i>0)
-            printf("\n");
-        }
+        std::string dt = DateTime();
+        ofstream dumptext;
+        dumptext.open ("dumptext_" + dt +".txt");
+        // for(unsigned int i = 0; i < network.get_layer(52).output.size(); i++)
+        //     dumptext << network.get_layer(52).output[i] << " ";
+        for(unsigned int i = 0; i < network.get_layer(52).output.size(); i++)
+            dumptext << networkOutput_transposed[i] << " ";
+        dumptext.close();
         #endif
 
         int x = ((SCREEN_W - IMAGE_RZ_W) / 2);
@@ -249,6 +279,7 @@ int main(int argc, char** argv) {
           fflush(stdout);
         }
 
+        usleep(1000000);
         break;
 
         #endif
@@ -263,7 +294,7 @@ int main(int argc, char** argv) {
         cv::Mat colorMat = cv::imread(input_image_path + image_names[image_nr], CV_LOAD_IMAGE_COLOR);
         // cv::Mat resizedMat = colorMat;
         // Resize image into 512x128 before feeding through network 
-        //cv::resize( colorMat , resizedMat , cv::Size( IMAGE_RZ_W, IMAGE_RZ_H ), 0, 0, CV_INTER_LINEAR);
+        // cv::resize( colorMat , resizedMat , cv::Size( IMAGE_RZ_W, IMAGE_RZ_H ), 0, 0, CV_INTER_LINEAR);
         // printf("Resized image %dx%d into %dx%d\n", colorMat.cols, colorMat.rows, IMAGE_RZ_W, IMAGE_RZ_H);
         opencv2dmp( colorMat, overlay_input );
         frame2rawUInt( overlay_input, imgView );
