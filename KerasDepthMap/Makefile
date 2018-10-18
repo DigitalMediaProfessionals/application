@@ -1,7 +1,7 @@
 include ../../env.mk
 
-INC = -I../../dv-user-driver/include -I../common/include -I/usr/include/agg2
-LIB = -L../../dv-user-driver -ldmpdv -L../common/lib -ldv700_util -lagg \
+INC = -I../../dv-user-driver/include -I../common/include -I/usr/include/agg2 `freetype-config --cflags`
+LIB = -L../../dv-user-driver -ldmpdv -L../common/lib -ldv700_util -lagg -lfreetype\
 	 -lopencv_shape -lopencv_stitching -lopencv_superres -lopencv_videostab \
 	 -lopencv_aruco -lopencv_bgsegm -lopencv_bioinspired -lopencv_ccalib \
 	 -lopencv_datasets -lopencv_dpm -lopencv_face -lopencv_freetype \
@@ -12,7 +12,6 @@ LIB = -L../../dv-user-driver -ldmpdv -L../common/lib -ldv700_util -lagg \
 	 -lopencv_features2d -lopencv_flann -lopencv_xobjdetect -lopencv_objdetect \
 	 -lopencv_ml -lopencv_xphoto -lopencv_highgui -lopencv_videoio -lopencv_imgcodecs \
 	 -lopencv_photo -lopencv_imgproc -lopencv_core \
-	 -L/opt/Xilinx/SDK/2018.2/gnu/aarch32/lin/gcc-arm-linux-gnueabi/arm-linux-gnueabihf/libc/usr/lib
 
 CFLAGS = -pthread -std=c++11 $(OPT) -Wall -Werror -c $(INC)
 LFLAGS = -pthread -std=c++11 $(OPT)

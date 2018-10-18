@@ -65,8 +65,8 @@ bool CDMP_Network::ReserveMemory(size_t weights_size, size_t io_size) {
   }
 
   memset(&dv_info_, 0, sizeof(dv_info_));
-  dv_info_.size = sizeof(dv_info_);
-  dv_info_.version = 0;
+  dv_info_.header.size = sizeof(dv_info_);
+  dv_info_.header.version = 0;
   if (dmp_dv_context_get_info(ctx_, (dmp_dv_info*)&dv_info_)) {
     ERR("Unable to get information about DV context: %s\n", dmp_dv_get_last_error_message());
     return false;
@@ -338,7 +338,7 @@ bool CDMP_Network::RunNetwork() {
 
   TimeInterval dt;
   int64_t exec_id = -1;
-  dmp_dv_cmdlist *cmdlist = NULL;
+  dmp_dv_cmdlist cmdlist = NULL;
   int conv_usec = 0;
   int fc_usec = 0;
   int cpu_usec = 0;
@@ -577,12 +577,12 @@ bool CDMP_Network::GenerateCommandLists() {
     switch (it->type) {
       case LT_CONV:
         if ((want_layer_outputs_) || (last_type != LT_CONV)) {
-          dmp_dv_cmdlist *obj = dmp_dv_cmdlist_create(ctx_);
-          if (!obj) {
+          dmp_dv_cmdlist cmdlist = dmp_dv_cmdlist_create(ctx_);
+          if (!cmdlist) {
             ERR("dmp_dv_cmdlist_create() failed: %s\n", dmp_dv_get_last_error_message());
             return false;
           }
-          cmdlists_.push_back(obj);
+          cmdlists_.push_back(cmdlist);
         }
         it->cmdlist = cmdlists_.back();
         if (dmp_dv_cmdlist_add_raw(it->cmdlist, (dmp_dv_cmdraw*)&it->conv_conf)) {
@@ -592,12 +592,12 @@ bool CDMP_Network::GenerateCommandLists() {
         break;
       case LT_FC:
         if ((want_layer_outputs_) || (last_type != LT_FC)) {
-          dmp_dv_cmdlist *obj = dmp_dv_cmdlist_create(ctx_);
-          if (!obj) {
+          dmp_dv_cmdlist cmdlist = dmp_dv_cmdlist_create(ctx_);
+          if (!cmdlist) {
             ERR("dmp_dv_cmdlist_create() failed: %s\n", dmp_dv_get_last_error_message());
             return false;
           }
-          cmdlists_.push_back(obj);
+          cmdlists_.push_back(cmdlist);
         }
         it->cmdlist = cmdlists_.back();
         if (dmp_dv_cmdlist_add_raw(it->cmdlist, (dmp_dv_cmdraw*)&it->fc_conf)) {
@@ -617,7 +617,7 @@ bool CDMP_Network::GenerateCommandLists() {
   }
 
   // Assign cmdlist_pos and cmdlist_size
-  dmp_dv_cmdlist *last_cmdlist = NULL;
+  dmp_dv_cmdlist last_cmdlist = NULL;
   int last_pos = 0;
   const int n_layers = (int)layers_.size();
   for (int i = 0; i < n_layers; ++i) {

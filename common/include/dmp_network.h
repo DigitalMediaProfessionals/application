@@ -72,9 +72,9 @@ struct fpga_layer {
   layer_type type;   // layer type
   std::string name;  // layer name
   union {
-    dmp_dv_cmdraw_conv_v0 conv_conf;  // convolutional configuration
-    dmp_dv_cmdraw_fc_v0 fc_conf;      // fully connected configuration
-    int softmax_axis;                 // softmax configuration
+    struct dmp_dv_cmdraw_conv_v0 conv_conf;  // convolutional configuration
+    struct dmp_dv_cmdraw_fc_v0 fc_conf;      // fully connected configuration
+    int softmax_axis;  // softmax configuration
     struct {
       int input_layer_num;
       fpga_layer **input_layers;
@@ -97,7 +97,7 @@ struct fpga_layer {
   bool is_f32_output;       // is the output in 32-bit float format
   bool is_input_hw_layout;  // is the input in WHC8 format
 
-  dmp_dv_cmdlist *cmdlist;  // command list containing this layer, can be NULL
+  dmp_dv_cmdlist cmdlist;   // command list containing this layer, can be NULL
   int cmdlist_pos;          // position of this layer in the command list
   int cmdlist_size;         // size of the command list
 };
@@ -238,22 +238,22 @@ class CDMP_Network {
   std::vector<fpga_layer*> output_layers_;
 
   /// @brief Context.
-  dmp_dv_context *ctx_;
+  dmp_dv_context ctx_;
 
   /// @brief Information about device.
-  dmp_dv_info_v0 dv_info_;
+  struct dmp_dv_info_v0 dv_info_;
 
   /// @brief Memory allocation for weights.
-  dmp_dv_mem *weights_mem_;
+  dmp_dv_mem weights_mem_;
 
   /// @brief Memory allocation for input/output.
-  dmp_dv_mem *io_mem_;
+  dmp_dv_mem io_mem_;
 
   /// @brief Memory pointer to the beginning of input/output buffer.
   uint8_t *io_ptr_;
 
   /// @brief Command lists for executing different sets of layers.
-  std::vector<dmp_dv_cmdlist*> cmdlists_;
+  std::vector<dmp_dv_cmdlist> cmdlists_;
 
   /// @brief Last time spent on all convolutional layers in microseconds.
   int last_conv_usec_;
