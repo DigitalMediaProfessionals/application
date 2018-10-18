@@ -138,8 +138,8 @@ int main(int argc, char** argv) {
   bg_overlay.load_ppm_img("fpgatitle_mobileNet");
   COverlayRGB overlay_input(SCREEN_W, SCREEN_H);
   overlay_input.alloc_mem_overlay(IMAGE_RZ_W, IMAGE_RZ_H);
-  COverlayRGB overlay_input_debug(SCREEN_W, SCREEN_H);
-  overlay_input_debug.alloc_mem_overlay(IMAGE_RZ_W, IMAGE_RZ_H);
+  COverlayRGB overlay_output(SCREEN_W, SCREEN_H);
+  overlay_output.alloc_mem_overlay(IMAGE_RZ_W, IMAGE_RZ_H);
 
   network.Verbose(0);
   if (!network.Initialize()) {
@@ -226,10 +226,11 @@ int main(int argc, char** argv) {
         cv::Mat matDepth(IMAGE_RZ_H, IMAGE_RZ_W, CV_32FC1, networkOutput_transposed.data());
         cv::Mat matDepth_8UC1;
         matDepth.convertTo(matDepth_8UC1, CV_8U);
-        cv::Mat matDepth_8UC3;
+        cv::Mat matDepth_8UC3, matDepth_color;
         cv::cvtColor(matDepth_8UC1,matDepth_8UC3,CV_GRAY2RGB);
+        cv::applyColorMap(matDepth_8UC3, matDepth_color, cv::ColormapTypes::COLORMAP_JET);
         //imwrite("test.png", imageF_8UC1);
-        opencv2dmp( matDepth_8UC3, overlay_input );
+        opencv2dmp( matDepth_color, overlay_output );
 
         clock_t stop = clock();
 
@@ -248,8 +249,12 @@ int main(int argc, char** argv) {
         #endif
 
         int x = ((SCREEN_W - IMAGE_RZ_W) / 2);
-        int y = ((SCREEN_H - IMAGE_RZ_H) / 2);
+        int y = ((SCREEN_H - IMAGE_RZ_H) / 2)-50;
         overlay_input.print_to_display(x, y);
+
+        x = ((SCREEN_W - IMAGE_RZ_W) / 2);
+        y = ((SCREEN_H + IMAGE_RZ_H) / 2)-50;
+        overlay_output.print_to_display(x, y);
 
         dmp::util::swap_buffer();
         fc++;
@@ -306,6 +311,7 @@ int main(int argc, char** argv) {
         #else
         dmp::util::decode_jpg_file(input_image_path + image_names[image_nr],
                                    imgView, IMAGE_RZ_W, IMAGE_RZ_H);
+        overlay_input.convert_to_overlay_pixel_format(imgView, IMAGE_RZ_W*IMAGE_RZ_H);
         #endif
         dmp::util::preproc_image(imgView, imgProc, IMAGE_RZ_W, IMAGE_RZ_H, 0, 0, 0, 0.003921569, true);
         printf("preproc_image done\n");
