@@ -231,7 +231,7 @@ int main(int argc, char** argv) {
       COverlayRGB::calculate_boundary_text(text, text_size, w, h);
 
       int x = ((SCREEN_W - w) / 2);
-      int y = 7*SCREEN_H/8;
+      int y = 7*SCREEN_H/8-100;
 
       COverlayRGB overlay_time(SCREEN_W, SCREEN_H);
       overlay_time.alloc_mem_overlay(w, h);
@@ -242,7 +242,7 @@ int main(int argc, char** argv) {
       text = COverlayRGB::convert_time_to_text("Total Processing Time               : ", conv_time_tot);
       COverlayRGB::calculate_boundary_text(text, text_size, w, h);
 
-      y = 7*SCREEN_H/8 + 28;
+      y += 28;
 
       COverlayRGB overlay_processingtime(SCREEN_W, SCREEN_H);
       overlay_processingtime.alloc_mem_overlay(w, h);
@@ -290,11 +290,11 @@ int main(int argc, char** argv) {
         #endif
 
         int x = ((SCREEN_W - IMAGE_RZ_W) / 2);
-        int y = ((SCREEN_H - IMAGE_RZ_H) / 2)-50;
+        int y = ((SCREEN_H - IMAGE_RZ_H) / 2)-80;
         overlay_input.print_to_display(x, y);
 
         x = ((SCREEN_W - IMAGE_RZ_W) / 2);
-        y = ((SCREEN_H + IMAGE_RZ_H) / 2)-50;
+        y = ((SCREEN_H + IMAGE_RZ_H) / 2)-80;
         overlay_output.print_to_display(x, y);
 
         dmp::util::swap_buffer();
