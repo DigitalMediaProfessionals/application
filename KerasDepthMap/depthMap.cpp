@@ -54,8 +54,8 @@ using namespace util;
 #define SCREEN_W (dmp::util::get_screen_width())
 #define SCREEN_H (dmp::util::get_screen_height())
 
-#define IMAGE_W 1242
-#define IMAGE_H 375
+#define IMAGE_W 1241
+#define IMAGE_H 376
 
 #define IMAGE_RZ_W 512
 #define IMAGE_RZ_H 128
@@ -65,7 +65,8 @@ void opencv2dmp(cv::Mat& input_frm, COverlayRGB& output_frm, bool isColor = true
 
 CKerasDepthMap network;
 
-//#define DUMP_OUTPUT
+// #define DUMP_OUTPUT
+// #define DEPTHMAP_SAVED
 
 // Frame counter
 uint32_t fc = 0;
@@ -98,8 +99,12 @@ void* hwacc_thread_func(void* targ) {
   return NULL;
 }
 
-std::string DateTime()
-{
+/**
+ * @brief get datetime as string
+ * 
+ * @ret   current datetime as string
+ */
+std::string DateTime(){
   time_t rawtime;
   struct tm * timeinfo;
   char buffer[80];
@@ -113,8 +118,7 @@ std::string DateTime()
   return str;
 }
 
-void print_demo_title(COverlayRGB &bg_overlay)
-{
+void print_demo_title(COverlayRGB &bg_overlay){
   unsigned text_size = 30;
   string font_file = "font/NotoSerif-Black.ttf";
   string text = "Depth Map Estimation";
@@ -151,6 +155,28 @@ void print_demo_title(COverlayRGB &bg_overlay)
   bg_text.copy_overlay(bg_overlay, x, y);
   bg_text.set_text_with_font(font_file, text, 0, 3*h/4, text_size, 0x00ffffff);
   bg_text.print_to_display(x, y);
+}
+
+/**
+ * @brief convert int to string with 0 numbers padding
+ * 
+ * @param in          int number
+ * @param len         string len
+ * 
+ * @ret   converted string
+ */
+string int_to_str(int in, int len){
+    int in_len = 1;
+    int in_tmp = in/10;
+    while(in_tmp>0){
+      in_len++;
+      in_tmp /= 10;
+    }
+    string s = to_string(in);
+    if(len>in_len){
+      s = string( len-in_len, '0').append(s);
+    }
+    return s;
 }
 
 int main(int argc, char** argv) {
@@ -221,14 +247,15 @@ int main(int argc, char** argv) {
       continue;
     }
 
+    string text_conv;
     // HW processing times
     if (conv_time_tot != 0) {
-      string text = COverlayRGB::convert_time_to_text("Convolution (" + conv_freq + " MHz HW ACC)      : ", conv_time_tot);
+      text_conv = COverlayRGB::convert_time_to_text("Convolution (" + conv_freq + " MHz HW ACC)      : ", conv_time_tot);
       unsigned text_size = 14;
 
       unsigned w = 0;
       unsigned h = 0;
-      COverlayRGB::calculate_boundary_text(text, text_size, w, h);
+      COverlayRGB::calculate_boundary_text(text_conv, text_size, w, h);
 
       int x = ((SCREEN_W - w) / 2);
       int y = 7*SCREEN_H/8-100;
@@ -236,19 +263,8 @@ int main(int argc, char** argv) {
       COverlayRGB overlay_time(SCREEN_W, SCREEN_H);
       overlay_time.alloc_mem_overlay(w, h);
       overlay_time.copy_overlay(bg_overlay,x, y);
-      overlay_time.set_text(0, 0, text, text_size, 0x00f4419d);
+      overlay_time.set_text(0, 0, text_conv, text_size, 0x00f4419d);
       overlay_time.print_to_display(x, y);
-
-      text = COverlayRGB::convert_time_to_text("Total Processing Time               : ", conv_time_tot);
-      COverlayRGB::calculate_boundary_text(text, text_size, w, h);
-
-      y += 28;
-
-      COverlayRGB overlay_processingtime(SCREEN_W, SCREEN_H);
-      overlay_processingtime.alloc_mem_overlay(w, h);
-      overlay_processingtime.copy_overlay(bg_overlay,x, y);
-      overlay_processingtime.set_text(0, 0, text, text_size, 0x00f4419d);
-      overlay_processingtime.print_to_display(x, y);
     }
 
     if (sync_cnn_out == sync_cnn_in) {
@@ -270,7 +286,18 @@ int main(int argc, char** argv) {
         cv::Mat matDepth_8UC3, matDepth_color;
         cv::cvtColor(matDepth_8UC1,matDepth_8UC3,CV_GRAY2RGB);
         cv::applyColorMap(matDepth_8UC3, matDepth_color, cv::ColormapTypes::COLORMAP_JET);
-        //imwrite("test.png", imageF_8UC1);
+        #ifdef DEPTHMAP_SAVED
+        cv::Mat matDepth_color_resized;
+        cv::resize( matDepth_color , matDepth_color_resized , cv::Size( IMAGE_W, IMAGE_H ), 0, 0, CV_INTER_LINEAR);
+        cv::putText( matDepth_color_resized,
+                     text_conv,
+                     cv::Point(10,18),                  // Coordinates
+                     cv::FONT_HERSHEY_COMPLEX_SMALL,    // Font
+                     1,                                 // Scale. 2.0 = 2x bigger
+                     cv::Scalar(0,0,0),                 // BGR Color
+                     1 );                               // Line Thickness (Optional)
+        cv::imwrite( "images_depth/" + int_to_str(image_nr-1,5) + ".png", matDepth_color_resized );
+        #endif
         opencv2dmp( matDepth_color, overlay_output );
 
         clock_t stop = clock();
@@ -359,6 +386,7 @@ int main(int argc, char** argv) {
 
         if (image_nr == num_images - 1) {
           image_nr = 0;
+          break;
         } else {
           image_nr++;
         }
@@ -388,8 +416,7 @@ int main(int argc, char** argv) {
  * @param output_frm dmp board image format
  * @param isColor        input_fram is color or grayscale
  */
-void opencv2dmp(cv::Mat& input_frm, COverlayRGB& output_frm, bool isColor)
-{
+void opencv2dmp(cv::Mat& input_frm, COverlayRGB& output_frm, bool isColor){
   if( input_frm.cols != IMAGE_RZ_W && input_frm.rows != IMAGE_RZ_H ){
       output_frm.alloc_mem_overlay(input_frm.cols, input_frm.rows);
   }
@@ -418,8 +445,7 @@ void opencv2dmp(cv::Mat& input_frm, COverlayRGB& output_frm, bool isColor)
  * @param input_frm   dmp board image format
  * @param imgview     unsigned int raw data pointer
  */
-void frame2rawUInt(COverlayRGB& intput_frm, unsigned int *imgview)
-{
+void frame2rawUInt(COverlayRGB& intput_frm, unsigned int *imgview){
   unsigned char *p = intput_frm.get_overlay_buf_ref();
   unsigned int size_of_imgview = intput_frm.get_overlay_width()*intput_frm.get_overlay_height();
   for(unsigned int i = 0; i < size_of_imgview*3; i += 3)
