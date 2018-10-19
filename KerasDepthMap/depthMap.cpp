@@ -48,7 +48,6 @@ using namespace std;
 using namespace dmp;
 using namespace util;
 
-// Take model file from https://dmprofs-my.sharepoint.com/:u:/g/personal/long_pthai_dmprof_com/EUdNbUrjya5Anw3KofWrL0kBB4hE4bmHVZoIUZKZLQvthQ?e=ae7T0P due to file size is more than 100 MB, so cannot be uploaded to github
 #define FILENAME_WEIGHTS "KerasDepthMap_weights.bin"
 
 #define SCREEN_W (dmp::util::get_screen_width())
@@ -386,7 +385,6 @@ int main(int argc, char** argv) {
 
         if (image_nr == num_images - 1) {
           image_nr = 0;
-          break;
         } else {
           image_nr++;
         }
