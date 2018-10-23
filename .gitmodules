@@ -1,0 +1,3 @@
+[submodule "KerasDepthMap"]
+	path = KerasDepthMap
+	url = git@github.com:DigitalMediaProfessionals/KerasDepthMap.git
