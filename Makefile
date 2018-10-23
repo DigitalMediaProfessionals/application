@@ -9,7 +9,8 @@ SUBDIRS = common/src \
 	KerasSqueezeNet \
 	SegNetBasic \
 	YOLOv3 \
-	YOLOv3Camera
+	YOLOv3Camera \
+	YOLOv3Pywrap
 
 .PHONY: all clean
 
