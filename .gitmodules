@@ -1,0 +1,3 @@
+[submodule "KerasDepthMap"]
+	path = KerasDepthMap
+	url = ../KerasDepthMap

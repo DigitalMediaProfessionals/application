@@ -10,7 +10,8 @@ SUBDIRS = common/src \
 	SegNetBasic \
 	YOLOv3 \
 	YOLOv3Camera \
-	YOLOv3Pywrap
+	YOLOv3Pywrap \
+	KerasDepthMap
 
 .PHONY: all clean
 
