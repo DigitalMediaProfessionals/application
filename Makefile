@@ -1,4 +1,5 @@
 SUBDIRS = common/src \
+	MouseDemo \
 	CaffeGoogLeNet \
 	CaffeGoogLeNetCam \
 	CaffeMobileNet \
@@ -9,6 +10,7 @@ SUBDIRS = common/src \
 	SegNetBasic \
 	YOLOv3 \
 	YOLOv3Camera \
+	YOLOv3Pywrap \
 	KerasDepthMap
 
 .PHONY: all clean
