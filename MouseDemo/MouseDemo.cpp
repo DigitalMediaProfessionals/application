@@ -94,11 +94,12 @@ struct app_infor{
 
 struct apps{
   string type_name;
-  app_infor app_num[20];
+  app_infor app_num[ MAX_APPS];
   int amount;
 };
 apps app_type[ MAX_APP_TYPES];
 
+#ifdef USE_SPC_PIPE
 typedef struct {
   FILE *read_fd;
   FILE *write_fd;
@@ -273,6 +274,7 @@ int spc_pclose(SPC_PIPE *p) {
   if ( pid != -1 && WIFEXITED(status)) return WEXITSTATUS(status);
   else return (pid == -1 ? -1 : 0);
 }
+#endif
 
 int rec_area[2][4] = {
     { 100-1, 160-1, 400-1,     720-80-1}, // left area
@@ -606,6 +608,9 @@ void *hwacc_thread_func(void *targ) {
 // Main function
 int main(int argc, char **argv) {
 
+  // Initialize Mouse and DMP Modules
+  mouse_init(m_cur, SCREEN_W/2, SCREEN_H/2);
+
   if (!dmp::util::init_fb()) {
 	fprintf(stderr, "dmp::util::init_fb() failed\n");
 	return 1;
@@ -616,9 +621,6 @@ int main(int argc, char **argv) {
 	  fprintf(stderr, "No application is read from appList.ini!\n" );
 	  return 0;
   }
-
-  // Initialize Mouse and DMP Modules
-  mouse_init(m_cur, SCREEN_W/2, SCREEN_H/2);
 
   // Set overlay for background
   bg_overlay.alloc_mem_overlay(SCREEN_W, SCREEN_H);
@@ -645,6 +647,8 @@ int main(int argc, char **argv) {
 
   int pressed_zone = 0;
   int capture_no = 0;
+  pid_t pid;
+
   while (exit_code == false){
     mouse_read(m_cur);
     if (flag == true){
@@ -669,6 +673,7 @@ int main(int argc, char **argv) {
         next_page = 0;
       }
       else if( (pressed_zone >= 3) && (pressed_zone < rboxes_will_draw + 3)){ // mouse pressed inside 6 big boxes
+#ifdef USE_SPC_PIPE
 		SPC_PIPE *p;
 		int app_run = pressed_zone - 3 + 6*next_page;
 		p = spc_popen( app_type[screen_mode].app_num[app_run].bin_address.c_str(), NULL, NULL);
@@ -680,6 +685,36 @@ int main(int argc, char **argv) {
 		st_changed = true;
         screen_update();
         usleep(50);
+#endif
+        pid = fork();
+		if (pid == 0) {
+		  int app_run = pressed_zone - 3 + 6*next_page;
+		  string name = "./" + app_type[screen_mode].app_num[app_run].name;
+		  execl( app_type[screen_mode].app_num[app_run].bin_address.c_str(),
+				  name.c_str(), NULL);
+		  printf("execl() failed");
+		}
+		else if( pid > 0) {
+		  // wait for right button clicked
+		  while( m_cur.r_pressed == false){
+	        mouse_read(m_cur);
+		  }
+		  //wait for right button released
+		  while( m_cur.r_pressed == true){
+			mouse_read(m_cur);
+		  }
+		  //kill child process
+		  kill(pid, SIGINT);
+		  wait(NULL);
+
+		  //Re-update the screen
+		  st_changed = true;
+		  screen_update();
+		  usleep(50);
+		}
+		else {
+		  printf("fork() failed");
+		}
       }
       else if ( (pressed_zone == 9) && ( previous_bt_ready == true)){ // Previous button is pressed
     	st_changed = true;
