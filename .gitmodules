@@ -1,3 +1,7 @@
 [submodule "KerasDepthMap"]
 	path = KerasDepthMap
 	url = ../KerasDepthMap
+
+[submodule "JointFace"]
+	path = JointFace
+	url = ../JointFace
