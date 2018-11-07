@@ -110,7 +110,7 @@ void CKerasMobileNet::Layer_0() {
   //->: conv1_relu
   conf.run[0].m = 32;  // Output Channels
   conf.run[0].conv_enable = 1;  // 1 = Enabled, 0 = Disabled
-  conf.run[0].p = 3;  // Filter Width and Height
+  conf.run[0].p = 0x3;  // Filter Width and Height
   conf.run[0].pz = 1;  // Filter Depth
   conf.run[0].weight_buf.mem = weights_mem_;
   conf.run[0].weight_buf.offs = 0;
@@ -122,7 +122,7 @@ void CKerasMobileNet::Layer_0() {
   conf.run[0].pool_size = 0x0;  // bits [7:0] = width, bits [15:8] = height
   conf.run[0].pool_stride = 0x101;  // bits [7:0] = X stride, bits [15:8] = Y stride
   conf.run[0].pool_pad = 0x0;  // bits [7:0] = left padding, bits [15:8] = right padding, bits [23:16] = top padding, bits [31:24] = bottom padding
-  conf.run[0].pool_avg_param = 0x0;  // Must be set to 1/pool_size^2 in FP16 format when using average pooling (average pooling assumes square size)
+  conf.run[0].pool_avg_param = 0x0;  // Usually set to 1/pool_size^2 in FP16 format when using average pooling (average pooling assumes square size)
   conf.run[0].actfunc = 2;  // Activation Function: 0 = None, 1 = Tanh, 2 = Leaky ReLU, 3 = Sigmoid, 4 = PReLU, 5 = ELU, 6 = ReLU6
   conf.run[0].actfunc_param = 0x0;  // Leaky ReLU parameter (NOTE: 0x2E66 is 0.1 in FP16)
   conf.run[0].rectifi_en = 0;  // Rectification, i.e. max(0, x) (NOTE: Can be applied after non-ReLU activation function)
@@ -187,7 +187,7 @@ void CKerasMobileNet::Layer_1() {
   //->: conv_dw_1_relu
   conf.run[0].m = 32;  // Output Channels
   conf.run[0].conv_enable = 3;  // 1 = Enabled, 0 = Disabled
-  conf.run[0].p = 3;  // Filter Width and Height
+  conf.run[0].p = 0x3;  // Filter Width and Height
   conf.run[0].pz = 1;  // Filter Depth
   conf.run[0].weight_buf.mem = weights_mem_;
   conf.run[0].weight_buf.offs = 2880;
@@ -199,7 +199,7 @@ void CKerasMobileNet::Layer_1() {
   conf.run[0].pool_size = 0x0;  // bits [7:0] = width, bits [15:8] = height
   conf.run[0].pool_stride = 0x101;  // bits [7:0] = X stride, bits [15:8] = Y stride
   conf.run[0].pool_pad = 0x0;  // bits [7:0] = left padding, bits [15:8] = right padding, bits [23:16] = top padding, bits [31:24] = bottom padding
-  conf.run[0].pool_avg_param = 0x0;  // Must be set to 1/pool_size^2 in FP16 format when using average pooling (average pooling assumes square size)
+  conf.run[0].pool_avg_param = 0x0;  // Usually set to 1/pool_size^2 in FP16 format when using average pooling (average pooling assumes square size)
   conf.run[0].actfunc = 2;  // Activation Function: 0 = None, 1 = Tanh, 2 = Leaky ReLU, 3 = Sigmoid, 4 = PReLU, 5 = ELU, 6 = ReLU6
   conf.run[0].actfunc_param = 0x0;  // Leaky ReLU parameter (NOTE: 0x2E66 is 0.1 in FP16)
   conf.run[0].rectifi_en = 0;  // Rectification, i.e. max(0, x) (NOTE: Can be applied after non-ReLU activation function)
@@ -264,7 +264,7 @@ void CKerasMobileNet::Layer_2() {
   //->: conv_pw_1_relu
   conf.run[0].m = 64;  // Output Channels
   conf.run[0].conv_enable = 1;  // 1 = Enabled, 0 = Disabled
-  conf.run[0].p = 1;  // Filter Width and Height
+  conf.run[0].p = 0x1;  // Filter Width and Height
   conf.run[0].pz = 1;  // Filter Depth
   conf.run[0].weight_buf.mem = weights_mem_;
   conf.run[0].weight_buf.offs = 5760;
@@ -276,7 +276,7 @@ void CKerasMobileNet::Layer_2() {
   conf.run[0].pool_size = 0x0;  // bits [7:0] = width, bits [15:8] = height
   conf.run[0].pool_stride = 0x101;  // bits [7:0] = X stride, bits [15:8] = Y stride
   conf.run[0].pool_pad = 0x0;  // bits [7:0] = left padding, bits [15:8] = right padding, bits [23:16] = top padding, bits [31:24] = bottom padding
-  conf.run[0].pool_avg_param = 0x0;  // Must be set to 1/pool_size^2 in FP16 format when using average pooling (average pooling assumes square size)
+  conf.run[0].pool_avg_param = 0x0;  // Usually set to 1/pool_size^2 in FP16 format when using average pooling (average pooling assumes square size)
   conf.run[0].actfunc = 2;  // Activation Function: 0 = None, 1 = Tanh, 2 = Leaky ReLU, 3 = Sigmoid, 4 = PReLU, 5 = ELU, 6 = ReLU6
   conf.run[0].actfunc_param = 0x0;  // Leaky ReLU parameter (NOTE: 0x2E66 is 0.1 in FP16)
   conf.run[0].rectifi_en = 0;  // Rectification, i.e. max(0, x) (NOTE: Can be applied after non-ReLU activation function)
@@ -341,7 +341,7 @@ void CKerasMobileNet::Layer_3() {
   //->: conv_dw_2_relu
   conf.run[0].m = 64;  // Output Channels
   conf.run[0].conv_enable = 3;  // 1 = Enabled, 0 = Disabled
-  conf.run[0].p = 3;  // Filter Width and Height
+  conf.run[0].p = 0x3;  // Filter Width and Height
   conf.run[0].pz = 1;  // Filter Depth
   conf.run[0].weight_buf.mem = weights_mem_;
   conf.run[0].weight_buf.offs = 11008;
@@ -353,7 +353,7 @@ void CKerasMobileNet::Layer_3() {
   conf.run[0].pool_size = 0x0;  // bits [7:0] = width, bits [15:8] = height
   conf.run[0].pool_stride = 0x101;  // bits [7:0] = X stride, bits [15:8] = Y stride
   conf.run[0].pool_pad = 0x0;  // bits [7:0] = left padding, bits [15:8] = right padding, bits [23:16] = top padding, bits [31:24] = bottom padding
-  conf.run[0].pool_avg_param = 0x0;  // Must be set to 1/pool_size^2 in FP16 format when using average pooling (average pooling assumes square size)
+  conf.run[0].pool_avg_param = 0x0;  // Usually set to 1/pool_size^2 in FP16 format when using average pooling (average pooling assumes square size)
   conf.run[0].actfunc = 2;  // Activation Function: 0 = None, 1 = Tanh, 2 = Leaky ReLU, 3 = Sigmoid, 4 = PReLU, 5 = ELU, 6 = ReLU6
   conf.run[0].actfunc_param = 0x0;  // Leaky ReLU parameter (NOTE: 0x2E66 is 0.1 in FP16)
   conf.run[0].rectifi_en = 0;  // Rectification, i.e. max(0, x) (NOTE: Can be applied after non-ReLU activation function)
@@ -418,7 +418,7 @@ void CKerasMobileNet::Layer_4() {
   //->: conv_pw_2_relu
   conf.run[0].m = 128;  // Output Channels
   conf.run[0].conv_enable = 1;  // 1 = Enabled, 0 = Disabled
-  conf.run[0].p = 1;  // Filter Width and Height
+  conf.run[0].p = 0x1;  // Filter Width and Height
   conf.run[0].pz = 1;  // Filter Depth
   conf.run[0].weight_buf.mem = weights_mem_;
   conf.run[0].weight_buf.offs = 16256;
@@ -430,7 +430,7 @@ void CKerasMobileNet::Layer_4() {
   conf.run[0].pool_size = 0x0;  // bits [7:0] = width, bits [15:8] = height
   conf.run[0].pool_stride = 0x101;  // bits [7:0] = X stride, bits [15:8] = Y stride
   conf.run[0].pool_pad = 0x0;  // bits [7:0] = left padding, bits [15:8] = right padding, bits [23:16] = top padding, bits [31:24] = bottom padding
-  conf.run[0].pool_avg_param = 0x0;  // Must be set to 1/pool_size^2 in FP16 format when using average pooling (average pooling assumes square size)
+  conf.run[0].pool_avg_param = 0x0;  // Usually set to 1/pool_size^2 in FP16 format when using average pooling (average pooling assumes square size)
   conf.run[0].actfunc = 2;  // Activation Function: 0 = None, 1 = Tanh, 2 = Leaky ReLU, 3 = Sigmoid, 4 = PReLU, 5 = ELU, 6 = ReLU6
   conf.run[0].actfunc_param = 0x0;  // Leaky ReLU parameter (NOTE: 0x2E66 is 0.1 in FP16)
   conf.run[0].rectifi_en = 0;  // Rectification, i.e. max(0, x) (NOTE: Can be applied after non-ReLU activation function)
@@ -495,7 +495,7 @@ void CKerasMobileNet::Layer_5() {
   //->: conv_dw_3_relu
   conf.run[0].m = 128;  // Output Channels
   conf.run[0].conv_enable = 3;  // 1 = Enabled, 0 = Disabled
-  conf.run[0].p = 3;  // Filter Width and Height
+  conf.run[0].p = 0x3;  // Filter Width and Height
   conf.run[0].pz = 1;  // Filter Depth
   conf.run[0].weight_buf.mem = weights_mem_;
   conf.run[0].weight_buf.offs = 26240;
@@ -507,7 +507,7 @@ void CKerasMobileNet::Layer_5() {
   conf.run[0].pool_size = 0x0;  // bits [7:0] = width, bits [15:8] = height
   conf.run[0].pool_stride = 0x101;  // bits [7:0] = X stride, bits [15:8] = Y stride
   conf.run[0].pool_pad = 0x0;  // bits [7:0] = left padding, bits [15:8] = right padding, bits [23:16] = top padding, bits [31:24] = bottom padding
-  conf.run[0].pool_avg_param = 0x0;  // Must be set to 1/pool_size^2 in FP16 format when using average pooling (average pooling assumes square size)
+  conf.run[0].pool_avg_param = 0x0;  // Usually set to 1/pool_size^2 in FP16 format when using average pooling (average pooling assumes square size)
   conf.run[0].actfunc = 2;  // Activation Function: 0 = None, 1 = Tanh, 2 = Leaky ReLU, 3 = Sigmoid, 4 = PReLU, 5 = ELU, 6 = ReLU6
   conf.run[0].actfunc_param = 0x0;  // Leaky ReLU parameter (NOTE: 0x2E66 is 0.1 in FP16)
   conf.run[0].rectifi_en = 0;  // Rectification, i.e. max(0, x) (NOTE: Can be applied after non-ReLU activation function)
@@ -572,7 +572,7 @@ void CKerasMobileNet::Layer_6() {
   //->: conv_pw_3_relu
   conf.run[0].m = 128;  // Output Channels
   conf.run[0].conv_enable = 1;  // 1 = Enabled, 0 = Disabled
-  conf.run[0].p = 1;  // Filter Width and Height
+  conf.run[0].p = 0x1;  // Filter Width and Height
   conf.run[0].pz = 1;  // Filter Depth
   conf.run[0].weight_buf.mem = weights_mem_;
   conf.run[0].weight_buf.offs = 36224;
@@ -584,7 +584,7 @@ void CKerasMobileNet::Layer_6() {
   conf.run[0].pool_size = 0x0;  // bits [7:0] = width, bits [15:8] = height
   conf.run[0].pool_stride = 0x101;  // bits [7:0] = X stride, bits [15:8] = Y stride
   conf.run[0].pool_pad = 0x0;  // bits [7:0] = left padding, bits [15:8] = right padding, bits [23:16] = top padding, bits [31:24] = bottom padding
-  conf.run[0].pool_avg_param = 0x0;  // Must be set to 1/pool_size^2 in FP16 format when using average pooling (average pooling assumes square size)
+  conf.run[0].pool_avg_param = 0x0;  // Usually set to 1/pool_size^2 in FP16 format when using average pooling (average pooling assumes square size)
   conf.run[0].actfunc = 2;  // Activation Function: 0 = None, 1 = Tanh, 2 = Leaky ReLU, 3 = Sigmoid, 4 = PReLU, 5 = ELU, 6 = ReLU6
   conf.run[0].actfunc_param = 0x0;  // Leaky ReLU parameter (NOTE: 0x2E66 is 0.1 in FP16)
   conf.run[0].rectifi_en = 0;  // Rectification, i.e. max(0, x) (NOTE: Can be applied after non-ReLU activation function)
@@ -649,7 +649,7 @@ void CKerasMobileNet::Layer_7() {
   //->: conv_dw_4_relu
   conf.run[0].m = 128;  // Output Channels
   conf.run[0].conv_enable = 3;  // 1 = Enabled, 0 = Disabled
-  conf.run[0].p = 3;  // Filter Width and Height
+  conf.run[0].p = 0x3;  // Filter Width and Height
   conf.run[0].pz = 1;  // Filter Depth
   conf.run[0].weight_buf.mem = weights_mem_;
   conf.run[0].weight_buf.offs = 55424;
@@ -661,7 +661,7 @@ void CKerasMobileNet::Layer_7() {
   conf.run[0].pool_size = 0x0;  // bits [7:0] = width, bits [15:8] = height
   conf.run[0].pool_stride = 0x101;  // bits [7:0] = X stride, bits [15:8] = Y stride
   conf.run[0].pool_pad = 0x0;  // bits [7:0] = left padding, bits [15:8] = right padding, bits [23:16] = top padding, bits [31:24] = bottom padding
-  conf.run[0].pool_avg_param = 0x0;  // Must be set to 1/pool_size^2 in FP16 format when using average pooling (average pooling assumes square size)
+  conf.run[0].pool_avg_param = 0x0;  // Usually set to 1/pool_size^2 in FP16 format when using average pooling (average pooling assumes square size)
   conf.run[0].actfunc = 2;  // Activation Function: 0 = None, 1 = Tanh, 2 = Leaky ReLU, 3 = Sigmoid, 4 = PReLU, 5 = ELU, 6 = ReLU6
   conf.run[0].actfunc_param = 0x0;  // Leaky ReLU parameter (NOTE: 0x2E66 is 0.1 in FP16)
   conf.run[0].rectifi_en = 0;  // Rectification, i.e. max(0, x) (NOTE: Can be applied after non-ReLU activation function)
@@ -726,7 +726,7 @@ void CKerasMobileNet::Layer_8() {
   //->: conv_pw_4_relu
   conf.run[0].m = 256;  // Output Channels
   conf.run[0].conv_enable = 1;  // 1 = Enabled, 0 = Disabled
-  conf.run[0].p = 1;  // Filter Width and Height
+  conf.run[0].p = 0x1;  // Filter Width and Height
   conf.run[0].pz = 1;  // Filter Depth
   conf.run[0].weight_buf.mem = weights_mem_;
   conf.run[0].weight_buf.offs = 65408;
@@ -738,7 +738,7 @@ void CKerasMobileNet::Layer_8() {
   conf.run[0].pool_size = 0x0;  // bits [7:0] = width, bits [15:8] = height
   conf.run[0].pool_stride = 0x101;  // bits [7:0] = X stride, bits [15:8] = Y stride
   conf.run[0].pool_pad = 0x0;  // bits [7:0] = left padding, bits [15:8] = right padding, bits [23:16] = top padding, bits [31:24] = bottom padding
-  conf.run[0].pool_avg_param = 0x0;  // Must be set to 1/pool_size^2 in FP16 format when using average pooling (average pooling assumes square size)
+  conf.run[0].pool_avg_param = 0x0;  // Usually set to 1/pool_size^2 in FP16 format when using average pooling (average pooling assumes square size)
   conf.run[0].actfunc = 2;  // Activation Function: 0 = None, 1 = Tanh, 2 = Leaky ReLU, 3 = Sigmoid, 4 = PReLU, 5 = ELU, 6 = ReLU6
   conf.run[0].actfunc_param = 0x0;  // Leaky ReLU parameter (NOTE: 0x2E66 is 0.1 in FP16)
   conf.run[0].rectifi_en = 0;  // Rectification, i.e. max(0, x) (NOTE: Can be applied after non-ReLU activation function)
@@ -803,7 +803,7 @@ void CKerasMobileNet::Layer_9() {
   //->: conv_dw_5_relu
   conf.run[0].m = 256;  // Output Channels
   conf.run[0].conv_enable = 3;  // 1 = Enabled, 0 = Disabled
-  conf.run[0].p = 3;  // Filter Width and Height
+  conf.run[0].p = 0x3;  // Filter Width and Height
   conf.run[0].pz = 1;  // Filter Depth
   conf.run[0].weight_buf.mem = weights_mem_;
   conf.run[0].weight_buf.offs = 103296;
@@ -815,7 +815,7 @@ void CKerasMobileNet::Layer_9() {
   conf.run[0].pool_size = 0x0;  // bits [7:0] = width, bits [15:8] = height
   conf.run[0].pool_stride = 0x101;  // bits [7:0] = X stride, bits [15:8] = Y stride
   conf.run[0].pool_pad = 0x0;  // bits [7:0] = left padding, bits [15:8] = right padding, bits [23:16] = top padding, bits [31:24] = bottom padding
-  conf.run[0].pool_avg_param = 0x0;  // Must be set to 1/pool_size^2 in FP16 format when using average pooling (average pooling assumes square size)
+  conf.run[0].pool_avg_param = 0x0;  // Usually set to 1/pool_size^2 in FP16 format when using average pooling (average pooling assumes square size)
   conf.run[0].actfunc = 2;  // Activation Function: 0 = None, 1 = Tanh, 2 = Leaky ReLU, 3 = Sigmoid, 4 = PReLU, 5 = ELU, 6 = ReLU6
   conf.run[0].actfunc_param = 0x0;  // Leaky ReLU parameter (NOTE: 0x2E66 is 0.1 in FP16)
   conf.run[0].rectifi_en = 0;  // Rectification, i.e. max(0, x) (NOTE: Can be applied after non-ReLU activation function)
@@ -880,7 +880,7 @@ void CKerasMobileNet::Layer_10() {
   //->: conv_pw_5_relu
   conf.run[0].m = 256;  // Output Channels
   conf.run[0].conv_enable = 1;  // 1 = Enabled, 0 = Disabled
-  conf.run[0].p = 1;  // Filter Width and Height
+  conf.run[0].p = 0x1;  // Filter Width and Height
   conf.run[0].pz = 1;  // Filter Depth
   conf.run[0].weight_buf.mem = weights_mem_;
   conf.run[0].weight_buf.offs = 122752;
@@ -892,7 +892,7 @@ void CKerasMobileNet::Layer_10() {
   conf.run[0].pool_size = 0x0;  // bits [7:0] = width, bits [15:8] = height
   conf.run[0].pool_stride = 0x101;  // bits [7:0] = X stride, bits [15:8] = Y stride
   conf.run[0].pool_pad = 0x0;  // bits [7:0] = left padding, bits [15:8] = right padding, bits [23:16] = top padding, bits [31:24] = bottom padding
-  conf.run[0].pool_avg_param = 0x0;  // Must be set to 1/pool_size^2 in FP16 format when using average pooling (average pooling assumes square size)
+  conf.run[0].pool_avg_param = 0x0;  // Usually set to 1/pool_size^2 in FP16 format when using average pooling (average pooling assumes square size)
   conf.run[0].actfunc = 2;  // Activation Function: 0 = None, 1 = Tanh, 2 = Leaky ReLU, 3 = Sigmoid, 4 = PReLU, 5 = ELU, 6 = ReLU6
   conf.run[0].actfunc_param = 0x0;  // Leaky ReLU parameter (NOTE: 0x2E66 is 0.1 in FP16)
   conf.run[0].rectifi_en = 0;  // Rectification, i.e. max(0, x) (NOTE: Can be applied after non-ReLU activation function)
@@ -957,7 +957,7 @@ void CKerasMobileNet::Layer_11() {
   //->: conv_dw_6_relu
   conf.run[0].m = 256;  // Output Channels
   conf.run[0].conv_enable = 3;  // 1 = Enabled, 0 = Disabled
-  conf.run[0].p = 3;  // Filter Width and Height
+  conf.run[0].p = 0x3;  // Filter Width and Height
   conf.run[0].pz = 1;  // Filter Depth
   conf.run[0].weight_buf.mem = weights_mem_;
   conf.run[0].weight_buf.offs = 197504;
@@ -969,7 +969,7 @@ void CKerasMobileNet::Layer_11() {
   conf.run[0].pool_size = 0x0;  // bits [7:0] = width, bits [15:8] = height
   conf.run[0].pool_stride = 0x101;  // bits [7:0] = X stride, bits [15:8] = Y stride
   conf.run[0].pool_pad = 0x0;  // bits [7:0] = left padding, bits [15:8] = right padding, bits [23:16] = top padding, bits [31:24] = bottom padding
-  conf.run[0].pool_avg_param = 0x0;  // Must be set to 1/pool_size^2 in FP16 format when using average pooling (average pooling assumes square size)
+  conf.run[0].pool_avg_param = 0x0;  // Usually set to 1/pool_size^2 in FP16 format when using average pooling (average pooling assumes square size)
   conf.run[0].actfunc = 2;  // Activation Function: 0 = None, 1 = Tanh, 2 = Leaky ReLU, 3 = Sigmoid, 4 = PReLU, 5 = ELU, 6 = ReLU6
   conf.run[0].actfunc_param = 0x0;  // Leaky ReLU parameter (NOTE: 0x2E66 is 0.1 in FP16)
   conf.run[0].rectifi_en = 0;  // Rectification, i.e. max(0, x) (NOTE: Can be applied after non-ReLU activation function)
@@ -1034,7 +1034,7 @@ void CKerasMobileNet::Layer_12() {
   //->: conv_pw_6_relu
   conf.run[0].m = 512;  // Output Channels
   conf.run[0].conv_enable = 1;  // 1 = Enabled, 0 = Disabled
-  conf.run[0].p = 1;  // Filter Width and Height
+  conf.run[0].p = 0x1;  // Filter Width and Height
   conf.run[0].pz = 1;  // Filter Depth
   conf.run[0].weight_buf.mem = weights_mem_;
   conf.run[0].weight_buf.offs = 216960;
@@ -1046,7 +1046,7 @@ void CKerasMobileNet::Layer_12() {
   conf.run[0].pool_size = 0x0;  // bits [7:0] = width, bits [15:8] = height
   conf.run[0].pool_stride = 0x101;  // bits [7:0] = X stride, bits [15:8] = Y stride
   conf.run[0].pool_pad = 0x0;  // bits [7:0] = left padding, bits [15:8] = right padding, bits [23:16] = top padding, bits [31:24] = bottom padding
-  conf.run[0].pool_avg_param = 0x0;  // Must be set to 1/pool_size^2 in FP16 format when using average pooling (average pooling assumes square size)
+  conf.run[0].pool_avg_param = 0x0;  // Usually set to 1/pool_size^2 in FP16 format when using average pooling (average pooling assumes square size)
   conf.run[0].actfunc = 2;  // Activation Function: 0 = None, 1 = Tanh, 2 = Leaky ReLU, 3 = Sigmoid, 4 = PReLU, 5 = ELU, 6 = ReLU6
   conf.run[0].actfunc_param = 0x0;  // Leaky ReLU parameter (NOTE: 0x2E66 is 0.1 in FP16)
   conf.run[0].rectifi_en = 0;  // Rectification, i.e. max(0, x) (NOTE: Can be applied after non-ReLU activation function)
@@ -1111,7 +1111,7 @@ void CKerasMobileNet::Layer_13() {
   //->: conv_dw_7_relu
   conf.run[0].m = 512;  // Output Channels
   conf.run[0].conv_enable = 3;  // 1 = Enabled, 0 = Disabled
-  conf.run[0].p = 3;  // Filter Width and Height
+  conf.run[0].p = 0x3;  // Filter Width and Height
   conf.run[0].pz = 1;  // Filter Depth
   conf.run[0].weight_buf.mem = weights_mem_;
   conf.run[0].weight_buf.offs = 365952;
@@ -1123,7 +1123,7 @@ void CKerasMobileNet::Layer_13() {
   conf.run[0].pool_size = 0x0;  // bits [7:0] = width, bits [15:8] = height
   conf.run[0].pool_stride = 0x101;  // bits [7:0] = X stride, bits [15:8] = Y stride
   conf.run[0].pool_pad = 0x0;  // bits [7:0] = left padding, bits [15:8] = right padding, bits [23:16] = top padding, bits [31:24] = bottom padding
-  conf.run[0].pool_avg_param = 0x0;  // Must be set to 1/pool_size^2 in FP16 format when using average pooling (average pooling assumes square size)
+  conf.run[0].pool_avg_param = 0x0;  // Usually set to 1/pool_size^2 in FP16 format when using average pooling (average pooling assumes square size)
   conf.run[0].actfunc = 2;  // Activation Function: 0 = None, 1 = Tanh, 2 = Leaky ReLU, 3 = Sigmoid, 4 = PReLU, 5 = ELU, 6 = ReLU6
   conf.run[0].actfunc_param = 0x0;  // Leaky ReLU parameter (NOTE: 0x2E66 is 0.1 in FP16)
   conf.run[0].rectifi_en = 0;  // Rectification, i.e. max(0, x) (NOTE: Can be applied after non-ReLU activation function)
@@ -1188,7 +1188,7 @@ void CKerasMobileNet::Layer_14() {
   //->: conv_pw_7_relu
   conf.run[0].m = 512;  // Output Channels
   conf.run[0].conv_enable = 1;  // 1 = Enabled, 0 = Disabled
-  conf.run[0].p = 1;  // Filter Width and Height
+  conf.run[0].p = 0x1;  // Filter Width and Height
   conf.run[0].pz = 1;  // Filter Depth
   conf.run[0].weight_buf.mem = weights_mem_;
   conf.run[0].weight_buf.offs = 404352;
@@ -1200,7 +1200,7 @@ void CKerasMobileNet::Layer_14() {
   conf.run[0].pool_size = 0x0;  // bits [7:0] = width, bits [15:8] = height
   conf.run[0].pool_stride = 0x101;  // bits [7:0] = X stride, bits [15:8] = Y stride
   conf.run[0].pool_pad = 0x0;  // bits [7:0] = left padding, bits [15:8] = right padding, bits [23:16] = top padding, bits [31:24] = bottom padding
-  conf.run[0].pool_avg_param = 0x0;  // Must be set to 1/pool_size^2 in FP16 format when using average pooling (average pooling assumes square size)
+  conf.run[0].pool_avg_param = 0x0;  // Usually set to 1/pool_size^2 in FP16 format when using average pooling (average pooling assumes square size)
   conf.run[0].actfunc = 2;  // Activation Function: 0 = None, 1 = Tanh, 2 = Leaky ReLU, 3 = Sigmoid, 4 = PReLU, 5 = ELU, 6 = ReLU6
   conf.run[0].actfunc_param = 0x0;  // Leaky ReLU parameter (NOTE: 0x2E66 is 0.1 in FP16)
   conf.run[0].rectifi_en = 0;  // Rectification, i.e. max(0, x) (NOTE: Can be applied after non-ReLU activation function)
@@ -1265,7 +1265,7 @@ void CKerasMobileNet::Layer_15() {
   //->: conv_dw_8_relu
   conf.run[0].m = 512;  // Output Channels
   conf.run[0].conv_enable = 3;  // 1 = Enabled, 0 = Disabled
-  conf.run[0].p = 3;  // Filter Width and Height
+  conf.run[0].p = 0x3;  // Filter Width and Height
   conf.run[0].pz = 1;  // Filter Depth
   conf.run[0].weight_buf.mem = weights_mem_;
   conf.run[0].weight_buf.offs = 700800;
@@ -1277,7 +1277,7 @@ void CKerasMobileNet::Layer_15() {
   conf.run[0].pool_size = 0x0;  // bits [7:0] = width, bits [15:8] = height
   conf.run[0].pool_stride = 0x101;  // bits [7:0] = X stride, bits [15:8] = Y stride
   conf.run[0].pool_pad = 0x0;  // bits [7:0] = left padding, bits [15:8] = right padding, bits [23:16] = top padding, bits [31:24] = bottom padding
-  conf.run[0].pool_avg_param = 0x0;  // Must be set to 1/pool_size^2 in FP16 format when using average pooling (average pooling assumes square size)
+  conf.run[0].pool_avg_param = 0x0;  // Usually set to 1/pool_size^2 in FP16 format when using average pooling (average pooling assumes square size)
   conf.run[0].actfunc = 2;  // Activation Function: 0 = None, 1 = Tanh, 2 = Leaky ReLU, 3 = Sigmoid, 4 = PReLU, 5 = ELU, 6 = ReLU6
   conf.run[0].actfunc_param = 0x0;  // Leaky ReLU parameter (NOTE: 0x2E66 is 0.1 in FP16)
   conf.run[0].rectifi_en = 0;  // Rectification, i.e. max(0, x) (NOTE: Can be applied after non-ReLU activation function)
@@ -1342,7 +1342,7 @@ void CKerasMobileNet::Layer_16() {
   //->: conv_pw_8_relu
   conf.run[0].m = 512;  // Output Channels
   conf.run[0].conv_enable = 1;  // 1 = Enabled, 0 = Disabled
-  conf.run[0].p = 1;  // Filter Width and Height
+  conf.run[0].p = 0x1;  // Filter Width and Height
   conf.run[0].pz = 1;  // Filter Depth
   conf.run[0].weight_buf.mem = weights_mem_;
   conf.run[0].weight_buf.offs = 739200;
@@ -1354,7 +1354,7 @@ void CKerasMobileNet::Layer_16() {
   conf.run[0].pool_size = 0x0;  // bits [7:0] = width, bits [15:8] = height
   conf.run[0].pool_stride = 0x101;  // bits [7:0] = X stride, bits [15:8] = Y stride
   conf.run[0].pool_pad = 0x0;  // bits [7:0] = left padding, bits [15:8] = right padding, bits [23:16] = top padding, bits [31:24] = bottom padding
-  conf.run[0].pool_avg_param = 0x0;  // Must be set to 1/pool_size^2 in FP16 format when using average pooling (average pooling assumes square size)
+  conf.run[0].pool_avg_param = 0x0;  // Usually set to 1/pool_size^2 in FP16 format when using average pooling (average pooling assumes square size)
   conf.run[0].actfunc = 2;  // Activation Function: 0 = None, 1 = Tanh, 2 = Leaky ReLU, 3 = Sigmoid, 4 = PReLU, 5 = ELU, 6 = ReLU6
   conf.run[0].actfunc_param = 0x0;  // Leaky ReLU parameter (NOTE: 0x2E66 is 0.1 in FP16)
   conf.run[0].rectifi_en = 0;  // Rectification, i.e. max(0, x) (NOTE: Can be applied after non-ReLU activation function)
@@ -1419,7 +1419,7 @@ void CKerasMobileNet::Layer_17() {
   //->: conv_dw_9_relu
   conf.run[0].m = 512;  // Output Channels
   conf.run[0].conv_enable = 3;  // 1 = Enabled, 0 = Disabled
-  conf.run[0].p = 3;  // Filter Width and Height
+  conf.run[0].p = 0x3;  // Filter Width and Height
   conf.run[0].pz = 1;  // Filter Depth
   conf.run[0].weight_buf.mem = weights_mem_;
   conf.run[0].weight_buf.offs = 1035648;
@@ -1431,7 +1431,7 @@ void CKerasMobileNet::Layer_17() {
   conf.run[0].pool_size = 0x0;  // bits [7:0] = width, bits [15:8] = height
   conf.run[0].pool_stride = 0x101;  // bits [7:0] = X stride, bits [15:8] = Y stride
   conf.run[0].pool_pad = 0x0;  // bits [7:0] = left padding, bits [15:8] = right padding, bits [23:16] = top padding, bits [31:24] = bottom padding
-  conf.run[0].pool_avg_param = 0x0;  // Must be set to 1/pool_size^2 in FP16 format when using average pooling (average pooling assumes square size)
+  conf.run[0].pool_avg_param = 0x0;  // Usually set to 1/pool_size^2 in FP16 format when using average pooling (average pooling assumes square size)
   conf.run[0].actfunc = 2;  // Activation Function: 0 = None, 1 = Tanh, 2 = Leaky ReLU, 3 = Sigmoid, 4 = PReLU, 5 = ELU, 6 = ReLU6
   conf.run[0].actfunc_param = 0x0;  // Leaky ReLU parameter (NOTE: 0x2E66 is 0.1 in FP16)
   conf.run[0].rectifi_en = 0;  // Rectification, i.e. max(0, x) (NOTE: Can be applied after non-ReLU activation function)
@@ -1496,7 +1496,7 @@ void CKerasMobileNet::Layer_18() {
   //->: conv_pw_9_relu
   conf.run[0].m = 512;  // Output Channels
   conf.run[0].conv_enable = 1;  // 1 = Enabled, 0 = Disabled
-  conf.run[0].p = 1;  // Filter Width and Height
+  conf.run[0].p = 0x1;  // Filter Width and Height
   conf.run[0].pz = 1;  // Filter Depth
   conf.run[0].weight_buf.mem = weights_mem_;
   conf.run[0].weight_buf.offs = 1074048;
@@ -1508,7 +1508,7 @@ void CKerasMobileNet::Layer_18() {
   conf.run[0].pool_size = 0x0;  // bits [7:0] = width, bits [15:8] = height
   conf.run[0].pool_stride = 0x101;  // bits [7:0] = X stride, bits [15:8] = Y stride
   conf.run[0].pool_pad = 0x0;  // bits [7:0] = left padding, bits [15:8] = right padding, bits [23:16] = top padding, bits [31:24] = bottom padding
-  conf.run[0].pool_avg_param = 0x0;  // Must be set to 1/pool_size^2 in FP16 format when using average pooling (average pooling assumes square size)
+  conf.run[0].pool_avg_param = 0x0;  // Usually set to 1/pool_size^2 in FP16 format when using average pooling (average pooling assumes square size)
   conf.run[0].actfunc = 2;  // Activation Function: 0 = None, 1 = Tanh, 2 = Leaky ReLU, 3 = Sigmoid, 4 = PReLU, 5 = ELU, 6 = ReLU6
   conf.run[0].actfunc_param = 0x0;  // Leaky ReLU parameter (NOTE: 0x2E66 is 0.1 in FP16)
   conf.run[0].rectifi_en = 0;  // Rectification, i.e. max(0, x) (NOTE: Can be applied after non-ReLU activation function)
@@ -1573,7 +1573,7 @@ void CKerasMobileNet::Layer_19() {
   //->: conv_dw_10_relu
   conf.run[0].m = 512;  // Output Channels
   conf.run[0].conv_enable = 3;  // 1 = Enabled, 0 = Disabled
-  conf.run[0].p = 3;  // Filter Width and Height
+  conf.run[0].p = 0x3;  // Filter Width and Height
   conf.run[0].pz = 1;  // Filter Depth
   conf.run[0].weight_buf.mem = weights_mem_;
   conf.run[0].weight_buf.offs = 1370496;
@@ -1585,7 +1585,7 @@ void CKerasMobileNet::Layer_19() {
   conf.run[0].pool_size = 0x0;  // bits [7:0] = width, bits [15:8] = height
   conf.run[0].pool_stride = 0x101;  // bits [7:0] = X stride, bits [15:8] = Y stride
   conf.run[0].pool_pad = 0x0;  // bits [7:0] = left padding, bits [15:8] = right padding, bits [23:16] = top padding, bits [31:24] = bottom padding
-  conf.run[0].pool_avg_param = 0x0;  // Must be set to 1/pool_size^2 in FP16 format when using average pooling (average pooling assumes square size)
+  conf.run[0].pool_avg_param = 0x0;  // Usually set to 1/pool_size^2 in FP16 format when using average pooling (average pooling assumes square size)
   conf.run[0].actfunc = 2;  // Activation Function: 0 = None, 1 = Tanh, 2 = Leaky ReLU, 3 = Sigmoid, 4 = PReLU, 5 = ELU, 6 = ReLU6
   conf.run[0].actfunc_param = 0x0;  // Leaky ReLU parameter (NOTE: 0x2E66 is 0.1 in FP16)
   conf.run[0].rectifi_en = 0;  // Rectification, i.e. max(0, x) (NOTE: Can be applied after non-ReLU activation function)
@@ -1650,7 +1650,7 @@ void CKerasMobileNet::Layer_20() {
   //->: conv_pw_10_relu
   conf.run[0].m = 512;  // Output Channels
   conf.run[0].conv_enable = 1;  // 1 = Enabled, 0 = Disabled
-  conf.run[0].p = 1;  // Filter Width and Height
+  conf.run[0].p = 0x1;  // Filter Width and Height
   conf.run[0].pz = 1;  // Filter Depth
   conf.run[0].weight_buf.mem = weights_mem_;
   conf.run[0].weight_buf.offs = 1408896;
@@ -1662,7 +1662,7 @@ void CKerasMobileNet::Layer_20() {
   conf.run[0].pool_size = 0x0;  // bits [7:0] = width, bits [15:8] = height
   conf.run[0].pool_stride = 0x101;  // bits [7:0] = X stride, bits [15:8] = Y stride
   conf.run[0].pool_pad = 0x0;  // bits [7:0] = left padding, bits [15:8] = right padding, bits [23:16] = top padding, bits [31:24] = bottom padding
-  conf.run[0].pool_avg_param = 0x0;  // Must be set to 1/pool_size^2 in FP16 format when using average pooling (average pooling assumes square size)
+  conf.run[0].pool_avg_param = 0x0;  // Usually set to 1/pool_size^2 in FP16 format when using average pooling (average pooling assumes square size)
   conf.run[0].actfunc = 2;  // Activation Function: 0 = None, 1 = Tanh, 2 = Leaky ReLU, 3 = Sigmoid, 4 = PReLU, 5 = ELU, 6 = ReLU6
   conf.run[0].actfunc_param = 0x0;  // Leaky ReLU parameter (NOTE: 0x2E66 is 0.1 in FP16)
   conf.run[0].rectifi_en = 0;  // Rectification, i.e. max(0, x) (NOTE: Can be applied after non-ReLU activation function)
@@ -1727,7 +1727,7 @@ void CKerasMobileNet::Layer_21() {
   //->: conv_dw_11_relu
   conf.run[0].m = 512;  // Output Channels
   conf.run[0].conv_enable = 3;  // 1 = Enabled, 0 = Disabled
-  conf.run[0].p = 3;  // Filter Width and Height
+  conf.run[0].p = 0x3;  // Filter Width and Height
   conf.run[0].pz = 1;  // Filter Depth
   conf.run[0].weight_buf.mem = weights_mem_;
   conf.run[0].weight_buf.offs = 1705344;
@@ -1739,7 +1739,7 @@ void CKerasMobileNet::Layer_21() {
   conf.run[0].pool_size = 0x0;  // bits [7:0] = width, bits [15:8] = height
   conf.run[0].pool_stride = 0x101;  // bits [7:0] = X stride, bits [15:8] = Y stride
   conf.run[0].pool_pad = 0x0;  // bits [7:0] = left padding, bits [15:8] = right padding, bits [23:16] = top padding, bits [31:24] = bottom padding
-  conf.run[0].pool_avg_param = 0x0;  // Must be set to 1/pool_size^2 in FP16 format when using average pooling (average pooling assumes square size)
+  conf.run[0].pool_avg_param = 0x0;  // Usually set to 1/pool_size^2 in FP16 format when using average pooling (average pooling assumes square size)
   conf.run[0].actfunc = 2;  // Activation Function: 0 = None, 1 = Tanh, 2 = Leaky ReLU, 3 = Sigmoid, 4 = PReLU, 5 = ELU, 6 = ReLU6
   conf.run[0].actfunc_param = 0x0;  // Leaky ReLU parameter (NOTE: 0x2E66 is 0.1 in FP16)
   conf.run[0].rectifi_en = 0;  // Rectification, i.e. max(0, x) (NOTE: Can be applied after non-ReLU activation function)
@@ -1804,7 +1804,7 @@ void CKerasMobileNet::Layer_22() {
   //->: conv_pw_11_relu
   conf.run[0].m = 512;  // Output Channels
   conf.run[0].conv_enable = 1;  // 1 = Enabled, 0 = Disabled
-  conf.run[0].p = 1;  // Filter Width and Height
+  conf.run[0].p = 0x1;  // Filter Width and Height
   conf.run[0].pz = 1;  // Filter Depth
   conf.run[0].weight_buf.mem = weights_mem_;
   conf.run[0].weight_buf.offs = 1743744;
@@ -1816,7 +1816,7 @@ void CKerasMobileNet::Layer_22() {
   conf.run[0].pool_size = 0x0;  // bits [7:0] = width, bits [15:8] = height
   conf.run[0].pool_stride = 0x101;  // bits [7:0] = X stride, bits [15:8] = Y stride
   conf.run[0].pool_pad = 0x0;  // bits [7:0] = left padding, bits [15:8] = right padding, bits [23:16] = top padding, bits [31:24] = bottom padding
-  conf.run[0].pool_avg_param = 0x0;  // Must be set to 1/pool_size^2 in FP16 format when using average pooling (average pooling assumes square size)
+  conf.run[0].pool_avg_param = 0x0;  // Usually set to 1/pool_size^2 in FP16 format when using average pooling (average pooling assumes square size)
   conf.run[0].actfunc = 2;  // Activation Function: 0 = None, 1 = Tanh, 2 = Leaky ReLU, 3 = Sigmoid, 4 = PReLU, 5 = ELU, 6 = ReLU6
   conf.run[0].actfunc_param = 0x0;  // Leaky ReLU parameter (NOTE: 0x2E66 is 0.1 in FP16)
   conf.run[0].rectifi_en = 0;  // Rectification, i.e. max(0, x) (NOTE: Can be applied after non-ReLU activation function)
@@ -1881,7 +1881,7 @@ void CKerasMobileNet::Layer_23() {
   //->: conv_dw_12_relu
   conf.run[0].m = 512;  // Output Channels
   conf.run[0].conv_enable = 3;  // 1 = Enabled, 0 = Disabled
-  conf.run[0].p = 3;  // Filter Width and Height
+  conf.run[0].p = 0x3;  // Filter Width and Height
   conf.run[0].pz = 1;  // Filter Depth
   conf.run[0].weight_buf.mem = weights_mem_;
   conf.run[0].weight_buf.offs = 2040192;
@@ -1893,7 +1893,7 @@ void CKerasMobileNet::Layer_23() {
   conf.run[0].pool_size = 0x0;  // bits [7:0] = width, bits [15:8] = height
   conf.run[0].pool_stride = 0x101;  // bits [7:0] = X stride, bits [15:8] = Y stride
   conf.run[0].pool_pad = 0x0;  // bits [7:0] = left padding, bits [15:8] = right padding, bits [23:16] = top padding, bits [31:24] = bottom padding
-  conf.run[0].pool_avg_param = 0x0;  // Must be set to 1/pool_size^2 in FP16 format when using average pooling (average pooling assumes square size)
+  conf.run[0].pool_avg_param = 0x0;  // Usually set to 1/pool_size^2 in FP16 format when using average pooling (average pooling assumes square size)
   conf.run[0].actfunc = 2;  // Activation Function: 0 = None, 1 = Tanh, 2 = Leaky ReLU, 3 = Sigmoid, 4 = PReLU, 5 = ELU, 6 = ReLU6
   conf.run[0].actfunc_param = 0x0;  // Leaky ReLU parameter (NOTE: 0x2E66 is 0.1 in FP16)
   conf.run[0].rectifi_en = 0;  // Rectification, i.e. max(0, x) (NOTE: Can be applied after non-ReLU activation function)
@@ -1958,7 +1958,7 @@ void CKerasMobileNet::Layer_24() {
   //->: conv_pw_12_relu
   conf.run[0].m = 1024;  // Output Channels
   conf.run[0].conv_enable = 1;  // 1 = Enabled, 0 = Disabled
-  conf.run[0].p = 1;  // Filter Width and Height
+  conf.run[0].p = 0x1;  // Filter Width and Height
   conf.run[0].pz = 1;  // Filter Depth
   conf.run[0].weight_buf.mem = weights_mem_;
   conf.run[0].weight_buf.offs = 2078592;
@@ -1970,7 +1970,7 @@ void CKerasMobileNet::Layer_24() {
   conf.run[0].pool_size = 0x0;  // bits [7:0] = width, bits [15:8] = height
   conf.run[0].pool_stride = 0x101;  // bits [7:0] = X stride, bits [15:8] = Y stride
   conf.run[0].pool_pad = 0x0;  // bits [7:0] = left padding, bits [15:8] = right padding, bits [23:16] = top padding, bits [31:24] = bottom padding
-  conf.run[0].pool_avg_param = 0x0;  // Must be set to 1/pool_size^2 in FP16 format when using average pooling (average pooling assumes square size)
+  conf.run[0].pool_avg_param = 0x0;  // Usually set to 1/pool_size^2 in FP16 format when using average pooling (average pooling assumes square size)
   conf.run[0].actfunc = 2;  // Activation Function: 0 = None, 1 = Tanh, 2 = Leaky ReLU, 3 = Sigmoid, 4 = PReLU, 5 = ELU, 6 = ReLU6
   conf.run[0].actfunc_param = 0x0;  // Leaky ReLU parameter (NOTE: 0x2E66 is 0.1 in FP16)
   conf.run[0].rectifi_en = 0;  // Rectification, i.e. max(0, x) (NOTE: Can be applied after non-ReLU activation function)
@@ -2035,7 +2035,7 @@ void CKerasMobileNet::Layer_25() {
   //->: conv_dw_13_relu
   conf.run[0].m = 1024;  // Output Channels
   conf.run[0].conv_enable = 3;  // 1 = Enabled, 0 = Disabled
-  conf.run[0].p = 3;  // Filter Width and Height
+  conf.run[0].p = 0x3;  // Filter Width and Height
   conf.run[0].pz = 1;  // Filter Depth
   conf.run[0].weight_buf.mem = weights_mem_;
   conf.run[0].weight_buf.offs = 2670976;
@@ -2047,7 +2047,7 @@ void CKerasMobileNet::Layer_25() {
   conf.run[0].pool_size = 0x0;  // bits [7:0] = width, bits [15:8] = height
   conf.run[0].pool_stride = 0x101;  // bits [7:0] = X stride, bits [15:8] = Y stride
   conf.run[0].pool_pad = 0x0;  // bits [7:0] = left padding, bits [15:8] = right padding, bits [23:16] = top padding, bits [31:24] = bottom padding
-  conf.run[0].pool_avg_param = 0x0;  // Must be set to 1/pool_size^2 in FP16 format when using average pooling (average pooling assumes square size)
+  conf.run[0].pool_avg_param = 0x0;  // Usually set to 1/pool_size^2 in FP16 format when using average pooling (average pooling assumes square size)
   conf.run[0].actfunc = 2;  // Activation Function: 0 = None, 1 = Tanh, 2 = Leaky ReLU, 3 = Sigmoid, 4 = PReLU, 5 = ELU, 6 = ReLU6
   conf.run[0].actfunc_param = 0x0;  // Leaky ReLU parameter (NOTE: 0x2E66 is 0.1 in FP16)
   conf.run[0].rectifi_en = 0;  // Rectification, i.e. max(0, x) (NOTE: Can be applied after non-ReLU activation function)
@@ -2112,7 +2112,7 @@ void CKerasMobileNet::Layer_26() {
   //->: conv_pw_13_relu
   conf.run[0].m = 1024;  // Output Channels
   conf.run[0].conv_enable = 1;  // 1 = Enabled, 0 = Disabled
-  conf.run[0].p = 1;  // Filter Width and Height
+  conf.run[0].p = 0x1;  // Filter Width and Height
   conf.run[0].pz = 1;  // Filter Depth
   conf.run[0].weight_buf.mem = weights_mem_;
   conf.run[0].weight_buf.offs = 2747264;
@@ -2124,7 +2124,7 @@ void CKerasMobileNet::Layer_26() {
   conf.run[0].pool_size = 0x0;  // bits [7:0] = width, bits [15:8] = height
   conf.run[0].pool_stride = 0x101;  // bits [7:0] = X stride, bits [15:8] = Y stride
   conf.run[0].pool_pad = 0x0;  // bits [7:0] = left padding, bits [15:8] = right padding, bits [23:16] = top padding, bits [31:24] = bottom padding
-  conf.run[0].pool_avg_param = 0x0;  // Must be set to 1/pool_size^2 in FP16 format when using average pooling (average pooling assumes square size)
+  conf.run[0].pool_avg_param = 0x0;  // Usually set to 1/pool_size^2 in FP16 format when using average pooling (average pooling assumes square size)
   conf.run[0].actfunc = 2;  // Activation Function: 0 = None, 1 = Tanh, 2 = Leaky ReLU, 3 = Sigmoid, 4 = PReLU, 5 = ELU, 6 = ReLU6
   conf.run[0].actfunc_param = 0x0;  // Leaky ReLU parameter (NOTE: 0x2E66 is 0.1 in FP16)
   conf.run[0].rectifi_en = 0;  // Rectification, i.e. max(0, x) (NOTE: Can be applied after non-ReLU activation function)
@@ -2183,7 +2183,7 @@ void CKerasMobileNet::Layer_27() {
   //->: global_average_pooling2d_1
   conf.run[0].m = 1024;  // Output Channels
   conf.run[0].conv_enable = 0;  // 1 = Enabled, 0 = Disabled
-  conf.run[0].p = 1;  // Filter Width and Height
+  conf.run[0].p = 0x1;  // Filter Width and Height
   conf.run[0].pz = 1;  // Filter Depth
   conf.run[0].weight_buf.mem = weights_mem_;
   conf.run[0].weight_buf.offs = 3929472;
@@ -2195,7 +2195,7 @@ void CKerasMobileNet::Layer_27() {
   conf.run[0].pool_size = 0x707;  // bits [7:0] = width, bits [15:8] = height
   conf.run[0].pool_stride = 0x101;  // bits [7:0] = X stride, bits [15:8] = Y stride
   conf.run[0].pool_pad = 0x0;  // bits [7:0] = left padding, bits [15:8] = right padding, bits [23:16] = top padding, bits [31:24] = bottom padding
-  conf.run[0].pool_avg_param = 0x2539;  // Must be set to 1/pool_size^2 in FP16 format when using average pooling (average pooling assumes square size)
+  conf.run[0].pool_avg_param = 0x2539;  // Usually set to 1/pool_size^2 in FP16 format when using average pooling (average pooling assumes square size)
   conf.run[0].actfunc = 0;  // Activation Function: 0 = None, 1 = Tanh, 2 = Leaky ReLU, 3 = Sigmoid, 4 = PReLU, 5 = ELU, 6 = ReLU6
   conf.run[0].actfunc_param = 0x0;  // Leaky ReLU parameter (NOTE: 0x2E66 is 0.1 in FP16)
   conf.run[0].rectifi_en = 0;  // Rectification, i.e. max(0, x) (NOTE: Can be applied after non-ReLU activation function)
@@ -2254,7 +2254,7 @@ void CKerasMobileNet::Layer_28() {
   //->: conv_preds
   conf.run[0].m = 1000;  // Output Channels
   conf.run[0].conv_enable = 1;  // 1 = Enabled, 0 = Disabled
-  conf.run[0].p = 1;  // Filter Width and Height
+  conf.run[0].p = 0x1;  // Filter Width and Height
   conf.run[0].pz = 1;  // Filter Depth
   conf.run[0].weight_buf.mem = weights_mem_;
   conf.run[0].weight_buf.offs = 3929472;
@@ -2266,7 +2266,7 @@ void CKerasMobileNet::Layer_28() {
   conf.run[0].pool_size = 0x0;  // bits [7:0] = width, bits [15:8] = height
   conf.run[0].pool_stride = 0x101;  // bits [7:0] = X stride, bits [15:8] = Y stride
   conf.run[0].pool_pad = 0x0;  // bits [7:0] = left padding, bits [15:8] = right padding, bits [23:16] = top padding, bits [31:24] = bottom padding
-  conf.run[0].pool_avg_param = 0x0;  // Must be set to 1/pool_size^2 in FP16 format when using average pooling (average pooling assumes square size)
+  conf.run[0].pool_avg_param = 0x0;  // Usually set to 1/pool_size^2 in FP16 format when using average pooling (average pooling assumes square size)
   conf.run[0].actfunc = 0;  // Activation Function: 0 = None, 1 = Tanh, 2 = Leaky ReLU, 3 = Sigmoid, 4 = PReLU, 5 = ELU, 6 = ReLU6
   conf.run[0].actfunc_param = 0x0;  // Leaky ReLU parameter (NOTE: 0x2E66 is 0.1 in FP16)
   conf.run[0].rectifi_en = 0;  // Rectification, i.e. max(0, x) (NOTE: Can be applied after non-ReLU activation function)

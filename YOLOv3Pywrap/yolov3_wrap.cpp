@@ -100,16 +100,17 @@ void put_input(net_id id, const np::ndarray & input)
 /**
  * @brief get output of the CNet
  * @param[in] id ID of CNet network
+ * @param[in] index index of output
  *
  * @return boost::python::numpy::ndarray An output from CNet network.
  */
-np::ndarray get_final_output(net_id id)
+np::ndarray get_final_output(net_id id, int index = 0)
 {
 	CNet * net = nets[id];
 
 	// get output
 	vector<float> * output = new std::vector<float>();
-	net->get_final_output(*output);
+	net->get_final_output(*output, index);
 
 	// convert the vector to ndarray
 	static const np::dtype ftdt = np::dtype::get_builtin<float>();
@@ -139,6 +140,8 @@ void destroy(net_id id)
 	delete nets[id];
 }
 
+BOOST_PYTHON_FUNCTION_OVERLOADS(f_overloads, get_final_output, 1, 2)
+
 BOOST_PYTHON_MODULE(yolov3_wrap) {
 	Py_Initialize();
 	np::initialize();
@@ -150,7 +153,8 @@ BOOST_PYTHON_MODULE(yolov3_wrap) {
 	py::def("commit", commit);
 	py::def("run_network", run_network);
 	py::def("put_input", put_input);
-	py::def("get_final_output", get_final_output);
+	py::def("get_final_output", get_final_output, f_overloads(
+		py::args("id", "index")));
 	py::def("get_conv_usec", get_conv_usec);
 	py::def("get_fc_usec", get_fc_usec);
 	py::def("get_cpu_usec", get_cpu_usec);

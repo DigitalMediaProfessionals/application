@@ -96,7 +96,7 @@ void CCaffeGoogLeNet::Layer_0() {
   //->: pool1/3x3_s2
   conf.run[0].m = 64;  // Output Channels
   conf.run[0].conv_enable = 1;  // 1 = Enabled, 0 = Disabled
-  conf.run[0].p = 7;  // Filter Width and Height
+  conf.run[0].p = 0x7;  // Filter Width and Height
   conf.run[0].pz = 1;  // Filter Depth
   conf.run[0].weight_buf.mem = weights_mem_;
   conf.run[0].weight_buf.offs = 0;
@@ -107,8 +107,8 @@ void CCaffeGoogLeNet::Layer_0() {
   conf.run[0].pool_enable = 1;  // 0 = disabled, 1 = max pooling, 2 = average pooling
   conf.run[0].pool_size = 0x303;  // bits [7:0] = width, bits [15:8] = height
   conf.run[0].pool_stride = 0x202;  // bits [7:0] = X stride, bits [15:8] = Y stride
-  conf.run[0].pool_pad = 0x1010101;  // bits [7:0] = left padding, bits [15:8] = right padding, bits [23:16] = top padding, bits [31:24] = bottom padding
-  conf.run[0].pool_avg_param = 0x0;  // Must be set to 1/pool_size^2 in FP16 format when using average pooling (average pooling assumes square size)
+  conf.run[0].pool_pad = 0x1000100;  // bits [7:0] = left padding, bits [15:8] = right padding, bits [23:16] = top padding, bits [31:24] = bottom padding
+  conf.run[0].pool_avg_param = 0x0;  // Usually set to 1/pool_size^2 in FP16 format when using average pooling (average pooling assumes square size)
   conf.run[0].actfunc = 2;  // Activation Function: 0 = None, 1 = Tanh, 2 = Leaky ReLU, 3 = Sigmoid, 4 = PReLU, 5 = ELU, 6 = ReLU6
   conf.run[0].actfunc_param = 0x0;  // Leaky ReLU parameter (NOTE: 0x2E66 is 0.1 in FP16)
   conf.run[0].rectifi_en = 0;  // Rectification, i.e. max(0, x) (NOTE: Can be applied after non-ReLU activation function)
@@ -167,7 +167,7 @@ void CCaffeGoogLeNet::Layer_1() {
   //->: pool1/norm1
   conf.run[0].m = 64;  // Output Channels
   conf.run[0].conv_enable = 0;  // 1 = Enabled, 0 = Disabled
-  conf.run[0].p = 1;  // Filter Width and Height
+  conf.run[0].p = 0x1;  // Filter Width and Height
   conf.run[0].pz = 1;  // Filter Depth
   conf.run[0].weight_buf.mem = weights_mem_;
   conf.run[0].weight_buf.offs = 14464;
@@ -179,11 +179,11 @@ void CCaffeGoogLeNet::Layer_1() {
   conf.run[0].pool_size = 0x0;  // bits [7:0] = width, bits [15:8] = height
   conf.run[0].pool_stride = 0x101;  // bits [7:0] = X stride, bits [15:8] = Y stride
   conf.run[0].pool_pad = 0x0;  // bits [7:0] = left padding, bits [15:8] = right padding, bits [23:16] = top padding, bits [31:24] = bottom padding
-  conf.run[0].pool_avg_param = 0x0;  // Must be set to 1/pool_size^2 in FP16 format when using average pooling (average pooling assumes square size)
+  conf.run[0].pool_avg_param = 0x0;  // Usually set to 1/pool_size^2 in FP16 format when using average pooling (average pooling assumes square size)
   conf.run[0].actfunc = 0;  // Activation Function: 0 = None, 1 = Tanh, 2 = Leaky ReLU, 3 = Sigmoid, 4 = PReLU, 5 = ELU, 6 = ReLU6
   conf.run[0].actfunc_param = 0x0;  // Leaky ReLU parameter (NOTE: 0x2E66 is 0.1 in FP16)
   conf.run[0].rectifi_en = 0;  // Rectification, i.e. max(0, x) (NOTE: Can be applied after non-ReLU activation function)
-  conf.run[0].lrn = 0x403;  // [0] : 1 = LRN enable, 0 = LRN disable, [1] : 1 = incl. power func, 0 = excl., [8:11] = x^2 scale factor log2
+  conf.run[0].lrn = 0x503;  // [0] : 1 = LRN enable, 0 = LRN disable, [1] : 1 = incl. power func, 0 = excl., [8:11] = x^2 scale factor log2
 
   fpga_layer& layer = get_layer(1);
   layer.type = LT_CONV;
@@ -240,7 +240,7 @@ void CCaffeGoogLeNet::Layer_2() {
   //->: conv2/relu_3x3_reduce
   conf.run[0].m = 64;  // Output Channels
   conf.run[0].conv_enable = 1;  // 1 = Enabled, 0 = Disabled
-  conf.run[0].p = 1;  // Filter Width and Height
+  conf.run[0].p = 0x1;  // Filter Width and Height
   conf.run[0].pz = 1;  // Filter Depth
   conf.run[0].weight_buf.mem = weights_mem_;
   conf.run[0].weight_buf.offs = 14464;
@@ -252,7 +252,7 @@ void CCaffeGoogLeNet::Layer_2() {
   conf.run[0].pool_size = 0x0;  // bits [7:0] = width, bits [15:8] = height
   conf.run[0].pool_stride = 0x101;  // bits [7:0] = X stride, bits [15:8] = Y stride
   conf.run[0].pool_pad = 0x0;  // bits [7:0] = left padding, bits [15:8] = right padding, bits [23:16] = top padding, bits [31:24] = bottom padding
-  conf.run[0].pool_avg_param = 0x0;  // Must be set to 1/pool_size^2 in FP16 format when using average pooling (average pooling assumes square size)
+  conf.run[0].pool_avg_param = 0x0;  // Usually set to 1/pool_size^2 in FP16 format when using average pooling (average pooling assumes square size)
   conf.run[0].actfunc = 2;  // Activation Function: 0 = None, 1 = Tanh, 2 = Leaky ReLU, 3 = Sigmoid, 4 = PReLU, 5 = ELU, 6 = ReLU6
   conf.run[0].actfunc_param = 0x0;  // Leaky ReLU parameter (NOTE: 0x2E66 is 0.1 in FP16)
   conf.run[0].rectifi_en = 0;  // Rectification, i.e. max(0, x) (NOTE: Can be applied after non-ReLU activation function)
@@ -313,7 +313,7 @@ void CCaffeGoogLeNet::Layer_3() {
   //->: conv2/relu_3x3
   conf.run[0].m = 192;  // Output Channels
   conf.run[0].conv_enable = 1;  // 1 = Enabled, 0 = Disabled
-  conf.run[0].p = 3;  // Filter Width and Height
+  conf.run[0].p = 0x3;  // Filter Width and Height
   conf.run[0].pz = 1;  // Filter Depth
   conf.run[0].weight_buf.mem = weights_mem_;
   conf.run[0].weight_buf.offs = 19712;
@@ -325,7 +325,7 @@ void CCaffeGoogLeNet::Layer_3() {
   conf.run[0].pool_size = 0x0;  // bits [7:0] = width, bits [15:8] = height
   conf.run[0].pool_stride = 0x101;  // bits [7:0] = X stride, bits [15:8] = Y stride
   conf.run[0].pool_pad = 0x0;  // bits [7:0] = left padding, bits [15:8] = right padding, bits [23:16] = top padding, bits [31:24] = bottom padding
-  conf.run[0].pool_avg_param = 0x0;  // Must be set to 1/pool_size^2 in FP16 format when using average pooling (average pooling assumes square size)
+  conf.run[0].pool_avg_param = 0x0;  // Usually set to 1/pool_size^2 in FP16 format when using average pooling (average pooling assumes square size)
   conf.run[0].actfunc = 2;  // Activation Function: 0 = None, 1 = Tanh, 2 = Leaky ReLU, 3 = Sigmoid, 4 = PReLU, 5 = ELU, 6 = ReLU6
   conf.run[0].actfunc_param = 0x0;  // Leaky ReLU parameter (NOTE: 0x2E66 is 0.1 in FP16)
   conf.run[0].rectifi_en = 0;  // Rectification, i.e. max(0, x) (NOTE: Can be applied after non-ReLU activation function)
@@ -384,7 +384,7 @@ void CCaffeGoogLeNet::Layer_4() {
   //->: conv2/norm2
   conf.run[0].m = 192;  // Output Channels
   conf.run[0].conv_enable = 0;  // 1 = Enabled, 0 = Disabled
-  conf.run[0].p = 1;  // Filter Width and Height
+  conf.run[0].p = 0x1;  // Filter Width and Height
   conf.run[0].pz = 1;  // Filter Depth
   conf.run[0].weight_buf.mem = weights_mem_;
   conf.run[0].weight_buf.offs = 131200;
@@ -396,11 +396,11 @@ void CCaffeGoogLeNet::Layer_4() {
   conf.run[0].pool_size = 0x0;  // bits [7:0] = width, bits [15:8] = height
   conf.run[0].pool_stride = 0x101;  // bits [7:0] = X stride, bits [15:8] = Y stride
   conf.run[0].pool_pad = 0x0;  // bits [7:0] = left padding, bits [15:8] = right padding, bits [23:16] = top padding, bits [31:24] = bottom padding
-  conf.run[0].pool_avg_param = 0x0;  // Must be set to 1/pool_size^2 in FP16 format when using average pooling (average pooling assumes square size)
+  conf.run[0].pool_avg_param = 0x0;  // Usually set to 1/pool_size^2 in FP16 format when using average pooling (average pooling assumes square size)
   conf.run[0].actfunc = 0;  // Activation Function: 0 = None, 1 = Tanh, 2 = Leaky ReLU, 3 = Sigmoid, 4 = PReLU, 5 = ELU, 6 = ReLU6
   conf.run[0].actfunc_param = 0x0;  // Leaky ReLU parameter (NOTE: 0x2E66 is 0.1 in FP16)
   conf.run[0].rectifi_en = 0;  // Rectification, i.e. max(0, x) (NOTE: Can be applied after non-ReLU activation function)
-  conf.run[0].lrn = 0x403;  // [0] : 1 = LRN enable, 0 = LRN disable, [1] : 1 = incl. power func, 0 = excl., [8:11] = x^2 scale factor log2
+  conf.run[0].lrn = 0x503;  // [0] : 1 = LRN enable, 0 = LRN disable, [1] : 1 = incl. power func, 0 = excl., [8:11] = x^2 scale factor log2
 
   fpga_layer& layer = get_layer(4);
   layer.type = LT_CONV;
@@ -455,7 +455,7 @@ void CCaffeGoogLeNet::Layer_5() {
   //->: pool2/3x3_s2
   conf.run[0].m = 192;  // Output Channels
   conf.run[0].conv_enable = 0;  // 1 = Enabled, 0 = Disabled
-  conf.run[0].p = 1;  // Filter Width and Height
+  conf.run[0].p = 0x1;  // Filter Width and Height
   conf.run[0].pz = 1;  // Filter Depth
   conf.run[0].weight_buf.mem = weights_mem_;
   conf.run[0].weight_buf.offs = 131200;
@@ -466,8 +466,8 @@ void CCaffeGoogLeNet::Layer_5() {
   conf.run[0].pool_enable = 1;  // 0 = disabled, 1 = max pooling, 2 = average pooling
   conf.run[0].pool_size = 0x303;  // bits [7:0] = width, bits [15:8] = height
   conf.run[0].pool_stride = 0x202;  // bits [7:0] = X stride, bits [15:8] = Y stride
-  conf.run[0].pool_pad = 0x1010101;  // bits [7:0] = left padding, bits [15:8] = right padding, bits [23:16] = top padding, bits [31:24] = bottom padding
-  conf.run[0].pool_avg_param = 0x0;  // Must be set to 1/pool_size^2 in FP16 format when using average pooling (average pooling assumes square size)
+  conf.run[0].pool_pad = 0x1000100;  // bits [7:0] = left padding, bits [15:8] = right padding, bits [23:16] = top padding, bits [31:24] = bottom padding
+  conf.run[0].pool_avg_param = 0x0;  // Usually set to 1/pool_size^2 in FP16 format when using average pooling (average pooling assumes square size)
   conf.run[0].actfunc = 0;  // Activation Function: 0 = None, 1 = Tanh, 2 = Leaky ReLU, 3 = Sigmoid, 4 = PReLU, 5 = ELU, 6 = ReLU6
   conf.run[0].actfunc_param = 0x0;  // Leaky ReLU parameter (NOTE: 0x2E66 is 0.1 in FP16)
   conf.run[0].rectifi_en = 0;  // Rectification, i.e. max(0, x) (NOTE: Can be applied after non-ReLU activation function)
@@ -539,7 +539,7 @@ void CCaffeGoogLeNet::Layer_6() {
   //->: inception_3a/relu_1x1
   conf.run[0].m = 64;  // Output Channels
   conf.run[0].conv_enable = 1;  // 1 = Enabled, 0 = Disabled
-  conf.run[0].p = 1;  // Filter Width and Height
+  conf.run[0].p = 0x1;  // Filter Width and Height
   conf.run[0].pz = 1;  // Filter Depth
   conf.run[0].weight_buf.mem = weights_mem_;
   conf.run[0].weight_buf.offs = 131200;
@@ -551,7 +551,7 @@ void CCaffeGoogLeNet::Layer_6() {
   conf.run[0].pool_size = 0x0;  // bits [7:0] = width, bits [15:8] = height
   conf.run[0].pool_stride = 0x101;  // bits [7:0] = X stride, bits [15:8] = Y stride
   conf.run[0].pool_pad = 0x0;  // bits [7:0] = left padding, bits [15:8] = right padding, bits [23:16] = top padding, bits [31:24] = bottom padding
-  conf.run[0].pool_avg_param = 0x0;  // Must be set to 1/pool_size^2 in FP16 format when using average pooling (average pooling assumes square size)
+  conf.run[0].pool_avg_param = 0x0;  // Usually set to 1/pool_size^2 in FP16 format when using average pooling (average pooling assumes square size)
   conf.run[0].actfunc = 2;  // Activation Function: 0 = None, 1 = Tanh, 2 = Leaky ReLU, 3 = Sigmoid, 4 = PReLU, 5 = ELU, 6 = ReLU6
   conf.run[0].actfunc_param = 0x0;  // Leaky ReLU parameter (NOTE: 0x2E66 is 0.1 in FP16)
   conf.run[0].rectifi_en = 0;  // Rectification, i.e. max(0, x) (NOTE: Can be applied after non-ReLU activation function)
@@ -563,7 +563,7 @@ void CCaffeGoogLeNet::Layer_6() {
   //->: inception_3a/relu_3x3_reduce
   conf.run[1].m = 96;  // Output Channels
   conf.run[1].conv_enable = 1;  // 1 = Enabled, 0 = Disabled
-  conf.run[1].p = 1;  // Filter Width and Height
+  conf.run[1].p = 0x1;  // Filter Width and Height
   conf.run[1].pz = 1;  // Filter Depth
   conf.run[1].weight_buf.mem = weights_mem_;
   conf.run[1].weight_buf.offs = 145664;
@@ -575,7 +575,7 @@ void CCaffeGoogLeNet::Layer_6() {
   conf.run[1].pool_size = 0x0;  // bits [7:0] = width, bits [15:8] = height
   conf.run[1].pool_stride = 0x101;  // bits [7:0] = X stride, bits [15:8] = Y stride
   conf.run[1].pool_pad = 0x0;  // bits [7:0] = left padding, bits [15:8] = right padding, bits [23:16] = top padding, bits [31:24] = bottom padding
-  conf.run[1].pool_avg_param = 0x0;  // Must be set to 1/pool_size^2 in FP16 format when using average pooling (average pooling assumes square size)
+  conf.run[1].pool_avg_param = 0x0;  // Usually set to 1/pool_size^2 in FP16 format when using average pooling (average pooling assumes square size)
   conf.run[1].actfunc = 2;  // Activation Function: 0 = None, 1 = Tanh, 2 = Leaky ReLU, 3 = Sigmoid, 4 = PReLU, 5 = ELU, 6 = ReLU6
   conf.run[1].actfunc_param = 0x0;  // Leaky ReLU parameter (NOTE: 0x2E66 is 0.1 in FP16)
   conf.run[1].rectifi_en = 0;  // Rectification, i.e. max(0, x) (NOTE: Can be applied after non-ReLU activation function)
@@ -587,7 +587,7 @@ void CCaffeGoogLeNet::Layer_6() {
   //->: inception_3a/relu_3x3
   conf.run[2].m = 128;  // Output Channels
   conf.run[2].conv_enable = 1;  // 1 = Enabled, 0 = Disabled
-  conf.run[2].p = 3;  // Filter Width and Height
+  conf.run[2].p = 0x3;  // Filter Width and Height
   conf.run[2].pz = 1;  // Filter Depth
   conf.run[2].weight_buf.mem = weights_mem_;
   conf.run[2].weight_buf.offs = 167104;
@@ -599,7 +599,7 @@ void CCaffeGoogLeNet::Layer_6() {
   conf.run[2].pool_size = 0x0;  // bits [7:0] = width, bits [15:8] = height
   conf.run[2].pool_stride = 0x101;  // bits [7:0] = X stride, bits [15:8] = Y stride
   conf.run[2].pool_pad = 0x0;  // bits [7:0] = left padding, bits [15:8] = right padding, bits [23:16] = top padding, bits [31:24] = bottom padding
-  conf.run[2].pool_avg_param = 0x0;  // Must be set to 1/pool_size^2 in FP16 format when using average pooling (average pooling assumes square size)
+  conf.run[2].pool_avg_param = 0x0;  // Usually set to 1/pool_size^2 in FP16 format when using average pooling (average pooling assumes square size)
   conf.run[2].actfunc = 2;  // Activation Function: 0 = None, 1 = Tanh, 2 = Leaky ReLU, 3 = Sigmoid, 4 = PReLU, 5 = ELU, 6 = ReLU6
   conf.run[2].actfunc_param = 0x0;  // Leaky ReLU parameter (NOTE: 0x2E66 is 0.1 in FP16)
   conf.run[2].rectifi_en = 0;  // Rectification, i.e. max(0, x) (NOTE: Can be applied after non-ReLU activation function)
@@ -611,7 +611,7 @@ void CCaffeGoogLeNet::Layer_6() {
   //->: inception_3a/relu_5x5_reduce
   conf.run[3].m = 16;  // Output Channels
   conf.run[3].conv_enable = 1;  // 1 = Enabled, 0 = Disabled
-  conf.run[3].p = 1;  // Filter Width and Height
+  conf.run[3].p = 0x1;  // Filter Width and Height
   conf.run[3].pz = 1;  // Filter Depth
   conf.run[3].weight_buf.mem = weights_mem_;
   conf.run[3].weight_buf.offs = 278464;
@@ -623,7 +623,7 @@ void CCaffeGoogLeNet::Layer_6() {
   conf.run[3].pool_size = 0x0;  // bits [7:0] = width, bits [15:8] = height
   conf.run[3].pool_stride = 0x101;  // bits [7:0] = X stride, bits [15:8] = Y stride
   conf.run[3].pool_pad = 0x0;  // bits [7:0] = left padding, bits [15:8] = right padding, bits [23:16] = top padding, bits [31:24] = bottom padding
-  conf.run[3].pool_avg_param = 0x0;  // Must be set to 1/pool_size^2 in FP16 format when using average pooling (average pooling assumes square size)
+  conf.run[3].pool_avg_param = 0x0;  // Usually set to 1/pool_size^2 in FP16 format when using average pooling (average pooling assumes square size)
   conf.run[3].actfunc = 2;  // Activation Function: 0 = None, 1 = Tanh, 2 = Leaky ReLU, 3 = Sigmoid, 4 = PReLU, 5 = ELU, 6 = ReLU6
   conf.run[3].actfunc_param = 0x0;  // Leaky ReLU parameter (NOTE: 0x2E66 is 0.1 in FP16)
   conf.run[3].rectifi_en = 0;  // Rectification, i.e. max(0, x) (NOTE: Can be applied after non-ReLU activation function)
@@ -635,7 +635,7 @@ void CCaffeGoogLeNet::Layer_6() {
   //->: inception_3a/relu_5x5
   conf.run[4].m = 32;  // Output Channels
   conf.run[4].conv_enable = 1;  // 1 = Enabled, 0 = Disabled
-  conf.run[4].p = 5;  // Filter Width and Height
+  conf.run[4].p = 0x5;  // Filter Width and Height
   conf.run[4].pz = 1;  // Filter Depth
   conf.run[4].weight_buf.mem = weights_mem_;
   conf.run[4].weight_buf.offs = 282464;
@@ -647,7 +647,7 @@ void CCaffeGoogLeNet::Layer_6() {
   conf.run[4].pool_size = 0x0;  // bits [7:0] = width, bits [15:8] = height
   conf.run[4].pool_stride = 0x101;  // bits [7:0] = X stride, bits [15:8] = Y stride
   conf.run[4].pool_pad = 0x0;  // bits [7:0] = left padding, bits [15:8] = right padding, bits [23:16] = top padding, bits [31:24] = bottom padding
-  conf.run[4].pool_avg_param = 0x0;  // Must be set to 1/pool_size^2 in FP16 format when using average pooling (average pooling assumes square size)
+  conf.run[4].pool_avg_param = 0x0;  // Usually set to 1/pool_size^2 in FP16 format when using average pooling (average pooling assumes square size)
   conf.run[4].actfunc = 2;  // Activation Function: 0 = None, 1 = Tanh, 2 = Leaky ReLU, 3 = Sigmoid, 4 = PReLU, 5 = ELU, 6 = ReLU6
   conf.run[4].actfunc_param = 0x0;  // Leaky ReLU parameter (NOTE: 0x2E66 is 0.1 in FP16)
   conf.run[4].rectifi_en = 0;  // Rectification, i.e. max(0, x) (NOTE: Can be applied after non-ReLU activation function)
@@ -658,7 +658,7 @@ void CCaffeGoogLeNet::Layer_6() {
   //->: inception_3a/pool
   conf.run[5].m = 192;  // Output Channels
   conf.run[5].conv_enable = 0;  // 1 = Enabled, 0 = Disabled
-  conf.run[5].p = 1;  // Filter Width and Height
+  conf.run[5].p = 0x1;  // Filter Width and Height
   conf.run[5].pz = 1;  // Filter Depth
   conf.run[5].weight_buf.mem = weights_mem_;
   conf.run[5].weight_buf.offs = 301472;
@@ -670,7 +670,7 @@ void CCaffeGoogLeNet::Layer_6() {
   conf.run[5].pool_size = 0x303;  // bits [7:0] = width, bits [15:8] = height
   conf.run[5].pool_stride = 0x101;  // bits [7:0] = X stride, bits [15:8] = Y stride
   conf.run[5].pool_pad = 0x1010101;  // bits [7:0] = left padding, bits [15:8] = right padding, bits [23:16] = top padding, bits [31:24] = bottom padding
-  conf.run[5].pool_avg_param = 0x0;  // Must be set to 1/pool_size^2 in FP16 format when using average pooling (average pooling assumes square size)
+  conf.run[5].pool_avg_param = 0x0;  // Usually set to 1/pool_size^2 in FP16 format when using average pooling (average pooling assumes square size)
   conf.run[5].actfunc = 0;  // Activation Function: 0 = None, 1 = Tanh, 2 = Leaky ReLU, 3 = Sigmoid, 4 = PReLU, 5 = ELU, 6 = ReLU6
   conf.run[5].actfunc_param = 0x0;  // Leaky ReLU parameter (NOTE: 0x2E66 is 0.1 in FP16)
   conf.run[5].rectifi_en = 0;  // Rectification, i.e. max(0, x) (NOTE: Can be applied after non-ReLU activation function)
@@ -682,7 +682,7 @@ void CCaffeGoogLeNet::Layer_6() {
   //->: inception_3a/relu_pool_proj
   conf.run[6].m = 32;  // Output Channels
   conf.run[6].conv_enable = 1;  // 1 = Enabled, 0 = Disabled
-  conf.run[6].p = 1;  // Filter Width and Height
+  conf.run[6].p = 0x1;  // Filter Width and Height
   conf.run[6].pz = 1;  // Filter Depth
   conf.run[6].weight_buf.mem = weights_mem_;
   conf.run[6].weight_buf.offs = 301472;
@@ -694,7 +694,7 @@ void CCaffeGoogLeNet::Layer_6() {
   conf.run[6].pool_size = 0x0;  // bits [7:0] = width, bits [15:8] = height
   conf.run[6].pool_stride = 0x101;  // bits [7:0] = X stride, bits [15:8] = Y stride
   conf.run[6].pool_pad = 0x0;  // bits [7:0] = left padding, bits [15:8] = right padding, bits [23:16] = top padding, bits [31:24] = bottom padding
-  conf.run[6].pool_avg_param = 0x0;  // Must be set to 1/pool_size^2 in FP16 format when using average pooling (average pooling assumes square size)
+  conf.run[6].pool_avg_param = 0x0;  // Usually set to 1/pool_size^2 in FP16 format when using average pooling (average pooling assumes square size)
   conf.run[6].actfunc = 2;  // Activation Function: 0 = None, 1 = Tanh, 2 = Leaky ReLU, 3 = Sigmoid, 4 = PReLU, 5 = ELU, 6 = ReLU6
   conf.run[6].actfunc_param = 0x0;  // Leaky ReLU parameter (NOTE: 0x2E66 is 0.1 in FP16)
   conf.run[6].rectifi_en = 0;  // Rectification, i.e. max(0, x) (NOTE: Can be applied after non-ReLU activation function)
@@ -771,7 +771,7 @@ void CCaffeGoogLeNet::Layer_7() {
   //->: pool3/3x3_s2
   conf.run[0].m = 128;  // Output Channels
   conf.run[0].conv_enable = 1;  // 1 = Enabled, 0 = Disabled
-  conf.run[0].p = 1;  // Filter Width and Height
+  conf.run[0].p = 0x1;  // Filter Width and Height
   conf.run[0].pz = 1;  // Filter Depth
   conf.run[0].weight_buf.mem = weights_mem_;
   conf.run[0].weight_buf.offs = 308960;
@@ -782,8 +782,8 @@ void CCaffeGoogLeNet::Layer_7() {
   conf.run[0].pool_enable = 1;  // 0 = disabled, 1 = max pooling, 2 = average pooling
   conf.run[0].pool_size = 0x303;  // bits [7:0] = width, bits [15:8] = height
   conf.run[0].pool_stride = 0x202;  // bits [7:0] = X stride, bits [15:8] = Y stride
-  conf.run[0].pool_pad = 0x1010101;  // bits [7:0] = left padding, bits [15:8] = right padding, bits [23:16] = top padding, bits [31:24] = bottom padding
-  conf.run[0].pool_avg_param = 0x0;  // Must be set to 1/pool_size^2 in FP16 format when using average pooling (average pooling assumes square size)
+  conf.run[0].pool_pad = 0x1000100;  // bits [7:0] = left padding, bits [15:8] = right padding, bits [23:16] = top padding, bits [31:24] = bottom padding
+  conf.run[0].pool_avg_param = 0x0;  // Usually set to 1/pool_size^2 in FP16 format when using average pooling (average pooling assumes square size)
   conf.run[0].actfunc = 2;  // Activation Function: 0 = None, 1 = Tanh, 2 = Leaky ReLU, 3 = Sigmoid, 4 = PReLU, 5 = ELU, 6 = ReLU6
   conf.run[0].actfunc_param = 0x0;  // Leaky ReLU parameter (NOTE: 0x2E66 is 0.1 in FP16)
   conf.run[0].rectifi_en = 0;  // Rectification, i.e. max(0, x) (NOTE: Can be applied after non-ReLU activation function)
@@ -795,7 +795,7 @@ void CCaffeGoogLeNet::Layer_7() {
   //->: inception_3b/relu_3x3_reduce
   conf.run[1].m = 128;  // Output Channels
   conf.run[1].conv_enable = 1;  // 1 = Enabled, 0 = Disabled
-  conf.run[1].p = 1;  // Filter Width and Height
+  conf.run[1].p = 0x1;  // Filter Width and Height
   conf.run[1].pz = 1;  // Filter Depth
   conf.run[1].weight_buf.mem = weights_mem_;
   conf.run[1].weight_buf.offs = 346592;
@@ -807,7 +807,7 @@ void CCaffeGoogLeNet::Layer_7() {
   conf.run[1].pool_size = 0x0;  // bits [7:0] = width, bits [15:8] = height
   conf.run[1].pool_stride = 0x101;  // bits [7:0] = X stride, bits [15:8] = Y stride
   conf.run[1].pool_pad = 0x0;  // bits [7:0] = left padding, bits [15:8] = right padding, bits [23:16] = top padding, bits [31:24] = bottom padding
-  conf.run[1].pool_avg_param = 0x0;  // Must be set to 1/pool_size^2 in FP16 format when using average pooling (average pooling assumes square size)
+  conf.run[1].pool_avg_param = 0x0;  // Usually set to 1/pool_size^2 in FP16 format when using average pooling (average pooling assumes square size)
   conf.run[1].actfunc = 2;  // Activation Function: 0 = None, 1 = Tanh, 2 = Leaky ReLU, 3 = Sigmoid, 4 = PReLU, 5 = ELU, 6 = ReLU6
   conf.run[1].actfunc_param = 0x0;  // Leaky ReLU parameter (NOTE: 0x2E66 is 0.1 in FP16)
   conf.run[1].rectifi_en = 0;  // Rectification, i.e. max(0, x) (NOTE: Can be applied after non-ReLU activation function)
@@ -820,7 +820,7 @@ void CCaffeGoogLeNet::Layer_7() {
   //->: pool3/3x3_s2
   conf.run[2].m = 192;  // Output Channels
   conf.run[2].conv_enable = 1;  // 1 = Enabled, 0 = Disabled
-  conf.run[2].p = 3;  // Filter Width and Height
+  conf.run[2].p = 0x3;  // Filter Width and Height
   conf.run[2].pz = 1;  // Filter Depth
   conf.run[2].weight_buf.mem = weights_mem_;
   conf.run[2].weight_buf.offs = 384224;
@@ -831,8 +831,8 @@ void CCaffeGoogLeNet::Layer_7() {
   conf.run[2].pool_enable = 1;  // 0 = disabled, 1 = max pooling, 2 = average pooling
   conf.run[2].pool_size = 0x303;  // bits [7:0] = width, bits [15:8] = height
   conf.run[2].pool_stride = 0x202;  // bits [7:0] = X stride, bits [15:8] = Y stride
-  conf.run[2].pool_pad = 0x1010101;  // bits [7:0] = left padding, bits [15:8] = right padding, bits [23:16] = top padding, bits [31:24] = bottom padding
-  conf.run[2].pool_avg_param = 0x0;  // Must be set to 1/pool_size^2 in FP16 format when using average pooling (average pooling assumes square size)
+  conf.run[2].pool_pad = 0x1000100;  // bits [7:0] = left padding, bits [15:8] = right padding, bits [23:16] = top padding, bits [31:24] = bottom padding
+  conf.run[2].pool_avg_param = 0x0;  // Usually set to 1/pool_size^2 in FP16 format when using average pooling (average pooling assumes square size)
   conf.run[2].actfunc = 2;  // Activation Function: 0 = None, 1 = Tanh, 2 = Leaky ReLU, 3 = Sigmoid, 4 = PReLU, 5 = ELU, 6 = ReLU6
   conf.run[2].actfunc_param = 0x0;  // Leaky ReLU parameter (NOTE: 0x2E66 is 0.1 in FP16)
   conf.run[2].rectifi_en = 0;  // Rectification, i.e. max(0, x) (NOTE: Can be applied after non-ReLU activation function)
@@ -844,7 +844,7 @@ void CCaffeGoogLeNet::Layer_7() {
   //->: inception_3b/relu_5x5_reduce
   conf.run[3].m = 32;  // Output Channels
   conf.run[3].conv_enable = 1;  // 1 = Enabled, 0 = Disabled
-  conf.run[3].p = 1;  // Filter Width and Height
+  conf.run[3].p = 0x1;  // Filter Width and Height
   conf.run[3].pz = 1;  // Filter Depth
   conf.run[3].weight_buf.mem = weights_mem_;
   conf.run[3].weight_buf.offs = 606304;
@@ -856,7 +856,7 @@ void CCaffeGoogLeNet::Layer_7() {
   conf.run[3].pool_size = 0x0;  // bits [7:0] = width, bits [15:8] = height
   conf.run[3].pool_stride = 0x101;  // bits [7:0] = X stride, bits [15:8] = Y stride
   conf.run[3].pool_pad = 0x0;  // bits [7:0] = left padding, bits [15:8] = right padding, bits [23:16] = top padding, bits [31:24] = bottom padding
-  conf.run[3].pool_avg_param = 0x0;  // Must be set to 1/pool_size^2 in FP16 format when using average pooling (average pooling assumes square size)
+  conf.run[3].pool_avg_param = 0x0;  // Usually set to 1/pool_size^2 in FP16 format when using average pooling (average pooling assumes square size)
   conf.run[3].actfunc = 2;  // Activation Function: 0 = None, 1 = Tanh, 2 = Leaky ReLU, 3 = Sigmoid, 4 = PReLU, 5 = ELU, 6 = ReLU6
   conf.run[3].actfunc_param = 0x0;  // Leaky ReLU parameter (NOTE: 0x2E66 is 0.1 in FP16)
   conf.run[3].rectifi_en = 0;  // Rectification, i.e. max(0, x) (NOTE: Can be applied after non-ReLU activation function)
@@ -869,7 +869,7 @@ void CCaffeGoogLeNet::Layer_7() {
   //->: pool3/3x3_s2
   conf.run[4].m = 96;  // Output Channels
   conf.run[4].conv_enable = 1;  // 1 = Enabled, 0 = Disabled
-  conf.run[4].p = 5;  // Filter Width and Height
+  conf.run[4].p = 0x5;  // Filter Width and Height
   conf.run[4].pz = 1;  // Filter Depth
   conf.run[4].weight_buf.mem = weights_mem_;
   conf.run[4].weight_buf.offs = 616096;
@@ -880,8 +880,8 @@ void CCaffeGoogLeNet::Layer_7() {
   conf.run[4].pool_enable = 1;  // 0 = disabled, 1 = max pooling, 2 = average pooling
   conf.run[4].pool_size = 0x303;  // bits [7:0] = width, bits [15:8] = height
   conf.run[4].pool_stride = 0x202;  // bits [7:0] = X stride, bits [15:8] = Y stride
-  conf.run[4].pool_pad = 0x1010101;  // bits [7:0] = left padding, bits [15:8] = right padding, bits [23:16] = top padding, bits [31:24] = bottom padding
-  conf.run[4].pool_avg_param = 0x0;  // Must be set to 1/pool_size^2 in FP16 format when using average pooling (average pooling assumes square size)
+  conf.run[4].pool_pad = 0x1000100;  // bits [7:0] = left padding, bits [15:8] = right padding, bits [23:16] = top padding, bits [31:24] = bottom padding
+  conf.run[4].pool_avg_param = 0x0;  // Usually set to 1/pool_size^2 in FP16 format when using average pooling (average pooling assumes square size)
   conf.run[4].actfunc = 2;  // Activation Function: 0 = None, 1 = Tanh, 2 = Leaky ReLU, 3 = Sigmoid, 4 = PReLU, 5 = ELU, 6 = ReLU6
   conf.run[4].actfunc_param = 0x0;  // Leaky ReLU parameter (NOTE: 0x2E66 is 0.1 in FP16)
   conf.run[4].rectifi_en = 0;  // Rectification, i.e. max(0, x) (NOTE: Can be applied after non-ReLU activation function)
@@ -892,7 +892,7 @@ void CCaffeGoogLeNet::Layer_7() {
   //->: inception_3b/pool
   conf.run[5].m = 256;  // Output Channels
   conf.run[5].conv_enable = 0;  // 1 = Enabled, 0 = Disabled
-  conf.run[5].p = 1;  // Filter Width and Height
+  conf.run[5].p = 0x1;  // Filter Width and Height
   conf.run[5].pz = 1;  // Filter Depth
   conf.run[5].weight_buf.mem = weights_mem_;
   conf.run[5].weight_buf.offs = 727392;
@@ -904,7 +904,7 @@ void CCaffeGoogLeNet::Layer_7() {
   conf.run[5].pool_size = 0x303;  // bits [7:0] = width, bits [15:8] = height
   conf.run[5].pool_stride = 0x101;  // bits [7:0] = X stride, bits [15:8] = Y stride
   conf.run[5].pool_pad = 0x1010101;  // bits [7:0] = left padding, bits [15:8] = right padding, bits [23:16] = top padding, bits [31:24] = bottom padding
-  conf.run[5].pool_avg_param = 0x0;  // Must be set to 1/pool_size^2 in FP16 format when using average pooling (average pooling assumes square size)
+  conf.run[5].pool_avg_param = 0x0;  // Usually set to 1/pool_size^2 in FP16 format when using average pooling (average pooling assumes square size)
   conf.run[5].actfunc = 0;  // Activation Function: 0 = None, 1 = Tanh, 2 = Leaky ReLU, 3 = Sigmoid, 4 = PReLU, 5 = ELU, 6 = ReLU6
   conf.run[5].actfunc_param = 0x0;  // Leaky ReLU parameter (NOTE: 0x2E66 is 0.1 in FP16)
   conf.run[5].rectifi_en = 0;  // Rectification, i.e. max(0, x) (NOTE: Can be applied after non-ReLU activation function)
@@ -917,7 +917,7 @@ void CCaffeGoogLeNet::Layer_7() {
   //->: pool3/3x3_s2
   conf.run[6].m = 64;  // Output Channels
   conf.run[6].conv_enable = 1;  // 1 = Enabled, 0 = Disabled
-  conf.run[6].p = 1;  // Filter Width and Height
+  conf.run[6].p = 0x1;  // Filter Width and Height
   conf.run[6].pz = 1;  // Filter Depth
   conf.run[6].weight_buf.mem = weights_mem_;
   conf.run[6].weight_buf.offs = 727392;
@@ -928,8 +928,8 @@ void CCaffeGoogLeNet::Layer_7() {
   conf.run[6].pool_enable = 1;  // 0 = disabled, 1 = max pooling, 2 = average pooling
   conf.run[6].pool_size = 0x303;  // bits [7:0] = width, bits [15:8] = height
   conf.run[6].pool_stride = 0x202;  // bits [7:0] = X stride, bits [15:8] = Y stride
-  conf.run[6].pool_pad = 0x1010101;  // bits [7:0] = left padding, bits [15:8] = right padding, bits [23:16] = top padding, bits [31:24] = bottom padding
-  conf.run[6].pool_avg_param = 0x0;  // Must be set to 1/pool_size^2 in FP16 format when using average pooling (average pooling assumes square size)
+  conf.run[6].pool_pad = 0x1000100;  // bits [7:0] = left padding, bits [15:8] = right padding, bits [23:16] = top padding, bits [31:24] = bottom padding
+  conf.run[6].pool_avg_param = 0x0;  // Usually set to 1/pool_size^2 in FP16 format when using average pooling (average pooling assumes square size)
   conf.run[6].actfunc = 2;  // Activation Function: 0 = None, 1 = Tanh, 2 = Leaky ReLU, 3 = Sigmoid, 4 = PReLU, 5 = ELU, 6 = ReLU6
   conf.run[6].actfunc_param = 0x0;  // Leaky ReLU parameter (NOTE: 0x2E66 is 0.1 in FP16)
   conf.run[6].rectifi_en = 0;  // Rectification, i.e. max(0, x) (NOTE: Can be applied after non-ReLU activation function)
@@ -1001,7 +1001,7 @@ void CCaffeGoogLeNet::Layer_8() {
   //->: inception_4a/relu_1x1
   conf.run[0].m = 192;  // Output Channels
   conf.run[0].conv_enable = 1;  // 1 = Enabled, 0 = Disabled
-  conf.run[0].p = 1;  // Filter Width and Height
+  conf.run[0].p = 0x1;  // Filter Width and Height
   conf.run[0].pz = 1;  // Filter Depth
   conf.run[0].weight_buf.mem = weights_mem_;
   conf.run[0].weight_buf.offs = 746464;
@@ -1013,7 +1013,7 @@ void CCaffeGoogLeNet::Layer_8() {
   conf.run[0].pool_size = 0x0;  // bits [7:0] = width, bits [15:8] = height
   conf.run[0].pool_stride = 0x101;  // bits [7:0] = X stride, bits [15:8] = Y stride
   conf.run[0].pool_pad = 0x0;  // bits [7:0] = left padding, bits [15:8] = right padding, bits [23:16] = top padding, bits [31:24] = bottom padding
-  conf.run[0].pool_avg_param = 0x0;  // Must be set to 1/pool_size^2 in FP16 format when using average pooling (average pooling assumes square size)
+  conf.run[0].pool_avg_param = 0x0;  // Usually set to 1/pool_size^2 in FP16 format when using average pooling (average pooling assumes square size)
   conf.run[0].actfunc = 2;  // Activation Function: 0 = None, 1 = Tanh, 2 = Leaky ReLU, 3 = Sigmoid, 4 = PReLU, 5 = ELU, 6 = ReLU6
   conf.run[0].actfunc_param = 0x0;  // Leaky ReLU parameter (NOTE: 0x2E66 is 0.1 in FP16)
   conf.run[0].rectifi_en = 0;  // Rectification, i.e. max(0, x) (NOTE: Can be applied after non-ReLU activation function)
@@ -1025,7 +1025,7 @@ void CCaffeGoogLeNet::Layer_8() {
   //->: inception_4a/relu_3x3_reduce
   conf.run[1].m = 96;  // Output Channels
   conf.run[1].conv_enable = 1;  // 1 = Enabled, 0 = Disabled
-  conf.run[1].p = 1;  // Filter Width and Height
+  conf.run[1].p = 0x1;  // Filter Width and Height
   conf.run[1].pz = 1;  // Filter Depth
   conf.run[1].weight_buf.mem = weights_mem_;
   conf.run[1].weight_buf.offs = 857952;
@@ -1037,7 +1037,7 @@ void CCaffeGoogLeNet::Layer_8() {
   conf.run[1].pool_size = 0x0;  // bits [7:0] = width, bits [15:8] = height
   conf.run[1].pool_stride = 0x101;  // bits [7:0] = X stride, bits [15:8] = Y stride
   conf.run[1].pool_pad = 0x0;  // bits [7:0] = left padding, bits [15:8] = right padding, bits [23:16] = top padding, bits [31:24] = bottom padding
-  conf.run[1].pool_avg_param = 0x0;  // Must be set to 1/pool_size^2 in FP16 format when using average pooling (average pooling assumes square size)
+  conf.run[1].pool_avg_param = 0x0;  // Usually set to 1/pool_size^2 in FP16 format when using average pooling (average pooling assumes square size)
   conf.run[1].actfunc = 2;  // Activation Function: 0 = None, 1 = Tanh, 2 = Leaky ReLU, 3 = Sigmoid, 4 = PReLU, 5 = ELU, 6 = ReLU6
   conf.run[1].actfunc_param = 0x0;  // Leaky ReLU parameter (NOTE: 0x2E66 is 0.1 in FP16)
   conf.run[1].rectifi_en = 0;  // Rectification, i.e. max(0, x) (NOTE: Can be applied after non-ReLU activation function)
@@ -1049,7 +1049,7 @@ void CCaffeGoogLeNet::Layer_8() {
   //->: inception_4a/relu_3x3
   conf.run[2].m = 208;  // Output Channels
   conf.run[2].conv_enable = 1;  // 1 = Enabled, 0 = Disabled
-  conf.run[2].p = 3;  // Filter Width and Height
+  conf.run[2].p = 0x3;  // Filter Width and Height
   conf.run[2].pz = 1;  // Filter Depth
   conf.run[2].weight_buf.mem = weights_mem_;
   conf.run[2].weight_buf.offs = 913952;
@@ -1061,7 +1061,7 @@ void CCaffeGoogLeNet::Layer_8() {
   conf.run[2].pool_size = 0x0;  // bits [7:0] = width, bits [15:8] = height
   conf.run[2].pool_stride = 0x101;  // bits [7:0] = X stride, bits [15:8] = Y stride
   conf.run[2].pool_pad = 0x0;  // bits [7:0] = left padding, bits [15:8] = right padding, bits [23:16] = top padding, bits [31:24] = bottom padding
-  conf.run[2].pool_avg_param = 0x0;  // Must be set to 1/pool_size^2 in FP16 format when using average pooling (average pooling assumes square size)
+  conf.run[2].pool_avg_param = 0x0;  // Usually set to 1/pool_size^2 in FP16 format when using average pooling (average pooling assumes square size)
   conf.run[2].actfunc = 2;  // Activation Function: 0 = None, 1 = Tanh, 2 = Leaky ReLU, 3 = Sigmoid, 4 = PReLU, 5 = ELU, 6 = ReLU6
   conf.run[2].actfunc_param = 0x0;  // Leaky ReLU parameter (NOTE: 0x2E66 is 0.1 in FP16)
   conf.run[2].rectifi_en = 0;  // Rectification, i.e. max(0, x) (NOTE: Can be applied after non-ReLU activation function)
@@ -1073,7 +1073,7 @@ void CCaffeGoogLeNet::Layer_8() {
   //->: inception_4a/relu_5x5_reduce
   conf.run[3].m = 16;  // Output Channels
   conf.run[3].conv_enable = 1;  // 1 = Enabled, 0 = Disabled
-  conf.run[3].p = 1;  // Filter Width and Height
+  conf.run[3].p = 0x1;  // Filter Width and Height
   conf.run[3].pz = 1;  // Filter Depth
   conf.run[3].weight_buf.mem = weights_mem_;
   conf.run[3].weight_buf.offs = 1094592;
@@ -1085,7 +1085,7 @@ void CCaffeGoogLeNet::Layer_8() {
   conf.run[3].pool_size = 0x0;  // bits [7:0] = width, bits [15:8] = height
   conf.run[3].pool_stride = 0x101;  // bits [7:0] = X stride, bits [15:8] = Y stride
   conf.run[3].pool_pad = 0x0;  // bits [7:0] = left padding, bits [15:8] = right padding, bits [23:16] = top padding, bits [31:24] = bottom padding
-  conf.run[3].pool_avg_param = 0x0;  // Must be set to 1/pool_size^2 in FP16 format when using average pooling (average pooling assumes square size)
+  conf.run[3].pool_avg_param = 0x0;  // Usually set to 1/pool_size^2 in FP16 format when using average pooling (average pooling assumes square size)
   conf.run[3].actfunc = 2;  // Activation Function: 0 = None, 1 = Tanh, 2 = Leaky ReLU, 3 = Sigmoid, 4 = PReLU, 5 = ELU, 6 = ReLU6
   conf.run[3].actfunc_param = 0x0;  // Leaky ReLU parameter (NOTE: 0x2E66 is 0.1 in FP16)
   conf.run[3].rectifi_en = 0;  // Rectification, i.e. max(0, x) (NOTE: Can be applied after non-ReLU activation function)
@@ -1097,7 +1097,7 @@ void CCaffeGoogLeNet::Layer_8() {
   //->: inception_4a/relu_5x5
   conf.run[4].m = 48;  // Output Channels
   conf.run[4].conv_enable = 1;  // 1 = Enabled, 0 = Disabled
-  conf.run[4].p = 5;  // Filter Width and Height
+  conf.run[4].p = 0x5;  // Filter Width and Height
   conf.run[4].pz = 1;  // Filter Depth
   conf.run[4].weight_buf.mem = weights_mem_;
   conf.run[4].weight_buf.offs = 1104352;
@@ -1109,7 +1109,7 @@ void CCaffeGoogLeNet::Layer_8() {
   conf.run[4].pool_size = 0x0;  // bits [7:0] = width, bits [15:8] = height
   conf.run[4].pool_stride = 0x101;  // bits [7:0] = X stride, bits [15:8] = Y stride
   conf.run[4].pool_pad = 0x0;  // bits [7:0] = left padding, bits [15:8] = right padding, bits [23:16] = top padding, bits [31:24] = bottom padding
-  conf.run[4].pool_avg_param = 0x0;  // Must be set to 1/pool_size^2 in FP16 format when using average pooling (average pooling assumes square size)
+  conf.run[4].pool_avg_param = 0x0;  // Usually set to 1/pool_size^2 in FP16 format when using average pooling (average pooling assumes square size)
   conf.run[4].actfunc = 2;  // Activation Function: 0 = None, 1 = Tanh, 2 = Leaky ReLU, 3 = Sigmoid, 4 = PReLU, 5 = ELU, 6 = ReLU6
   conf.run[4].actfunc_param = 0x0;  // Leaky ReLU parameter (NOTE: 0x2E66 is 0.1 in FP16)
   conf.run[4].rectifi_en = 0;  // Rectification, i.e. max(0, x) (NOTE: Can be applied after non-ReLU activation function)
@@ -1120,7 +1120,7 @@ void CCaffeGoogLeNet::Layer_8() {
   //->: inception_4a/pool
   conf.run[5].m = 480;  // Output Channels
   conf.run[5].conv_enable = 0;  // 1 = Enabled, 0 = Disabled
-  conf.run[5].p = 1;  // Filter Width and Height
+  conf.run[5].p = 0x1;  // Filter Width and Height
   conf.run[5].pz = 1;  // Filter Depth
   conf.run[5].weight_buf.mem = weights_mem_;
   conf.run[5].weight_buf.offs = 1132608;
@@ -1132,7 +1132,7 @@ void CCaffeGoogLeNet::Layer_8() {
   conf.run[5].pool_size = 0x303;  // bits [7:0] = width, bits [15:8] = height
   conf.run[5].pool_stride = 0x101;  // bits [7:0] = X stride, bits [15:8] = Y stride
   conf.run[5].pool_pad = 0x1010101;  // bits [7:0] = left padding, bits [15:8] = right padding, bits [23:16] = top padding, bits [31:24] = bottom padding
-  conf.run[5].pool_avg_param = 0x0;  // Must be set to 1/pool_size^2 in FP16 format when using average pooling (average pooling assumes square size)
+  conf.run[5].pool_avg_param = 0x0;  // Usually set to 1/pool_size^2 in FP16 format when using average pooling (average pooling assumes square size)
   conf.run[5].actfunc = 0;  // Activation Function: 0 = None, 1 = Tanh, 2 = Leaky ReLU, 3 = Sigmoid, 4 = PReLU, 5 = ELU, 6 = ReLU6
   conf.run[5].actfunc_param = 0x0;  // Leaky ReLU parameter (NOTE: 0x2E66 is 0.1 in FP16)
   conf.run[5].rectifi_en = 0;  // Rectification, i.e. max(0, x) (NOTE: Can be applied after non-ReLU activation function)
@@ -1144,7 +1144,7 @@ void CCaffeGoogLeNet::Layer_8() {
   //->: inception_4a/relu_pool_proj
   conf.run[6].m = 64;  // Output Channels
   conf.run[6].conv_enable = 1;  // 1 = Enabled, 0 = Disabled
-  conf.run[6].p = 1;  // Filter Width and Height
+  conf.run[6].p = 0x1;  // Filter Width and Height
   conf.run[6].pz = 1;  // Filter Depth
   conf.run[6].weight_buf.mem = weights_mem_;
   conf.run[6].weight_buf.offs = 1132608;
@@ -1156,7 +1156,7 @@ void CCaffeGoogLeNet::Layer_8() {
   conf.run[6].pool_size = 0x0;  // bits [7:0] = width, bits [15:8] = height
   conf.run[6].pool_stride = 0x101;  // bits [7:0] = X stride, bits [15:8] = Y stride
   conf.run[6].pool_pad = 0x0;  // bits [7:0] = left padding, bits [15:8] = right padding, bits [23:16] = top padding, bits [31:24] = bottom padding
-  conf.run[6].pool_avg_param = 0x0;  // Must be set to 1/pool_size^2 in FP16 format when using average pooling (average pooling assumes square size)
+  conf.run[6].pool_avg_param = 0x0;  // Usually set to 1/pool_size^2 in FP16 format when using average pooling (average pooling assumes square size)
   conf.run[6].actfunc = 2;  // Activation Function: 0 = None, 1 = Tanh, 2 = Leaky ReLU, 3 = Sigmoid, 4 = PReLU, 5 = ELU, 6 = ReLU6
   conf.run[6].actfunc_param = 0x0;  // Leaky ReLU parameter (NOTE: 0x2E66 is 0.1 in FP16)
   conf.run[6].rectifi_en = 0;  // Rectification, i.e. max(0, x) (NOTE: Can be applied after non-ReLU activation function)
@@ -1228,7 +1228,7 @@ void CCaffeGoogLeNet::Layer_9() {
   //->: inception_4b/relu_1x1
   conf.run[0].m = 160;  // Output Channels
   conf.run[0].conv_enable = 1;  // 1 = Enabled, 0 = Disabled
-  conf.run[0].p = 1;  // Filter Width and Height
+  conf.run[0].p = 0x1;  // Filter Width and Height
   conf.run[0].pz = 1;  // Filter Depth
   conf.run[0].weight_buf.mem = weights_mem_;
   conf.run[0].weight_buf.offs = 1170112;
@@ -1240,7 +1240,7 @@ void CCaffeGoogLeNet::Layer_9() {
   conf.run[0].pool_size = 0x0;  // bits [7:0] = width, bits [15:8] = height
   conf.run[0].pool_stride = 0x101;  // bits [7:0] = X stride, bits [15:8] = Y stride
   conf.run[0].pool_pad = 0x0;  // bits [7:0] = left padding, bits [15:8] = right padding, bits [23:16] = top padding, bits [31:24] = bottom padding
-  conf.run[0].pool_avg_param = 0x0;  // Must be set to 1/pool_size^2 in FP16 format when using average pooling (average pooling assumes square size)
+  conf.run[0].pool_avg_param = 0x0;  // Usually set to 1/pool_size^2 in FP16 format when using average pooling (average pooling assumes square size)
   conf.run[0].actfunc = 2;  // Activation Function: 0 = None, 1 = Tanh, 2 = Leaky ReLU, 3 = Sigmoid, 4 = PReLU, 5 = ELU, 6 = ReLU6
   conf.run[0].actfunc_param = 0x0;  // Leaky ReLU parameter (NOTE: 0x2E66 is 0.1 in FP16)
   conf.run[0].rectifi_en = 0;  // Rectification, i.e. max(0, x) (NOTE: Can be applied after non-ReLU activation function)
@@ -1252,7 +1252,7 @@ void CCaffeGoogLeNet::Layer_9() {
   //->: inception_4b/relu_3x3_reduce
   conf.run[1].m = 112;  // Output Channels
   conf.run[1].conv_enable = 1;  // 1 = Enabled, 0 = Disabled
-  conf.run[1].p = 1;  // Filter Width and Height
+  conf.run[1].p = 0x1;  // Filter Width and Height
   conf.run[1].pz = 1;  // Filter Depth
   conf.run[1].weight_buf.mem = weights_mem_;
   conf.run[1].weight_buf.offs = 1263104;
@@ -1264,7 +1264,7 @@ void CCaffeGoogLeNet::Layer_9() {
   conf.run[1].pool_size = 0x0;  // bits [7:0] = width, bits [15:8] = height
   conf.run[1].pool_stride = 0x101;  // bits [7:0] = X stride, bits [15:8] = Y stride
   conf.run[1].pool_pad = 0x0;  // bits [7:0] = left padding, bits [15:8] = right padding, bits [23:16] = top padding, bits [31:24] = bottom padding
-  conf.run[1].pool_avg_param = 0x0;  // Must be set to 1/pool_size^2 in FP16 format when using average pooling (average pooling assumes square size)
+  conf.run[1].pool_avg_param = 0x0;  // Usually set to 1/pool_size^2 in FP16 format when using average pooling (average pooling assumes square size)
   conf.run[1].actfunc = 2;  // Activation Function: 0 = None, 1 = Tanh, 2 = Leaky ReLU, 3 = Sigmoid, 4 = PReLU, 5 = ELU, 6 = ReLU6
   conf.run[1].actfunc_param = 0x0;  // Leaky ReLU parameter (NOTE: 0x2E66 is 0.1 in FP16)
   conf.run[1].rectifi_en = 0;  // Rectification, i.e. max(0, x) (NOTE: Can be applied after non-ReLU activation function)
@@ -1276,7 +1276,7 @@ void CCaffeGoogLeNet::Layer_9() {
   //->: inception_4b/relu_3x3
   conf.run[2].m = 224;  // Output Channels
   conf.run[2].conv_enable = 1;  // 1 = Enabled, 0 = Disabled
-  conf.run[2].p = 3;  // Filter Width and Height
+  conf.run[2].p = 0x3;  // Filter Width and Height
   conf.run[2].pz = 1;  // Filter Depth
   conf.run[2].weight_buf.mem = weights_mem_;
   conf.run[2].weight_buf.offs = 1328352;
@@ -1288,7 +1288,7 @@ void CCaffeGoogLeNet::Layer_9() {
   conf.run[2].pool_size = 0x0;  // bits [7:0] = width, bits [15:8] = height
   conf.run[2].pool_stride = 0x101;  // bits [7:0] = X stride, bits [15:8] = Y stride
   conf.run[2].pool_pad = 0x0;  // bits [7:0] = left padding, bits [15:8] = right padding, bits [23:16] = top padding, bits [31:24] = bottom padding
-  conf.run[2].pool_avg_param = 0x0;  // Must be set to 1/pool_size^2 in FP16 format when using average pooling (average pooling assumes square size)
+  conf.run[2].pool_avg_param = 0x0;  // Usually set to 1/pool_size^2 in FP16 format when using average pooling (average pooling assumes square size)
   conf.run[2].actfunc = 2;  // Activation Function: 0 = None, 1 = Tanh, 2 = Leaky ReLU, 3 = Sigmoid, 4 = PReLU, 5 = ELU, 6 = ReLU6
   conf.run[2].actfunc_param = 0x0;  // Leaky ReLU parameter (NOTE: 0x2E66 is 0.1 in FP16)
   conf.run[2].rectifi_en = 0;  // Rectification, i.e. max(0, x) (NOTE: Can be applied after non-ReLU activation function)
@@ -1300,7 +1300,7 @@ void CCaffeGoogLeNet::Layer_9() {
   //->: inception_4b/relu_5x5_reduce
   conf.run[3].m = 24;  // Output Channels
   conf.run[3].conv_enable = 1;  // 1 = Enabled, 0 = Disabled
-  conf.run[3].p = 1;  // Filter Width and Height
+  conf.run[3].p = 0x1;  // Filter Width and Height
   conf.run[3].pz = 1;  // Filter Depth
   conf.run[3].weight_buf.mem = weights_mem_;
   conf.run[3].weight_buf.offs = 1555104;
@@ -1312,7 +1312,7 @@ void CCaffeGoogLeNet::Layer_9() {
   conf.run[3].pool_size = 0x0;  // bits [7:0] = width, bits [15:8] = height
   conf.run[3].pool_stride = 0x101;  // bits [7:0] = X stride, bits [15:8] = Y stride
   conf.run[3].pool_pad = 0x0;  // bits [7:0] = left padding, bits [15:8] = right padding, bits [23:16] = top padding, bits [31:24] = bottom padding
-  conf.run[3].pool_avg_param = 0x0;  // Must be set to 1/pool_size^2 in FP16 format when using average pooling (average pooling assumes square size)
+  conf.run[3].pool_avg_param = 0x0;  // Usually set to 1/pool_size^2 in FP16 format when using average pooling (average pooling assumes square size)
   conf.run[3].actfunc = 2;  // Activation Function: 0 = None, 1 = Tanh, 2 = Leaky ReLU, 3 = Sigmoid, 4 = PReLU, 5 = ELU, 6 = ReLU6
   conf.run[3].actfunc_param = 0x0;  // Leaky ReLU parameter (NOTE: 0x2E66 is 0.1 in FP16)
   conf.run[3].rectifi_en = 0;  // Rectification, i.e. max(0, x) (NOTE: Can be applied after non-ReLU activation function)
@@ -1324,7 +1324,7 @@ void CCaffeGoogLeNet::Layer_9() {
   //->: inception_4b/relu_5x5
   conf.run[4].m = 64;  // Output Channels
   conf.run[4].conv_enable = 1;  // 1 = Enabled, 0 = Disabled
-  conf.run[4].p = 5;  // Filter Width and Height
+  conf.run[4].p = 0x5;  // Filter Width and Height
   conf.run[4].pz = 1;  // Filter Depth
   conf.run[4].weight_buf.mem = weights_mem_;
   conf.run[4].weight_buf.offs = 1569488;
@@ -1336,7 +1336,7 @@ void CCaffeGoogLeNet::Layer_9() {
   conf.run[4].pool_size = 0x0;  // bits [7:0] = width, bits [15:8] = height
   conf.run[4].pool_stride = 0x101;  // bits [7:0] = X stride, bits [15:8] = Y stride
   conf.run[4].pool_pad = 0x0;  // bits [7:0] = left padding, bits [15:8] = right padding, bits [23:16] = top padding, bits [31:24] = bottom padding
-  conf.run[4].pool_avg_param = 0x0;  // Must be set to 1/pool_size^2 in FP16 format when using average pooling (average pooling assumes square size)
+  conf.run[4].pool_avg_param = 0x0;  // Usually set to 1/pool_size^2 in FP16 format when using average pooling (average pooling assumes square size)
   conf.run[4].actfunc = 2;  // Activation Function: 0 = None, 1 = Tanh, 2 = Leaky ReLU, 3 = Sigmoid, 4 = PReLU, 5 = ELU, 6 = ReLU6
   conf.run[4].actfunc_param = 0x0;  // Leaky ReLU parameter (NOTE: 0x2E66 is 0.1 in FP16)
   conf.run[4].rectifi_en = 0;  // Rectification, i.e. max(0, x) (NOTE: Can be applied after non-ReLU activation function)
@@ -1347,7 +1347,7 @@ void CCaffeGoogLeNet::Layer_9() {
   //->: inception_4b/pool
   conf.run[5].m = 512;  // Output Channels
   conf.run[5].conv_enable = 0;  // 1 = Enabled, 0 = Disabled
-  conf.run[5].p = 1;  // Filter Width and Height
+  conf.run[5].p = 0x1;  // Filter Width and Height
   conf.run[5].pz = 1;  // Filter Depth
   conf.run[5].weight_buf.mem = weights_mem_;
   conf.run[5].weight_buf.offs = 1625424;
@@ -1359,7 +1359,7 @@ void CCaffeGoogLeNet::Layer_9() {
   conf.run[5].pool_size = 0x303;  // bits [7:0] = width, bits [15:8] = height
   conf.run[5].pool_stride = 0x101;  // bits [7:0] = X stride, bits [15:8] = Y stride
   conf.run[5].pool_pad = 0x1010101;  // bits [7:0] = left padding, bits [15:8] = right padding, bits [23:16] = top padding, bits [31:24] = bottom padding
-  conf.run[5].pool_avg_param = 0x0;  // Must be set to 1/pool_size^2 in FP16 format when using average pooling (average pooling assumes square size)
+  conf.run[5].pool_avg_param = 0x0;  // Usually set to 1/pool_size^2 in FP16 format when using average pooling (average pooling assumes square size)
   conf.run[5].actfunc = 0;  // Activation Function: 0 = None, 1 = Tanh, 2 = Leaky ReLU, 3 = Sigmoid, 4 = PReLU, 5 = ELU, 6 = ReLU6
   conf.run[5].actfunc_param = 0x0;  // Leaky ReLU parameter (NOTE: 0x2E66 is 0.1 in FP16)
   conf.run[5].rectifi_en = 0;  // Rectification, i.e. max(0, x) (NOTE: Can be applied after non-ReLU activation function)
@@ -1371,7 +1371,7 @@ void CCaffeGoogLeNet::Layer_9() {
   //->: inception_4b/relu_pool_proj
   conf.run[6].m = 64;  // Output Channels
   conf.run[6].conv_enable = 1;  // 1 = Enabled, 0 = Disabled
-  conf.run[6].p = 1;  // Filter Width and Height
+  conf.run[6].p = 0x1;  // Filter Width and Height
   conf.run[6].pz = 1;  // Filter Depth
   conf.run[6].weight_buf.mem = weights_mem_;
   conf.run[6].weight_buf.offs = 1625424;
@@ -1383,7 +1383,7 @@ void CCaffeGoogLeNet::Layer_9() {
   conf.run[6].pool_size = 0x0;  // bits [7:0] = width, bits [15:8] = height
   conf.run[6].pool_stride = 0x101;  // bits [7:0] = X stride, bits [15:8] = Y stride
   conf.run[6].pool_pad = 0x0;  // bits [7:0] = left padding, bits [15:8] = right padding, bits [23:16] = top padding, bits [31:24] = bottom padding
-  conf.run[6].pool_avg_param = 0x0;  // Must be set to 1/pool_size^2 in FP16 format when using average pooling (average pooling assumes square size)
+  conf.run[6].pool_avg_param = 0x0;  // Usually set to 1/pool_size^2 in FP16 format when using average pooling (average pooling assumes square size)
   conf.run[6].actfunc = 2;  // Activation Function: 0 = None, 1 = Tanh, 2 = Leaky ReLU, 3 = Sigmoid, 4 = PReLU, 5 = ELU, 6 = ReLU6
   conf.run[6].actfunc_param = 0x0;  // Leaky ReLU parameter (NOTE: 0x2E66 is 0.1 in FP16)
   conf.run[6].rectifi_en = 0;  // Rectification, i.e. max(0, x) (NOTE: Can be applied after non-ReLU activation function)
@@ -1455,7 +1455,7 @@ void CCaffeGoogLeNet::Layer_10() {
   //->: inception_4c/relu_1x1
   conf.run[0].m = 128;  // Output Channels
   conf.run[0].conv_enable = 1;  // 1 = Enabled, 0 = Disabled
-  conf.run[0].p = 1;  // Filter Width and Height
+  conf.run[0].p = 0x1;  // Filter Width and Height
   conf.run[0].pz = 1;  // Filter Depth
   conf.run[0].weight_buf.mem = weights_mem_;
   conf.run[0].weight_buf.offs = 1662928;
@@ -1467,7 +1467,7 @@ void CCaffeGoogLeNet::Layer_10() {
   conf.run[0].pool_size = 0x0;  // bits [7:0] = width, bits [15:8] = height
   conf.run[0].pool_stride = 0x101;  // bits [7:0] = X stride, bits [15:8] = Y stride
   conf.run[0].pool_pad = 0x0;  // bits [7:0] = left padding, bits [15:8] = right padding, bits [23:16] = top padding, bits [31:24] = bottom padding
-  conf.run[0].pool_avg_param = 0x0;  // Must be set to 1/pool_size^2 in FP16 format when using average pooling (average pooling assumes square size)
+  conf.run[0].pool_avg_param = 0x0;  // Usually set to 1/pool_size^2 in FP16 format when using average pooling (average pooling assumes square size)
   conf.run[0].actfunc = 2;  // Activation Function: 0 = None, 1 = Tanh, 2 = Leaky ReLU, 3 = Sigmoid, 4 = PReLU, 5 = ELU, 6 = ReLU6
   conf.run[0].actfunc_param = 0x0;  // Leaky ReLU parameter (NOTE: 0x2E66 is 0.1 in FP16)
   conf.run[0].rectifi_en = 0;  // Rectification, i.e. max(0, x) (NOTE: Can be applied after non-ReLU activation function)
@@ -1479,7 +1479,7 @@ void CCaffeGoogLeNet::Layer_10() {
   //->: inception_4c/relu_3x3_reduce
   conf.run[1].m = 128;  // Output Channels
   conf.run[1].conv_enable = 1;  // 1 = Enabled, 0 = Disabled
-  conf.run[1].p = 1;  // Filter Width and Height
+  conf.run[1].p = 0x1;  // Filter Width and Height
   conf.run[1].pz = 1;  // Filter Depth
   conf.run[1].weight_buf.mem = weights_mem_;
   conf.run[1].weight_buf.offs = 1737424;
@@ -1491,7 +1491,7 @@ void CCaffeGoogLeNet::Layer_10() {
   conf.run[1].pool_size = 0x0;  // bits [7:0] = width, bits [15:8] = height
   conf.run[1].pool_stride = 0x101;  // bits [7:0] = X stride, bits [15:8] = Y stride
   conf.run[1].pool_pad = 0x0;  // bits [7:0] = left padding, bits [15:8] = right padding, bits [23:16] = top padding, bits [31:24] = bottom padding
-  conf.run[1].pool_avg_param = 0x0;  // Must be set to 1/pool_size^2 in FP16 format when using average pooling (average pooling assumes square size)
+  conf.run[1].pool_avg_param = 0x0;  // Usually set to 1/pool_size^2 in FP16 format when using average pooling (average pooling assumes square size)
   conf.run[1].actfunc = 2;  // Activation Function: 0 = None, 1 = Tanh, 2 = Leaky ReLU, 3 = Sigmoid, 4 = PReLU, 5 = ELU, 6 = ReLU6
   conf.run[1].actfunc_param = 0x0;  // Leaky ReLU parameter (NOTE: 0x2E66 is 0.1 in FP16)
   conf.run[1].rectifi_en = 0;  // Rectification, i.e. max(0, x) (NOTE: Can be applied after non-ReLU activation function)
@@ -1503,7 +1503,7 @@ void CCaffeGoogLeNet::Layer_10() {
   //->: inception_4c/relu_3x3
   conf.run[2].m = 256;  // Output Channels
   conf.run[2].conv_enable = 1;  // 1 = Enabled, 0 = Disabled
-  conf.run[2].p = 3;  // Filter Width and Height
+  conf.run[2].p = 0x3;  // Filter Width and Height
   conf.run[2].pz = 1;  // Filter Depth
   conf.run[2].weight_buf.mem = weights_mem_;
   conf.run[2].weight_buf.offs = 1811920;
@@ -1515,7 +1515,7 @@ void CCaffeGoogLeNet::Layer_10() {
   conf.run[2].pool_size = 0x0;  // bits [7:0] = width, bits [15:8] = height
   conf.run[2].pool_stride = 0x101;  // bits [7:0] = X stride, bits [15:8] = Y stride
   conf.run[2].pool_pad = 0x0;  // bits [7:0] = left padding, bits [15:8] = right padding, bits [23:16] = top padding, bits [31:24] = bottom padding
-  conf.run[2].pool_avg_param = 0x0;  // Must be set to 1/pool_size^2 in FP16 format when using average pooling (average pooling assumes square size)
+  conf.run[2].pool_avg_param = 0x0;  // Usually set to 1/pool_size^2 in FP16 format when using average pooling (average pooling assumes square size)
   conf.run[2].actfunc = 2;  // Activation Function: 0 = None, 1 = Tanh, 2 = Leaky ReLU, 3 = Sigmoid, 4 = PReLU, 5 = ELU, 6 = ReLU6
   conf.run[2].actfunc_param = 0x0;  // Leaky ReLU parameter (NOTE: 0x2E66 is 0.1 in FP16)
   conf.run[2].rectifi_en = 0;  // Rectification, i.e. max(0, x) (NOTE: Can be applied after non-ReLU activation function)
@@ -1527,7 +1527,7 @@ void CCaffeGoogLeNet::Layer_10() {
   //->: inception_4c/relu_5x5_reduce
   conf.run[3].m = 24;  // Output Channels
   conf.run[3].conv_enable = 1;  // 1 = Enabled, 0 = Disabled
-  conf.run[3].p = 1;  // Filter Width and Height
+  conf.run[3].p = 0x1;  // Filter Width and Height
   conf.run[3].pz = 1;  // Filter Depth
   conf.run[3].weight_buf.mem = weights_mem_;
   conf.run[3].weight_buf.offs = 2107856;
@@ -1539,7 +1539,7 @@ void CCaffeGoogLeNet::Layer_10() {
   conf.run[3].pool_size = 0x0;  // bits [7:0] = width, bits [15:8] = height
   conf.run[3].pool_stride = 0x101;  // bits [7:0] = X stride, bits [15:8] = Y stride
   conf.run[3].pool_pad = 0x0;  // bits [7:0] = left padding, bits [15:8] = right padding, bits [23:16] = top padding, bits [31:24] = bottom padding
-  conf.run[3].pool_avg_param = 0x0;  // Must be set to 1/pool_size^2 in FP16 format when using average pooling (average pooling assumes square size)
+  conf.run[3].pool_avg_param = 0x0;  // Usually set to 1/pool_size^2 in FP16 format when using average pooling (average pooling assumes square size)
   conf.run[3].actfunc = 2;  // Activation Function: 0 = None, 1 = Tanh, 2 = Leaky ReLU, 3 = Sigmoid, 4 = PReLU, 5 = ELU, 6 = ReLU6
   conf.run[3].actfunc_param = 0x0;  // Leaky ReLU parameter (NOTE: 0x2E66 is 0.1 in FP16)
   conf.run[3].rectifi_en = 0;  // Rectification, i.e. max(0, x) (NOTE: Can be applied after non-ReLU activation function)
@@ -1551,7 +1551,7 @@ void CCaffeGoogLeNet::Layer_10() {
   //->: inception_4c/relu_5x5
   conf.run[4].m = 64;  // Output Channels
   conf.run[4].conv_enable = 1;  // 1 = Enabled, 0 = Disabled
-  conf.run[4].p = 5;  // Filter Width and Height
+  conf.run[4].p = 0x5;  // Filter Width and Height
   conf.run[4].pz = 1;  // Filter Depth
   conf.run[4].weight_buf.mem = weights_mem_;
   conf.run[4].weight_buf.offs = 2122240;
@@ -1563,7 +1563,7 @@ void CCaffeGoogLeNet::Layer_10() {
   conf.run[4].pool_size = 0x0;  // bits [7:0] = width, bits [15:8] = height
   conf.run[4].pool_stride = 0x101;  // bits [7:0] = X stride, bits [15:8] = Y stride
   conf.run[4].pool_pad = 0x0;  // bits [7:0] = left padding, bits [15:8] = right padding, bits [23:16] = top padding, bits [31:24] = bottom padding
-  conf.run[4].pool_avg_param = 0x0;  // Must be set to 1/pool_size^2 in FP16 format when using average pooling (average pooling assumes square size)
+  conf.run[4].pool_avg_param = 0x0;  // Usually set to 1/pool_size^2 in FP16 format when using average pooling (average pooling assumes square size)
   conf.run[4].actfunc = 2;  // Activation Function: 0 = None, 1 = Tanh, 2 = Leaky ReLU, 3 = Sigmoid, 4 = PReLU, 5 = ELU, 6 = ReLU6
   conf.run[4].actfunc_param = 0x0;  // Leaky ReLU parameter (NOTE: 0x2E66 is 0.1 in FP16)
   conf.run[4].rectifi_en = 0;  // Rectification, i.e. max(0, x) (NOTE: Can be applied after non-ReLU activation function)
@@ -1574,7 +1574,7 @@ void CCaffeGoogLeNet::Layer_10() {
   //->: inception_4c/pool
   conf.run[5].m = 512;  // Output Channels
   conf.run[5].conv_enable = 0;  // 1 = Enabled, 0 = Disabled
-  conf.run[5].p = 1;  // Filter Width and Height
+  conf.run[5].p = 0x1;  // Filter Width and Height
   conf.run[5].pz = 1;  // Filter Depth
   conf.run[5].weight_buf.mem = weights_mem_;
   conf.run[5].weight_buf.offs = 2178176;
@@ -1586,7 +1586,7 @@ void CCaffeGoogLeNet::Layer_10() {
   conf.run[5].pool_size = 0x303;  // bits [7:0] = width, bits [15:8] = height
   conf.run[5].pool_stride = 0x101;  // bits [7:0] = X stride, bits [15:8] = Y stride
   conf.run[5].pool_pad = 0x1010101;  // bits [7:0] = left padding, bits [15:8] = right padding, bits [23:16] = top padding, bits [31:24] = bottom padding
-  conf.run[5].pool_avg_param = 0x0;  // Must be set to 1/pool_size^2 in FP16 format when using average pooling (average pooling assumes square size)
+  conf.run[5].pool_avg_param = 0x0;  // Usually set to 1/pool_size^2 in FP16 format when using average pooling (average pooling assumes square size)
   conf.run[5].actfunc = 0;  // Activation Function: 0 = None, 1 = Tanh, 2 = Leaky ReLU, 3 = Sigmoid, 4 = PReLU, 5 = ELU, 6 = ReLU6
   conf.run[5].actfunc_param = 0x0;  // Leaky ReLU parameter (NOTE: 0x2E66 is 0.1 in FP16)
   conf.run[5].rectifi_en = 0;  // Rectification, i.e. max(0, x) (NOTE: Can be applied after non-ReLU activation function)
@@ -1598,7 +1598,7 @@ void CCaffeGoogLeNet::Layer_10() {
   //->: inception_4c/relu_pool_proj
   conf.run[6].m = 64;  // Output Channels
   conf.run[6].conv_enable = 1;  // 1 = Enabled, 0 = Disabled
-  conf.run[6].p = 1;  // Filter Width and Height
+  conf.run[6].p = 0x1;  // Filter Width and Height
   conf.run[6].pz = 1;  // Filter Depth
   conf.run[6].weight_buf.mem = weights_mem_;
   conf.run[6].weight_buf.offs = 2178176;
@@ -1610,7 +1610,7 @@ void CCaffeGoogLeNet::Layer_10() {
   conf.run[6].pool_size = 0x0;  // bits [7:0] = width, bits [15:8] = height
   conf.run[6].pool_stride = 0x101;  // bits [7:0] = X stride, bits [15:8] = Y stride
   conf.run[6].pool_pad = 0x0;  // bits [7:0] = left padding, bits [15:8] = right padding, bits [23:16] = top padding, bits [31:24] = bottom padding
-  conf.run[6].pool_avg_param = 0x0;  // Must be set to 1/pool_size^2 in FP16 format when using average pooling (average pooling assumes square size)
+  conf.run[6].pool_avg_param = 0x0;  // Usually set to 1/pool_size^2 in FP16 format when using average pooling (average pooling assumes square size)
   conf.run[6].actfunc = 2;  // Activation Function: 0 = None, 1 = Tanh, 2 = Leaky ReLU, 3 = Sigmoid, 4 = PReLU, 5 = ELU, 6 = ReLU6
   conf.run[6].actfunc_param = 0x0;  // Leaky ReLU parameter (NOTE: 0x2E66 is 0.1 in FP16)
   conf.run[6].rectifi_en = 0;  // Rectification, i.e. max(0, x) (NOTE: Can be applied after non-ReLU activation function)
@@ -1682,7 +1682,7 @@ void CCaffeGoogLeNet::Layer_11() {
   //->: inception_4d/relu_1x1
   conf.run[0].m = 112;  // Output Channels
   conf.run[0].conv_enable = 1;  // 1 = Enabled, 0 = Disabled
-  conf.run[0].p = 1;  // Filter Width and Height
+  conf.run[0].p = 0x1;  // Filter Width and Height
   conf.run[0].pz = 1;  // Filter Depth
   conf.run[0].weight_buf.mem = weights_mem_;
   conf.run[0].weight_buf.offs = 2215680;
@@ -1694,7 +1694,7 @@ void CCaffeGoogLeNet::Layer_11() {
   conf.run[0].pool_size = 0x0;  // bits [7:0] = width, bits [15:8] = height
   conf.run[0].pool_stride = 0x101;  // bits [7:0] = X stride, bits [15:8] = Y stride
   conf.run[0].pool_pad = 0x0;  // bits [7:0] = left padding, bits [15:8] = right padding, bits [23:16] = top padding, bits [31:24] = bottom padding
-  conf.run[0].pool_avg_param = 0x0;  // Must be set to 1/pool_size^2 in FP16 format when using average pooling (average pooling assumes square size)
+  conf.run[0].pool_avg_param = 0x0;  // Usually set to 1/pool_size^2 in FP16 format when using average pooling (average pooling assumes square size)
   conf.run[0].actfunc = 2;  // Activation Function: 0 = None, 1 = Tanh, 2 = Leaky ReLU, 3 = Sigmoid, 4 = PReLU, 5 = ELU, 6 = ReLU6
   conf.run[0].actfunc_param = 0x0;  // Leaky ReLU parameter (NOTE: 0x2E66 is 0.1 in FP16)
   conf.run[0].rectifi_en = 0;  // Rectification, i.e. max(0, x) (NOTE: Can be applied after non-ReLU activation function)
@@ -1706,7 +1706,7 @@ void CCaffeGoogLeNet::Layer_11() {
   //->: inception_4d/relu_3x3_reduce
   conf.run[1].m = 144;  // Output Channels
   conf.run[1].conv_enable = 1;  // 1 = Enabled, 0 = Disabled
-  conf.run[1].p = 1;  // Filter Width and Height
+  conf.run[1].p = 0x1;  // Filter Width and Height
   conf.run[1].pz = 1;  // Filter Depth
   conf.run[1].weight_buf.mem = weights_mem_;
   conf.run[1].weight_buf.offs = 2280928;
@@ -1718,7 +1718,7 @@ void CCaffeGoogLeNet::Layer_11() {
   conf.run[1].pool_size = 0x0;  // bits [7:0] = width, bits [15:8] = height
   conf.run[1].pool_stride = 0x101;  // bits [7:0] = X stride, bits [15:8] = Y stride
   conf.run[1].pool_pad = 0x0;  // bits [7:0] = left padding, bits [15:8] = right padding, bits [23:16] = top padding, bits [31:24] = bottom padding
-  conf.run[1].pool_avg_param = 0x0;  // Must be set to 1/pool_size^2 in FP16 format when using average pooling (average pooling assumes square size)
+  conf.run[1].pool_avg_param = 0x0;  // Usually set to 1/pool_size^2 in FP16 format when using average pooling (average pooling assumes square size)
   conf.run[1].actfunc = 2;  // Activation Function: 0 = None, 1 = Tanh, 2 = Leaky ReLU, 3 = Sigmoid, 4 = PReLU, 5 = ELU, 6 = ReLU6
   conf.run[1].actfunc_param = 0x0;  // Leaky ReLU parameter (NOTE: 0x2E66 is 0.1 in FP16)
   conf.run[1].rectifi_en = 0;  // Rectification, i.e. max(0, x) (NOTE: Can be applied after non-ReLU activation function)
@@ -1730,7 +1730,7 @@ void CCaffeGoogLeNet::Layer_11() {
   //->: inception_4d/relu_3x3
   conf.run[2].m = 288;  // Output Channels
   conf.run[2].conv_enable = 1;  // 1 = Enabled, 0 = Disabled
-  conf.run[2].p = 3;  // Filter Width and Height
+  conf.run[2].p = 0x3;  // Filter Width and Height
   conf.run[2].pz = 1;  // Filter Depth
   conf.run[2].weight_buf.mem = weights_mem_;
   conf.run[2].weight_buf.offs = 2364672;
@@ -1742,7 +1742,7 @@ void CCaffeGoogLeNet::Layer_11() {
   conf.run[2].pool_size = 0x0;  // bits [7:0] = width, bits [15:8] = height
   conf.run[2].pool_stride = 0x101;  // bits [7:0] = X stride, bits [15:8] = Y stride
   conf.run[2].pool_pad = 0x0;  // bits [7:0] = left padding, bits [15:8] = right padding, bits [23:16] = top padding, bits [31:24] = bottom padding
-  conf.run[2].pool_avg_param = 0x0;  // Must be set to 1/pool_size^2 in FP16 format when using average pooling (average pooling assumes square size)
+  conf.run[2].pool_avg_param = 0x0;  // Usually set to 1/pool_size^2 in FP16 format when using average pooling (average pooling assumes square size)
   conf.run[2].actfunc = 2;  // Activation Function: 0 = None, 1 = Tanh, 2 = Leaky ReLU, 3 = Sigmoid, 4 = PReLU, 5 = ELU, 6 = ReLU6
   conf.run[2].actfunc_param = 0x0;  // Leaky ReLU parameter (NOTE: 0x2E66 is 0.1 in FP16)
   conf.run[2].rectifi_en = 0;  // Rectification, i.e. max(0, x) (NOTE: Can be applied after non-ReLU activation function)
@@ -1754,7 +1754,7 @@ void CCaffeGoogLeNet::Layer_11() {
   //->: inception_4d/relu_5x5_reduce
   conf.run[3].m = 32;  // Output Channels
   conf.run[3].conv_enable = 1;  // 1 = Enabled, 0 = Disabled
-  conf.run[3].p = 1;  // Filter Width and Height
+  conf.run[3].p = 0x1;  // Filter Width and Height
   conf.run[3].pz = 1;  // Filter Depth
   conf.run[3].weight_buf.mem = weights_mem_;
   conf.run[3].weight_buf.offs = 2739008;
@@ -1766,7 +1766,7 @@ void CCaffeGoogLeNet::Layer_11() {
   conf.run[3].pool_size = 0x0;  // bits [7:0] = width, bits [15:8] = height
   conf.run[3].pool_stride = 0x101;  // bits [7:0] = X stride, bits [15:8] = Y stride
   conf.run[3].pool_pad = 0x0;  // bits [7:0] = left padding, bits [15:8] = right padding, bits [23:16] = top padding, bits [31:24] = bottom padding
-  conf.run[3].pool_avg_param = 0x0;  // Must be set to 1/pool_size^2 in FP16 format when using average pooling (average pooling assumes square size)
+  conf.run[3].pool_avg_param = 0x0;  // Usually set to 1/pool_size^2 in FP16 format when using average pooling (average pooling assumes square size)
   conf.run[3].actfunc = 2;  // Activation Function: 0 = None, 1 = Tanh, 2 = Leaky ReLU, 3 = Sigmoid, 4 = PReLU, 5 = ELU, 6 = ReLU6
   conf.run[3].actfunc_param = 0x0;  // Leaky ReLU parameter (NOTE: 0x2E66 is 0.1 in FP16)
   conf.run[3].rectifi_en = 0;  // Rectification, i.e. max(0, x) (NOTE: Can be applied after non-ReLU activation function)
@@ -1778,7 +1778,7 @@ void CCaffeGoogLeNet::Layer_11() {
   //->: inception_4d/relu_5x5
   conf.run[4].m = 64;  // Output Channels
   conf.run[4].conv_enable = 1;  // 1 = Enabled, 0 = Disabled
-  conf.run[4].p = 5;  // Filter Width and Height
+  conf.run[4].p = 0x5;  // Filter Width and Height
   conf.run[4].pz = 1;  // Filter Depth
   conf.run[4].weight_buf.mem = weights_mem_;
   conf.run[4].weight_buf.offs = 2758016;
@@ -1790,7 +1790,7 @@ void CCaffeGoogLeNet::Layer_11() {
   conf.run[4].pool_size = 0x0;  // bits [7:0] = width, bits [15:8] = height
   conf.run[4].pool_stride = 0x101;  // bits [7:0] = X stride, bits [15:8] = Y stride
   conf.run[4].pool_pad = 0x0;  // bits [7:0] = left padding, bits [15:8] = right padding, bits [23:16] = top padding, bits [31:24] = bottom padding
-  conf.run[4].pool_avg_param = 0x0;  // Must be set to 1/pool_size^2 in FP16 format when using average pooling (average pooling assumes square size)
+  conf.run[4].pool_avg_param = 0x0;  // Usually set to 1/pool_size^2 in FP16 format when using average pooling (average pooling assumes square size)
   conf.run[4].actfunc = 2;  // Activation Function: 0 = None, 1 = Tanh, 2 = Leaky ReLU, 3 = Sigmoid, 4 = PReLU, 5 = ELU, 6 = ReLU6
   conf.run[4].actfunc_param = 0x0;  // Leaky ReLU parameter (NOTE: 0x2E66 is 0.1 in FP16)
   conf.run[4].rectifi_en = 0;  // Rectification, i.e. max(0, x) (NOTE: Can be applied after non-ReLU activation function)
@@ -1801,7 +1801,7 @@ void CCaffeGoogLeNet::Layer_11() {
   //->: inception_4d/pool
   conf.run[5].m = 512;  // Output Channels
   conf.run[5].conv_enable = 0;  // 1 = Enabled, 0 = Disabled
-  conf.run[5].p = 1;  // Filter Width and Height
+  conf.run[5].p = 0x1;  // Filter Width and Height
   conf.run[5].pz = 1;  // Filter Depth
   conf.run[5].weight_buf.mem = weights_mem_;
   conf.run[5].weight_buf.offs = 2832384;
@@ -1813,7 +1813,7 @@ void CCaffeGoogLeNet::Layer_11() {
   conf.run[5].pool_size = 0x303;  // bits [7:0] = width, bits [15:8] = height
   conf.run[5].pool_stride = 0x101;  // bits [7:0] = X stride, bits [15:8] = Y stride
   conf.run[5].pool_pad = 0x1010101;  // bits [7:0] = left padding, bits [15:8] = right padding, bits [23:16] = top padding, bits [31:24] = bottom padding
-  conf.run[5].pool_avg_param = 0x0;  // Must be set to 1/pool_size^2 in FP16 format when using average pooling (average pooling assumes square size)
+  conf.run[5].pool_avg_param = 0x0;  // Usually set to 1/pool_size^2 in FP16 format when using average pooling (average pooling assumes square size)
   conf.run[5].actfunc = 0;  // Activation Function: 0 = None, 1 = Tanh, 2 = Leaky ReLU, 3 = Sigmoid, 4 = PReLU, 5 = ELU, 6 = ReLU6
   conf.run[5].actfunc_param = 0x0;  // Leaky ReLU parameter (NOTE: 0x2E66 is 0.1 in FP16)
   conf.run[5].rectifi_en = 0;  // Rectification, i.e. max(0, x) (NOTE: Can be applied after non-ReLU activation function)
@@ -1825,7 +1825,7 @@ void CCaffeGoogLeNet::Layer_11() {
   //->: inception_4d/relu_pool_proj
   conf.run[6].m = 64;  // Output Channels
   conf.run[6].conv_enable = 1;  // 1 = Enabled, 0 = Disabled
-  conf.run[6].p = 1;  // Filter Width and Height
+  conf.run[6].p = 0x1;  // Filter Width and Height
   conf.run[6].pz = 1;  // Filter Depth
   conf.run[6].weight_buf.mem = weights_mem_;
   conf.run[6].weight_buf.offs = 2832384;
@@ -1837,7 +1837,7 @@ void CCaffeGoogLeNet::Layer_11() {
   conf.run[6].pool_size = 0x0;  // bits [7:0] = width, bits [15:8] = height
   conf.run[6].pool_stride = 0x101;  // bits [7:0] = X stride, bits [15:8] = Y stride
   conf.run[6].pool_pad = 0x0;  // bits [7:0] = left padding, bits [15:8] = right padding, bits [23:16] = top padding, bits [31:24] = bottom padding
-  conf.run[6].pool_avg_param = 0x0;  // Must be set to 1/pool_size^2 in FP16 format when using average pooling (average pooling assumes square size)
+  conf.run[6].pool_avg_param = 0x0;  // Usually set to 1/pool_size^2 in FP16 format when using average pooling (average pooling assumes square size)
   conf.run[6].actfunc = 2;  // Activation Function: 0 = None, 1 = Tanh, 2 = Leaky ReLU, 3 = Sigmoid, 4 = PReLU, 5 = ELU, 6 = ReLU6
   conf.run[6].actfunc_param = 0x0;  // Leaky ReLU parameter (NOTE: 0x2E66 is 0.1 in FP16)
   conf.run[6].rectifi_en = 0;  // Rectification, i.e. max(0, x) (NOTE: Can be applied after non-ReLU activation function)
@@ -1914,7 +1914,7 @@ void CCaffeGoogLeNet::Layer_12() {
   //->: pool4/3x3_s2
   conf.run[0].m = 256;  // Output Channels
   conf.run[0].conv_enable = 1;  // 1 = Enabled, 0 = Disabled
-  conf.run[0].p = 1;  // Filter Width and Height
+  conf.run[0].p = 0x1;  // Filter Width and Height
   conf.run[0].pz = 1;  // Filter Depth
   conf.run[0].weight_buf.mem = weights_mem_;
   conf.run[0].weight_buf.offs = 2869888;
@@ -1925,8 +1925,8 @@ void CCaffeGoogLeNet::Layer_12() {
   conf.run[0].pool_enable = 1;  // 0 = disabled, 1 = max pooling, 2 = average pooling
   conf.run[0].pool_size = 0x303;  // bits [7:0] = width, bits [15:8] = height
   conf.run[0].pool_stride = 0x202;  // bits [7:0] = X stride, bits [15:8] = Y stride
-  conf.run[0].pool_pad = 0x1010101;  // bits [7:0] = left padding, bits [15:8] = right padding, bits [23:16] = top padding, bits [31:24] = bottom padding
-  conf.run[0].pool_avg_param = 0x0;  // Must be set to 1/pool_size^2 in FP16 format when using average pooling (average pooling assumes square size)
+  conf.run[0].pool_pad = 0x1000100;  // bits [7:0] = left padding, bits [15:8] = right padding, bits [23:16] = top padding, bits [31:24] = bottom padding
+  conf.run[0].pool_avg_param = 0x0;  // Usually set to 1/pool_size^2 in FP16 format when using average pooling (average pooling assumes square size)
   conf.run[0].actfunc = 2;  // Activation Function: 0 = None, 1 = Tanh, 2 = Leaky ReLU, 3 = Sigmoid, 4 = PReLU, 5 = ELU, 6 = ReLU6
   conf.run[0].actfunc_param = 0x0;  // Leaky ReLU parameter (NOTE: 0x2E66 is 0.1 in FP16)
   conf.run[0].rectifi_en = 0;  // Rectification, i.e. max(0, x) (NOTE: Can be applied after non-ReLU activation function)
@@ -1938,7 +1938,7 @@ void CCaffeGoogLeNet::Layer_12() {
   //->: inception_4e/relu_3x3_reduce
   conf.run[1].m = 160;  // Output Channels
   conf.run[1].conv_enable = 1;  // 1 = Enabled, 0 = Disabled
-  conf.run[1].p = 1;  // Filter Width and Height
+  conf.run[1].p = 0x1;  // Filter Width and Height
   conf.run[1].pz = 1;  // Filter Depth
   conf.run[1].weight_buf.mem = weights_mem_;
   conf.run[1].weight_buf.offs = 3036800;
@@ -1950,7 +1950,7 @@ void CCaffeGoogLeNet::Layer_12() {
   conf.run[1].pool_size = 0x0;  // bits [7:0] = width, bits [15:8] = height
   conf.run[1].pool_stride = 0x101;  // bits [7:0] = X stride, bits [15:8] = Y stride
   conf.run[1].pool_pad = 0x0;  // bits [7:0] = left padding, bits [15:8] = right padding, bits [23:16] = top padding, bits [31:24] = bottom padding
-  conf.run[1].pool_avg_param = 0x0;  // Must be set to 1/pool_size^2 in FP16 format when using average pooling (average pooling assumes square size)
+  conf.run[1].pool_avg_param = 0x0;  // Usually set to 1/pool_size^2 in FP16 format when using average pooling (average pooling assumes square size)
   conf.run[1].actfunc = 2;  // Activation Function: 0 = None, 1 = Tanh, 2 = Leaky ReLU, 3 = Sigmoid, 4 = PReLU, 5 = ELU, 6 = ReLU6
   conf.run[1].actfunc_param = 0x0;  // Leaky ReLU parameter (NOTE: 0x2E66 is 0.1 in FP16)
   conf.run[1].rectifi_en = 0;  // Rectification, i.e. max(0, x) (NOTE: Can be applied after non-ReLU activation function)
@@ -1963,7 +1963,7 @@ void CCaffeGoogLeNet::Layer_12() {
   //->: pool4/3x3_s2
   conf.run[2].m = 320;  // Output Channels
   conf.run[2].conv_enable = 1;  // 1 = Enabled, 0 = Disabled
-  conf.run[2].p = 3;  // Filter Width and Height
+  conf.run[2].p = 0x3;  // Filter Width and Height
   conf.run[2].pz = 1;  // Filter Depth
   conf.run[2].weight_buf.mem = weights_mem_;
   conf.run[2].weight_buf.offs = 3141312;
@@ -1974,8 +1974,8 @@ void CCaffeGoogLeNet::Layer_12() {
   conf.run[2].pool_enable = 1;  // 0 = disabled, 1 = max pooling, 2 = average pooling
   conf.run[2].pool_size = 0x303;  // bits [7:0] = width, bits [15:8] = height
   conf.run[2].pool_stride = 0x202;  // bits [7:0] = X stride, bits [15:8] = Y stride
-  conf.run[2].pool_pad = 0x1010101;  // bits [7:0] = left padding, bits [15:8] = right padding, bits [23:16] = top padding, bits [31:24] = bottom padding
-  conf.run[2].pool_avg_param = 0x0;  // Must be set to 1/pool_size^2 in FP16 format when using average pooling (average pooling assumes square size)
+  conf.run[2].pool_pad = 0x1000100;  // bits [7:0] = left padding, bits [15:8] = right padding, bits [23:16] = top padding, bits [31:24] = bottom padding
+  conf.run[2].pool_avg_param = 0x0;  // Usually set to 1/pool_size^2 in FP16 format when using average pooling (average pooling assumes square size)
   conf.run[2].actfunc = 2;  // Activation Function: 0 = None, 1 = Tanh, 2 = Leaky ReLU, 3 = Sigmoid, 4 = PReLU, 5 = ELU, 6 = ReLU6
   conf.run[2].actfunc_param = 0x0;  // Leaky ReLU parameter (NOTE: 0x2E66 is 0.1 in FP16)
   conf.run[2].rectifi_en = 0;  // Rectification, i.e. max(0, x) (NOTE: Can be applied after non-ReLU activation function)
@@ -1987,7 +1987,7 @@ void CCaffeGoogLeNet::Layer_12() {
   //->: inception_4e/relu_5x5_reduce
   conf.run[3].m = 32;  // Output Channels
   conf.run[3].conv_enable = 1;  // 1 = Enabled, 0 = Disabled
-  conf.run[3].p = 1;  // Filter Width and Height
+  conf.run[3].p = 0x1;  // Filter Width and Height
   conf.run[3].pz = 1;  // Filter Depth
   conf.run[3].weight_buf.mem = weights_mem_;
   conf.run[3].weight_buf.offs = 3603264;
@@ -1999,7 +1999,7 @@ void CCaffeGoogLeNet::Layer_12() {
   conf.run[3].pool_size = 0x0;  // bits [7:0] = width, bits [15:8] = height
   conf.run[3].pool_stride = 0x101;  // bits [7:0] = X stride, bits [15:8] = Y stride
   conf.run[3].pool_pad = 0x0;  // bits [7:0] = left padding, bits [15:8] = right padding, bits [23:16] = top padding, bits [31:24] = bottom padding
-  conf.run[3].pool_avg_param = 0x0;  // Must be set to 1/pool_size^2 in FP16 format when using average pooling (average pooling assumes square size)
+  conf.run[3].pool_avg_param = 0x0;  // Usually set to 1/pool_size^2 in FP16 format when using average pooling (average pooling assumes square size)
   conf.run[3].actfunc = 2;  // Activation Function: 0 = None, 1 = Tanh, 2 = Leaky ReLU, 3 = Sigmoid, 4 = PReLU, 5 = ELU, 6 = ReLU6
   conf.run[3].actfunc_param = 0x0;  // Leaky ReLU parameter (NOTE: 0x2E66 is 0.1 in FP16)
   conf.run[3].rectifi_en = 0;  // Rectification, i.e. max(0, x) (NOTE: Can be applied after non-ReLU activation function)
@@ -2012,7 +2012,7 @@ void CCaffeGoogLeNet::Layer_12() {
   //->: pool4/3x3_s2
   conf.run[4].m = 128;  // Output Channels
   conf.run[4].conv_enable = 1;  // 1 = Enabled, 0 = Disabled
-  conf.run[4].p = 5;  // Filter Width and Height
+  conf.run[4].p = 0x5;  // Filter Width and Height
   conf.run[4].pz = 1;  // Filter Depth
   conf.run[4].weight_buf.mem = weights_mem_;
   conf.run[4].weight_buf.offs = 3624576;
@@ -2023,8 +2023,8 @@ void CCaffeGoogLeNet::Layer_12() {
   conf.run[4].pool_enable = 1;  // 0 = disabled, 1 = max pooling, 2 = average pooling
   conf.run[4].pool_size = 0x303;  // bits [7:0] = width, bits [15:8] = height
   conf.run[4].pool_stride = 0x202;  // bits [7:0] = X stride, bits [15:8] = Y stride
-  conf.run[4].pool_pad = 0x1010101;  // bits [7:0] = left padding, bits [15:8] = right padding, bits [23:16] = top padding, bits [31:24] = bottom padding
-  conf.run[4].pool_avg_param = 0x0;  // Must be set to 1/pool_size^2 in FP16 format when using average pooling (average pooling assumes square size)
+  conf.run[4].pool_pad = 0x1000100;  // bits [7:0] = left padding, bits [15:8] = right padding, bits [23:16] = top padding, bits [31:24] = bottom padding
+  conf.run[4].pool_avg_param = 0x0;  // Usually set to 1/pool_size^2 in FP16 format when using average pooling (average pooling assumes square size)
   conf.run[4].actfunc = 2;  // Activation Function: 0 = None, 1 = Tanh, 2 = Leaky ReLU, 3 = Sigmoid, 4 = PReLU, 5 = ELU, 6 = ReLU6
   conf.run[4].actfunc_param = 0x0;  // Leaky ReLU parameter (NOTE: 0x2E66 is 0.1 in FP16)
   conf.run[4].rectifi_en = 0;  // Rectification, i.e. max(0, x) (NOTE: Can be applied after non-ReLU activation function)
@@ -2035,7 +2035,7 @@ void CCaffeGoogLeNet::Layer_12() {
   //->: inception_4e/pool
   conf.run[5].m = 528;  // Output Channels
   conf.run[5].conv_enable = 0;  // 1 = Enabled, 0 = Disabled
-  conf.run[5].p = 1;  // Filter Width and Height
+  conf.run[5].p = 0x1;  // Filter Width and Height
   conf.run[5].pz = 1;  // Filter Depth
   conf.run[5].weight_buf.mem = weights_mem_;
   conf.run[5].weight_buf.offs = 3772800;
@@ -2047,7 +2047,7 @@ void CCaffeGoogLeNet::Layer_12() {
   conf.run[5].pool_size = 0x303;  // bits [7:0] = width, bits [15:8] = height
   conf.run[5].pool_stride = 0x101;  // bits [7:0] = X stride, bits [15:8] = Y stride
   conf.run[5].pool_pad = 0x1010101;  // bits [7:0] = left padding, bits [15:8] = right padding, bits [23:16] = top padding, bits [31:24] = bottom padding
-  conf.run[5].pool_avg_param = 0x0;  // Must be set to 1/pool_size^2 in FP16 format when using average pooling (average pooling assumes square size)
+  conf.run[5].pool_avg_param = 0x0;  // Usually set to 1/pool_size^2 in FP16 format when using average pooling (average pooling assumes square size)
   conf.run[5].actfunc = 0;  // Activation Function: 0 = None, 1 = Tanh, 2 = Leaky ReLU, 3 = Sigmoid, 4 = PReLU, 5 = ELU, 6 = ReLU6
   conf.run[5].actfunc_param = 0x0;  // Leaky ReLU parameter (NOTE: 0x2E66 is 0.1 in FP16)
   conf.run[5].rectifi_en = 0;  // Rectification, i.e. max(0, x) (NOTE: Can be applied after non-ReLU activation function)
@@ -2060,7 +2060,7 @@ void CCaffeGoogLeNet::Layer_12() {
   //->: pool4/3x3_s2
   conf.run[6].m = 128;  // Output Channels
   conf.run[6].conv_enable = 1;  // 1 = Enabled, 0 = Disabled
-  conf.run[6].p = 1;  // Filter Width and Height
+  conf.run[6].p = 0x1;  // Filter Width and Height
   conf.run[6].pz = 1;  // Filter Depth
   conf.run[6].weight_buf.mem = weights_mem_;
   conf.run[6].weight_buf.offs = 3772800;
@@ -2071,8 +2071,8 @@ void CCaffeGoogLeNet::Layer_12() {
   conf.run[6].pool_enable = 1;  // 0 = disabled, 1 = max pooling, 2 = average pooling
   conf.run[6].pool_size = 0x303;  // bits [7:0] = width, bits [15:8] = height
   conf.run[6].pool_stride = 0x202;  // bits [7:0] = X stride, bits [15:8] = Y stride
-  conf.run[6].pool_pad = 0x1010101;  // bits [7:0] = left padding, bits [15:8] = right padding, bits [23:16] = top padding, bits [31:24] = bottom padding
-  conf.run[6].pool_avg_param = 0x0;  // Must be set to 1/pool_size^2 in FP16 format when using average pooling (average pooling assumes square size)
+  conf.run[6].pool_pad = 0x1000100;  // bits [7:0] = left padding, bits [15:8] = right padding, bits [23:16] = top padding, bits [31:24] = bottom padding
+  conf.run[6].pool_avg_param = 0x0;  // Usually set to 1/pool_size^2 in FP16 format when using average pooling (average pooling assumes square size)
   conf.run[6].actfunc = 2;  // Activation Function: 0 = None, 1 = Tanh, 2 = Leaky ReLU, 3 = Sigmoid, 4 = PReLU, 5 = ELU, 6 = ReLU6
   conf.run[6].actfunc_param = 0x0;  // Leaky ReLU parameter (NOTE: 0x2E66 is 0.1 in FP16)
   conf.run[6].rectifi_en = 0;  // Rectification, i.e. max(0, x) (NOTE: Can be applied after non-ReLU activation function)
@@ -2144,7 +2144,7 @@ void CCaffeGoogLeNet::Layer_13() {
   //->: inception_5a/relu_1x1
   conf.run[0].m = 256;  // Output Channels
   conf.run[0].conv_enable = 1;  // 1 = Enabled, 0 = Disabled
-  conf.run[0].p = 1;  // Filter Width and Height
+  conf.run[0].p = 0x1;  // Filter Width and Height
   conf.run[0].pz = 1;  // Filter Depth
   conf.run[0].weight_buf.mem = weights_mem_;
   conf.run[0].weight_buf.offs = 3856512;
@@ -2156,7 +2156,7 @@ void CCaffeGoogLeNet::Layer_13() {
   conf.run[0].pool_size = 0x0;  // bits [7:0] = width, bits [15:8] = height
   conf.run[0].pool_stride = 0x101;  // bits [7:0] = X stride, bits [15:8] = Y stride
   conf.run[0].pool_pad = 0x0;  // bits [7:0] = left padding, bits [15:8] = right padding, bits [23:16] = top padding, bits [31:24] = bottom padding
-  conf.run[0].pool_avg_param = 0x0;  // Must be set to 1/pool_size^2 in FP16 format when using average pooling (average pooling assumes square size)
+  conf.run[0].pool_avg_param = 0x0;  // Usually set to 1/pool_size^2 in FP16 format when using average pooling (average pooling assumes square size)
   conf.run[0].actfunc = 2;  // Activation Function: 0 = None, 1 = Tanh, 2 = Leaky ReLU, 3 = Sigmoid, 4 = PReLU, 5 = ELU, 6 = ReLU6
   conf.run[0].actfunc_param = 0x0;  // Leaky ReLU parameter (NOTE: 0x2E66 is 0.1 in FP16)
   conf.run[0].rectifi_en = 0;  // Rectification, i.e. max(0, x) (NOTE: Can be applied after non-ReLU activation function)
@@ -2168,7 +2168,7 @@ void CCaffeGoogLeNet::Layer_13() {
   //->: inception_5a/relu_3x3_reduce
   conf.run[1].m = 160;  // Output Channels
   conf.run[1].conv_enable = 1;  // 1 = Enabled, 0 = Disabled
-  conf.run[1].p = 1;  // Filter Width and Height
+  conf.run[1].p = 0x1;  // Filter Width and Height
   conf.run[1].pz = 1;  // Filter Depth
   conf.run[1].weight_buf.mem = weights_mem_;
   conf.run[1].weight_buf.offs = 4097152;
@@ -2180,7 +2180,7 @@ void CCaffeGoogLeNet::Layer_13() {
   conf.run[1].pool_size = 0x0;  // bits [7:0] = width, bits [15:8] = height
   conf.run[1].pool_stride = 0x101;  // bits [7:0] = X stride, bits [15:8] = Y stride
   conf.run[1].pool_pad = 0x0;  // bits [7:0] = left padding, bits [15:8] = right padding, bits [23:16] = top padding, bits [31:24] = bottom padding
-  conf.run[1].pool_avg_param = 0x0;  // Must be set to 1/pool_size^2 in FP16 format when using average pooling (average pooling assumes square size)
+  conf.run[1].pool_avg_param = 0x0;  // Usually set to 1/pool_size^2 in FP16 format when using average pooling (average pooling assumes square size)
   conf.run[1].actfunc = 2;  // Activation Function: 0 = None, 1 = Tanh, 2 = Leaky ReLU, 3 = Sigmoid, 4 = PReLU, 5 = ELU, 6 = ReLU6
   conf.run[1].actfunc_param = 0x0;  // Leaky ReLU parameter (NOTE: 0x2E66 is 0.1 in FP16)
   conf.run[1].rectifi_en = 0;  // Rectification, i.e. max(0, x) (NOTE: Can be applied after non-ReLU activation function)
@@ -2192,7 +2192,7 @@ void CCaffeGoogLeNet::Layer_13() {
   //->: inception_5a/relu_3x3
   conf.run[2].m = 320;  // Output Channels
   conf.run[2].conv_enable = 1;  // 1 = Enabled, 0 = Disabled
-  conf.run[2].p = 3;  // Filter Width and Height
+  conf.run[2].p = 0x3;  // Filter Width and Height
   conf.run[2].pz = 1;  // Filter Depth
   conf.run[2].weight_buf.mem = weights_mem_;
   conf.run[2].weight_buf.offs = 4247744;
@@ -2204,7 +2204,7 @@ void CCaffeGoogLeNet::Layer_13() {
   conf.run[2].pool_size = 0x0;  // bits [7:0] = width, bits [15:8] = height
   conf.run[2].pool_stride = 0x101;  // bits [7:0] = X stride, bits [15:8] = Y stride
   conf.run[2].pool_pad = 0x0;  // bits [7:0] = left padding, bits [15:8] = right padding, bits [23:16] = top padding, bits [31:24] = bottom padding
-  conf.run[2].pool_avg_param = 0x0;  // Must be set to 1/pool_size^2 in FP16 format when using average pooling (average pooling assumes square size)
+  conf.run[2].pool_avg_param = 0x0;  // Usually set to 1/pool_size^2 in FP16 format when using average pooling (average pooling assumes square size)
   conf.run[2].actfunc = 2;  // Activation Function: 0 = None, 1 = Tanh, 2 = Leaky ReLU, 3 = Sigmoid, 4 = PReLU, 5 = ELU, 6 = ReLU6
   conf.run[2].actfunc_param = 0x0;  // Leaky ReLU parameter (NOTE: 0x2E66 is 0.1 in FP16)
   conf.run[2].rectifi_en = 0;  // Rectification, i.e. max(0, x) (NOTE: Can be applied after non-ReLU activation function)
@@ -2216,7 +2216,7 @@ void CCaffeGoogLeNet::Layer_13() {
   //->: inception_5a/relu_5x5_reduce
   conf.run[3].m = 32;  // Output Channels
   conf.run[3].conv_enable = 1;  // 1 = Enabled, 0 = Disabled
-  conf.run[3].p = 1;  // Filter Width and Height
+  conf.run[3].p = 0x1;  // Filter Width and Height
   conf.run[3].pz = 1;  // Filter Depth
   conf.run[3].weight_buf.mem = weights_mem_;
   conf.run[3].weight_buf.offs = 4709696;
@@ -2228,7 +2228,7 @@ void CCaffeGoogLeNet::Layer_13() {
   conf.run[3].pool_size = 0x0;  // bits [7:0] = width, bits [15:8] = height
   conf.run[3].pool_stride = 0x101;  // bits [7:0] = X stride, bits [15:8] = Y stride
   conf.run[3].pool_pad = 0x0;  // bits [7:0] = left padding, bits [15:8] = right padding, bits [23:16] = top padding, bits [31:24] = bottom padding
-  conf.run[3].pool_avg_param = 0x0;  // Must be set to 1/pool_size^2 in FP16 format when using average pooling (average pooling assumes square size)
+  conf.run[3].pool_avg_param = 0x0;  // Usually set to 1/pool_size^2 in FP16 format when using average pooling (average pooling assumes square size)
   conf.run[3].actfunc = 2;  // Activation Function: 0 = None, 1 = Tanh, 2 = Leaky ReLU, 3 = Sigmoid, 4 = PReLU, 5 = ELU, 6 = ReLU6
   conf.run[3].actfunc_param = 0x0;  // Leaky ReLU parameter (NOTE: 0x2E66 is 0.1 in FP16)
   conf.run[3].rectifi_en = 0;  // Rectification, i.e. max(0, x) (NOTE: Can be applied after non-ReLU activation function)
@@ -2240,7 +2240,7 @@ void CCaffeGoogLeNet::Layer_13() {
   //->: inception_5a/relu_5x5
   conf.run[4].m = 128;  // Output Channels
   conf.run[4].conv_enable = 1;  // 1 = Enabled, 0 = Disabled
-  conf.run[4].p = 5;  // Filter Width and Height
+  conf.run[4].p = 0x5;  // Filter Width and Height
   conf.run[4].pz = 1;  // Filter Depth
   conf.run[4].weight_buf.mem = weights_mem_;
   conf.run[4].weight_buf.offs = 4740224;
@@ -2252,7 +2252,7 @@ void CCaffeGoogLeNet::Layer_13() {
   conf.run[4].pool_size = 0x0;  // bits [7:0] = width, bits [15:8] = height
   conf.run[4].pool_stride = 0x101;  // bits [7:0] = X stride, bits [15:8] = Y stride
   conf.run[4].pool_pad = 0x0;  // bits [7:0] = left padding, bits [15:8] = right padding, bits [23:16] = top padding, bits [31:24] = bottom padding
-  conf.run[4].pool_avg_param = 0x0;  // Must be set to 1/pool_size^2 in FP16 format when using average pooling (average pooling assumes square size)
+  conf.run[4].pool_avg_param = 0x0;  // Usually set to 1/pool_size^2 in FP16 format when using average pooling (average pooling assumes square size)
   conf.run[4].actfunc = 2;  // Activation Function: 0 = None, 1 = Tanh, 2 = Leaky ReLU, 3 = Sigmoid, 4 = PReLU, 5 = ELU, 6 = ReLU6
   conf.run[4].actfunc_param = 0x0;  // Leaky ReLU parameter (NOTE: 0x2E66 is 0.1 in FP16)
   conf.run[4].rectifi_en = 0;  // Rectification, i.e. max(0, x) (NOTE: Can be applied after non-ReLU activation function)
@@ -2263,7 +2263,7 @@ void CCaffeGoogLeNet::Layer_13() {
   //->: inception_5a/pool
   conf.run[5].m = 832;  // Output Channels
   conf.run[5].conv_enable = 0;  // 1 = Enabled, 0 = Disabled
-  conf.run[5].p = 1;  // Filter Width and Height
+  conf.run[5].p = 0x1;  // Filter Width and Height
   conf.run[5].pz = 1;  // Filter Depth
   conf.run[5].weight_buf.mem = weights_mem_;
   conf.run[5].weight_buf.offs = 4888448;
@@ -2275,7 +2275,7 @@ void CCaffeGoogLeNet::Layer_13() {
   conf.run[5].pool_size = 0x303;  // bits [7:0] = width, bits [15:8] = height
   conf.run[5].pool_stride = 0x101;  // bits [7:0] = X stride, bits [15:8] = Y stride
   conf.run[5].pool_pad = 0x1010101;  // bits [7:0] = left padding, bits [15:8] = right padding, bits [23:16] = top padding, bits [31:24] = bottom padding
-  conf.run[5].pool_avg_param = 0x0;  // Must be set to 1/pool_size^2 in FP16 format when using average pooling (average pooling assumes square size)
+  conf.run[5].pool_avg_param = 0x0;  // Usually set to 1/pool_size^2 in FP16 format when using average pooling (average pooling assumes square size)
   conf.run[5].actfunc = 0;  // Activation Function: 0 = None, 1 = Tanh, 2 = Leaky ReLU, 3 = Sigmoid, 4 = PReLU, 5 = ELU, 6 = ReLU6
   conf.run[5].actfunc_param = 0x0;  // Leaky ReLU parameter (NOTE: 0x2E66 is 0.1 in FP16)
   conf.run[5].rectifi_en = 0;  // Rectification, i.e. max(0, x) (NOTE: Can be applied after non-ReLU activation function)
@@ -2287,7 +2287,7 @@ void CCaffeGoogLeNet::Layer_13() {
   //->: inception_5a/relu_pool_proj
   conf.run[6].m = 128;  // Output Channels
   conf.run[6].conv_enable = 1;  // 1 = Enabled, 0 = Disabled
-  conf.run[6].p = 1;  // Filter Width and Height
+  conf.run[6].p = 0x1;  // Filter Width and Height
   conf.run[6].pz = 1;  // Filter Depth
   conf.run[6].weight_buf.mem = weights_mem_;
   conf.run[6].weight_buf.offs = 4888448;
@@ -2299,7 +2299,7 @@ void CCaffeGoogLeNet::Layer_13() {
   conf.run[6].pool_size = 0x0;  // bits [7:0] = width, bits [15:8] = height
   conf.run[6].pool_stride = 0x101;  // bits [7:0] = X stride, bits [15:8] = Y stride
   conf.run[6].pool_pad = 0x0;  // bits [7:0] = left padding, bits [15:8] = right padding, bits [23:16] = top padding, bits [31:24] = bottom padding
-  conf.run[6].pool_avg_param = 0x0;  // Must be set to 1/pool_size^2 in FP16 format when using average pooling (average pooling assumes square size)
+  conf.run[6].pool_avg_param = 0x0;  // Usually set to 1/pool_size^2 in FP16 format when using average pooling (average pooling assumes square size)
   conf.run[6].actfunc = 2;  // Activation Function: 0 = None, 1 = Tanh, 2 = Leaky ReLU, 3 = Sigmoid, 4 = PReLU, 5 = ELU, 6 = ReLU6
   conf.run[6].actfunc_param = 0x0;  // Leaky ReLU parameter (NOTE: 0x2E66 is 0.1 in FP16)
   conf.run[6].rectifi_en = 0;  // Rectification, i.e. max(0, x) (NOTE: Can be applied after non-ReLU activation function)
@@ -2371,7 +2371,7 @@ void CCaffeGoogLeNet::Layer_14() {
   //->: inception_5b/relu_1x1
   conf.run[0].m = 384;  // Output Channels
   conf.run[0].conv_enable = 1;  // 1 = Enabled, 0 = Disabled
-  conf.run[0].p = 1;  // Filter Width and Height
+  conf.run[0].p = 0x1;  // Filter Width and Height
   conf.run[0].pz = 1;  // Filter Depth
   conf.run[0].weight_buf.mem = weights_mem_;
   conf.run[0].weight_buf.offs = 5009024;
@@ -2383,7 +2383,7 @@ void CCaffeGoogLeNet::Layer_14() {
   conf.run[0].pool_size = 0x0;  // bits [7:0] = width, bits [15:8] = height
   conf.run[0].pool_stride = 0x101;  // bits [7:0] = X stride, bits [15:8] = Y stride
   conf.run[0].pool_pad = 0x0;  // bits [7:0] = left padding, bits [15:8] = right padding, bits [23:16] = top padding, bits [31:24] = bottom padding
-  conf.run[0].pool_avg_param = 0x0;  // Must be set to 1/pool_size^2 in FP16 format when using average pooling (average pooling assumes square size)
+  conf.run[0].pool_avg_param = 0x0;  // Usually set to 1/pool_size^2 in FP16 format when using average pooling (average pooling assumes square size)
   conf.run[0].actfunc = 2;  // Activation Function: 0 = None, 1 = Tanh, 2 = Leaky ReLU, 3 = Sigmoid, 4 = PReLU, 5 = ELU, 6 = ReLU6
   conf.run[0].actfunc_param = 0x0;  // Leaky ReLU parameter (NOTE: 0x2E66 is 0.1 in FP16)
   conf.run[0].rectifi_en = 0;  // Rectification, i.e. max(0, x) (NOTE: Can be applied after non-ReLU activation function)
@@ -2395,7 +2395,7 @@ void CCaffeGoogLeNet::Layer_14() {
   //->: inception_5b/relu_3x3_reduce
   conf.run[1].m = 192;  // Output Channels
   conf.run[1].conv_enable = 1;  // 1 = Enabled, 0 = Disabled
-  conf.run[1].p = 1;  // Filter Width and Height
+  conf.run[1].p = 0x1;  // Filter Width and Height
   conf.run[1].pz = 1;  // Filter Depth
   conf.run[1].weight_buf.mem = weights_mem_;
   conf.run[1].weight_buf.offs = 5369728;
@@ -2407,7 +2407,7 @@ void CCaffeGoogLeNet::Layer_14() {
   conf.run[1].pool_size = 0x0;  // bits [7:0] = width, bits [15:8] = height
   conf.run[1].pool_stride = 0x101;  // bits [7:0] = X stride, bits [15:8] = Y stride
   conf.run[1].pool_pad = 0x0;  // bits [7:0] = left padding, bits [15:8] = right padding, bits [23:16] = top padding, bits [31:24] = bottom padding
-  conf.run[1].pool_avg_param = 0x0;  // Must be set to 1/pool_size^2 in FP16 format when using average pooling (average pooling assumes square size)
+  conf.run[1].pool_avg_param = 0x0;  // Usually set to 1/pool_size^2 in FP16 format when using average pooling (average pooling assumes square size)
   conf.run[1].actfunc = 2;  // Activation Function: 0 = None, 1 = Tanh, 2 = Leaky ReLU, 3 = Sigmoid, 4 = PReLU, 5 = ELU, 6 = ReLU6
   conf.run[1].actfunc_param = 0x0;  // Leaky ReLU parameter (NOTE: 0x2E66 is 0.1 in FP16)
   conf.run[1].rectifi_en = 0;  // Rectification, i.e. max(0, x) (NOTE: Can be applied after non-ReLU activation function)
@@ -2419,7 +2419,7 @@ void CCaffeGoogLeNet::Layer_14() {
   //->: inception_5b/relu_3x3
   conf.run[2].m = 384;  // Output Channels
   conf.run[2].conv_enable = 1;  // 1 = Enabled, 0 = Disabled
-  conf.run[2].p = 3;  // Filter Width and Height
+  conf.run[2].p = 0x3;  // Filter Width and Height
   conf.run[2].pz = 1;  // Filter Depth
   conf.run[2].weight_buf.mem = weights_mem_;
   conf.run[2].weight_buf.offs = 5550336;
@@ -2431,7 +2431,7 @@ void CCaffeGoogLeNet::Layer_14() {
   conf.run[2].pool_size = 0x0;  // bits [7:0] = width, bits [15:8] = height
   conf.run[2].pool_stride = 0x101;  // bits [7:0] = X stride, bits [15:8] = Y stride
   conf.run[2].pool_pad = 0x0;  // bits [7:0] = left padding, bits [15:8] = right padding, bits [23:16] = top padding, bits [31:24] = bottom padding
-  conf.run[2].pool_avg_param = 0x0;  // Must be set to 1/pool_size^2 in FP16 format when using average pooling (average pooling assumes square size)
+  conf.run[2].pool_avg_param = 0x0;  // Usually set to 1/pool_size^2 in FP16 format when using average pooling (average pooling assumes square size)
   conf.run[2].actfunc = 2;  // Activation Function: 0 = None, 1 = Tanh, 2 = Leaky ReLU, 3 = Sigmoid, 4 = PReLU, 5 = ELU, 6 = ReLU6
   conf.run[2].actfunc_param = 0x0;  // Leaky ReLU parameter (NOTE: 0x2E66 is 0.1 in FP16)
   conf.run[2].rectifi_en = 0;  // Rectification, i.e. max(0, x) (NOTE: Can be applied after non-ReLU activation function)
@@ -2443,7 +2443,7 @@ void CCaffeGoogLeNet::Layer_14() {
   //->: inception_5b/relu_5x5_reduce
   conf.run[3].m = 48;  // Output Channels
   conf.run[3].conv_enable = 1;  // 1 = Enabled, 0 = Disabled
-  conf.run[3].p = 1;  // Filter Width and Height
+  conf.run[3].p = 0x1;  // Filter Width and Height
   conf.run[3].pz = 1;  // Filter Depth
   conf.run[3].weight_buf.mem = weights_mem_;
   conf.run[3].weight_buf.offs = 6215168;
@@ -2455,7 +2455,7 @@ void CCaffeGoogLeNet::Layer_14() {
   conf.run[3].pool_size = 0x0;  // bits [7:0] = width, bits [15:8] = height
   conf.run[3].pool_stride = 0x101;  // bits [7:0] = X stride, bits [15:8] = Y stride
   conf.run[3].pool_pad = 0x0;  // bits [7:0] = left padding, bits [15:8] = right padding, bits [23:16] = top padding, bits [31:24] = bottom padding
-  conf.run[3].pool_avg_param = 0x0;  // Must be set to 1/pool_size^2 in FP16 format when using average pooling (average pooling assumes square size)
+  conf.run[3].pool_avg_param = 0x0;  // Usually set to 1/pool_size^2 in FP16 format when using average pooling (average pooling assumes square size)
   conf.run[3].actfunc = 2;  // Activation Function: 0 = None, 1 = Tanh, 2 = Leaky ReLU, 3 = Sigmoid, 4 = PReLU, 5 = ELU, 6 = ReLU6
   conf.run[3].actfunc_param = 0x0;  // Leaky ReLU parameter (NOTE: 0x2E66 is 0.1 in FP16)
   conf.run[3].rectifi_en = 0;  // Rectification, i.e. max(0, x) (NOTE: Can be applied after non-ReLU activation function)
@@ -2467,7 +2467,7 @@ void CCaffeGoogLeNet::Layer_14() {
   //->: inception_5b/relu_5x5
   conf.run[4].m = 128;  // Output Channels
   conf.run[4].conv_enable = 1;  // 1 = Enabled, 0 = Disabled
-  conf.run[4].p = 5;  // Filter Width and Height
+  conf.run[4].p = 0x5;  // Filter Width and Height
   conf.run[4].pz = 1;  // Filter Depth
   conf.run[4].weight_buf.mem = weights_mem_;
   conf.run[4].weight_buf.offs = 6260704;
@@ -2479,7 +2479,7 @@ void CCaffeGoogLeNet::Layer_14() {
   conf.run[4].pool_size = 0x0;  // bits [7:0] = width, bits [15:8] = height
   conf.run[4].pool_stride = 0x101;  // bits [7:0] = X stride, bits [15:8] = Y stride
   conf.run[4].pool_pad = 0x0;  // bits [7:0] = left padding, bits [15:8] = right padding, bits [23:16] = top padding, bits [31:24] = bottom padding
-  conf.run[4].pool_avg_param = 0x0;  // Must be set to 1/pool_size^2 in FP16 format when using average pooling (average pooling assumes square size)
+  conf.run[4].pool_avg_param = 0x0;  // Usually set to 1/pool_size^2 in FP16 format when using average pooling (average pooling assumes square size)
   conf.run[4].actfunc = 2;  // Activation Function: 0 = None, 1 = Tanh, 2 = Leaky ReLU, 3 = Sigmoid, 4 = PReLU, 5 = ELU, 6 = ReLU6
   conf.run[4].actfunc_param = 0x0;  // Leaky ReLU parameter (NOTE: 0x2E66 is 0.1 in FP16)
   conf.run[4].rectifi_en = 0;  // Rectification, i.e. max(0, x) (NOTE: Can be applied after non-ReLU activation function)
@@ -2490,7 +2490,7 @@ void CCaffeGoogLeNet::Layer_14() {
   //->: inception_5b/pool
   conf.run[5].m = 832;  // Output Channels
   conf.run[5].conv_enable = 0;  // 1 = Enabled, 0 = Disabled
-  conf.run[5].p = 1;  // Filter Width and Height
+  conf.run[5].p = 0x1;  // Filter Width and Height
   conf.run[5].pz = 1;  // Filter Depth
   conf.run[5].weight_buf.mem = weights_mem_;
   conf.run[5].weight_buf.offs = 6482656;
@@ -2502,7 +2502,7 @@ void CCaffeGoogLeNet::Layer_14() {
   conf.run[5].pool_size = 0x303;  // bits [7:0] = width, bits [15:8] = height
   conf.run[5].pool_stride = 0x101;  // bits [7:0] = X stride, bits [15:8] = Y stride
   conf.run[5].pool_pad = 0x1010101;  // bits [7:0] = left padding, bits [15:8] = right padding, bits [23:16] = top padding, bits [31:24] = bottom padding
-  conf.run[5].pool_avg_param = 0x0;  // Must be set to 1/pool_size^2 in FP16 format when using average pooling (average pooling assumes square size)
+  conf.run[5].pool_avg_param = 0x0;  // Usually set to 1/pool_size^2 in FP16 format when using average pooling (average pooling assumes square size)
   conf.run[5].actfunc = 0;  // Activation Function: 0 = None, 1 = Tanh, 2 = Leaky ReLU, 3 = Sigmoid, 4 = PReLU, 5 = ELU, 6 = ReLU6
   conf.run[5].actfunc_param = 0x0;  // Leaky ReLU parameter (NOTE: 0x2E66 is 0.1 in FP16)
   conf.run[5].rectifi_en = 0;  // Rectification, i.e. max(0, x) (NOTE: Can be applied after non-ReLU activation function)
@@ -2514,7 +2514,7 @@ void CCaffeGoogLeNet::Layer_14() {
   //->: inception_5b/relu_pool_proj
   conf.run[6].m = 128;  // Output Channels
   conf.run[6].conv_enable = 1;  // 1 = Enabled, 0 = Disabled
-  conf.run[6].p = 1;  // Filter Width and Height
+  conf.run[6].p = 0x1;  // Filter Width and Height
   conf.run[6].pz = 1;  // Filter Depth
   conf.run[6].weight_buf.mem = weights_mem_;
   conf.run[6].weight_buf.offs = 6482656;
@@ -2526,7 +2526,7 @@ void CCaffeGoogLeNet::Layer_14() {
   conf.run[6].pool_size = 0x0;  // bits [7:0] = width, bits [15:8] = height
   conf.run[6].pool_stride = 0x101;  // bits [7:0] = X stride, bits [15:8] = Y stride
   conf.run[6].pool_pad = 0x0;  // bits [7:0] = left padding, bits [15:8] = right padding, bits [23:16] = top padding, bits [31:24] = bottom padding
-  conf.run[6].pool_avg_param = 0x0;  // Must be set to 1/pool_size^2 in FP16 format when using average pooling (average pooling assumes square size)
+  conf.run[6].pool_avg_param = 0x0;  // Usually set to 1/pool_size^2 in FP16 format when using average pooling (average pooling assumes square size)
   conf.run[6].actfunc = 2;  // Activation Function: 0 = None, 1 = Tanh, 2 = Leaky ReLU, 3 = Sigmoid, 4 = PReLU, 5 = ELU, 6 = ReLU6
   conf.run[6].actfunc_param = 0x0;  // Leaky ReLU parameter (NOTE: 0x2E66 is 0.1 in FP16)
   conf.run[6].rectifi_en = 0;  // Rectification, i.e. max(0, x) (NOTE: Can be applied after non-ReLU activation function)
@@ -2585,7 +2585,7 @@ void CCaffeGoogLeNet::Layer_15() {
   //->: pool5/7x7_s1
   conf.run[0].m = 1024;  // Output Channels
   conf.run[0].conv_enable = 0;  // 1 = Enabled, 0 = Disabled
-  conf.run[0].p = 1;  // Filter Width and Height
+  conf.run[0].p = 0x1;  // Filter Width and Height
   conf.run[0].pz = 1;  // Filter Depth
   conf.run[0].weight_buf.mem = weights_mem_;
   conf.run[0].weight_buf.offs = 6603232;
@@ -2597,7 +2597,7 @@ void CCaffeGoogLeNet::Layer_15() {
   conf.run[0].pool_size = 0x707;  // bits [7:0] = width, bits [15:8] = height
   conf.run[0].pool_stride = 0x101;  // bits [7:0] = X stride, bits [15:8] = Y stride
   conf.run[0].pool_pad = 0x0;  // bits [7:0] = left padding, bits [15:8] = right padding, bits [23:16] = top padding, bits [31:24] = bottom padding
-  conf.run[0].pool_avg_param = 0x2539;  // Must be set to 1/pool_size^2 in FP16 format when using average pooling (average pooling assumes square size)
+  conf.run[0].pool_avg_param = 0x2539;  // Usually set to 1/pool_size^2 in FP16 format when using average pooling (average pooling assumes square size)
   conf.run[0].actfunc = 0;  // Activation Function: 0 = None, 1 = Tanh, 2 = Leaky ReLU, 3 = Sigmoid, 4 = PReLU, 5 = ELU, 6 = ReLU6
   conf.run[0].actfunc_param = 0x0;  // Leaky ReLU parameter (NOTE: 0x2E66 is 0.1 in FP16)
   conf.run[0].rectifi_en = 0;  // Rectification, i.e. max(0, x) (NOTE: Can be applied after non-ReLU activation function)
@@ -2638,7 +2638,7 @@ void CCaffeGoogLeNet::Layer_16() {
   conf.output_buf.mem = io_mem_;
   conf.output_buf.offs = 2048;
   conf.weight_fmt = 1;  // 0 = unquantized weight matrix, 1 = qunatized
-  conf.actfunc = 0x0;  // Activation Function: 0 = None, 1 = Tanh, 2 = Leaky ReLU, 3 = Sigmoid, 4 = PReLU, 5 = ELU, 6 = ReLU6
+  conf.actfunc = 0;  // Activation Function: 0 = None, 1 = ReLU, 2 = Tanh, 3 = Leaky ReLU, 4 = Sigmoid, 5 = PReLU (PReLU must be used with POST-OP=1)
   conf.actfunc_param = 0x0;  // Leaky ReLU parameter (in FP16 format), 0 = non-leaky
 
   fpga_layer& layer = get_layer(16);
