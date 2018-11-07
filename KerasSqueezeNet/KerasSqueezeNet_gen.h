@@ -73,11 +73,11 @@ class CKerasSqueezeNet : public CDMP_Network {
 
   | ID | Layers | Type | Dim In | Dim Out | Param | Mem |
   | :- | :- | :-: | :-: | :-: | :-: | :-: |
-  | 4 | FPGA-Layer | Convolution | (56, 56, 16) | (28, 28, 128) | - | - |
+  | 4 | FPGA-Layer | Convolution | (56, 56, 16) | (27, 27, 128) | - | - |
   | 4-0 | fire3/expand1x1 | Convolution | (56, 56, 16) | (56, 56, 64) | - | 5248 |
-  | 4-0 | pool3 | Pooling | (56, 56, 128) | (28, 28, 128) | - | - |
+  | 4-0 | pool3 | Pooling | (56, 56, 128) | (27, 27, 128) | - | - |
   | 4-1 | fire3/expand3x3 | Convolution | (56, 56, 16) | (56, 56, 64) | - | 9856 |
-  | 4-1 | pool3 | Pooling | (56, 56, 128) | (28, 28, 128) | - | - |
+  | 4-1 | pool3 | Pooling | (56, 56, 128) | (27, 27, 128) | - | - |
 
   */
   void Layer_4();
@@ -87,8 +87,8 @@ class CKerasSqueezeNet : public CDMP_Network {
 
   | ID | Layers | Type | Dim In | Dim Out | Param | Mem |
   | :- | :- | :-: | :-: | :-: | :-: | :-: |
-  | 5 | FPGA-Layer | Convolution | (28, 28, 128) | (28, 28, 32) | - | - |
-  | 5-0 | fire4/squeeze1x1 | Convolution | (28, 28, 128) | (28, 28, 32) | - | 5184 |
+  | 5 | FPGA-Layer | Convolution | (27, 27, 128) | (27, 27, 32) | - | - |
+  | 5-0 | fire4/squeeze1x1 | Convolution | (27, 27, 128) | (27, 27, 32) | - | 5184 |
 
   */
   void Layer_5();
@@ -98,9 +98,9 @@ class CKerasSqueezeNet : public CDMP_Network {
 
   | ID | Layers | Type | Dim In | Dim Out | Param | Mem |
   | :- | :- | :-: | :-: | :-: | :-: | :-: |
-  | 6 | FPGA-Layer | Convolution | (28, 28, 32) | (28, 28, 256) | - | - |
-  | 6-0 | fire4/expand1x1 | Convolution | (28, 28, 32) | (28, 28, 128) | - | 9984 |
-  | 6-1 | fire4/expand3x3 | Convolution | (28, 28, 32) | (28, 28, 128) | - | 37632 |
+  | 6 | FPGA-Layer | Convolution | (27, 27, 32) | (27, 27, 256) | - | - |
+  | 6-0 | fire4/expand1x1 | Convolution | (27, 27, 32) | (27, 27, 128) | - | 9984 |
+  | 6-1 | fire4/expand3x3 | Convolution | (27, 27, 32) | (27, 27, 128) | - | 37632 |
 
   */
   void Layer_6();
@@ -110,8 +110,8 @@ class CKerasSqueezeNet : public CDMP_Network {
 
   | ID | Layers | Type | Dim In | Dim Out | Param | Mem |
   | :- | :- | :-: | :-: | :-: | :-: | :-: |
-  | 7 | FPGA-Layer | Convolution | (28, 28, 256) | (28, 28, 32) | - | - |
-  | 7-0 | fire5/squeeze1x1 | Convolution | (28, 28, 256) | (28, 28, 32) | - | 9792 |
+  | 7 | FPGA-Layer | Convolution | (27, 27, 256) | (27, 27, 32) | - | - |
+  | 7-0 | fire5/squeeze1x1 | Convolution | (27, 27, 256) | (27, 27, 32) | - | 9792 |
 
   */
   void Layer_7();
@@ -121,11 +121,11 @@ class CKerasSqueezeNet : public CDMP_Network {
 
   | ID | Layers | Type | Dim In | Dim Out | Param | Mem |
   | :- | :- | :-: | :-: | :-: | :-: | :-: |
-  | 8 | FPGA-Layer | Convolution | (28, 28, 32) | (14, 14, 256) | - | - |
-  | 8-0 | fire5/expand1x1 | Convolution | (28, 28, 32) | (28, 28, 128) | - | 9984 |
-  | 8-0 | pool5 | Pooling | (28, 28, 256) | (14, 14, 256) | - | - |
-  | 8-1 | fire5/expand3x3 | Convolution | (28, 28, 32) | (28, 28, 128) | - | 37632 |
-  | 8-1 | pool5 | Pooling | (28, 28, 256) | (14, 14, 256) | - | - |
+  | 8 | FPGA-Layer | Convolution | (27, 27, 32) | (13, 13, 256) | - | - |
+  | 8-0 | fire5/expand1x1 | Convolution | (27, 27, 32) | (27, 27, 128) | - | 9984 |
+  | 8-0 | pool5 | Pooling | (27, 27, 256) | (13, 13, 256) | - | - |
+  | 8-1 | fire5/expand3x3 | Convolution | (27, 27, 32) | (27, 27, 128) | - | 37632 |
+  | 8-1 | pool5 | Pooling | (27, 27, 256) | (13, 13, 256) | - | - |
 
   */
   void Layer_8();
@@ -135,8 +135,8 @@ class CKerasSqueezeNet : public CDMP_Network {
 
   | ID | Layers | Type | Dim In | Dim Out | Param | Mem |
   | :- | :- | :-: | :-: | :-: | :-: | :-: |
-  | 9 | FPGA-Layer | Convolution | (14, 14, 256) | (14, 14, 48) | - | - |
-  | 9-0 | fire6/squeeze1x1 | Convolution | (14, 14, 256) | (14, 14, 48) | - | 14432 |
+  | 9 | FPGA-Layer | Convolution | (13, 13, 256) | (13, 13, 48) | - | - |
+  | 9-0 | fire6/squeeze1x1 | Convolution | (13, 13, 256) | (13, 13, 48) | - | 14432 |
 
   */
   void Layer_9();
@@ -146,9 +146,9 @@ class CKerasSqueezeNet : public CDMP_Network {
 
   | ID | Layers | Type | Dim In | Dim Out | Param | Mem |
   | :- | :- | :-: | :-: | :-: | :-: | :-: |
-  | 10 | FPGA-Layer | Convolution | (14, 14, 48) | (14, 14, 384) | - | - |
-  | 10-0 | fire6/expand1x1 | Convolution | (14, 14, 48) | (14, 14, 192) | - | 14720 |
-  | 10-1 | fire6/expand3x3 | Convolution | (14, 14, 48) | (14, 14, 192) | - | 83840 |
+  | 10 | FPGA-Layer | Convolution | (13, 13, 48) | (13, 13, 384) | - | - |
+  | 10-0 | fire6/expand1x1 | Convolution | (13, 13, 48) | (13, 13, 192) | - | 14720 |
+  | 10-1 | fire6/expand3x3 | Convolution | (13, 13, 48) | (13, 13, 192) | - | 83840 |
 
   */
   void Layer_10();
@@ -158,8 +158,8 @@ class CKerasSqueezeNet : public CDMP_Network {
 
   | ID | Layers | Type | Dim In | Dim Out | Param | Mem |
   | :- | :- | :-: | :-: | :-: | :-: | :-: |
-  | 11 | FPGA-Layer | Convolution | (14, 14, 384) | (14, 14, 48) | - | - |
-  | 11-0 | fire7/squeeze1x1 | Convolution | (14, 14, 384) | (14, 14, 48) | - | 21344 |
+  | 11 | FPGA-Layer | Convolution | (13, 13, 384) | (13, 13, 48) | - | - |
+  | 11-0 | fire7/squeeze1x1 | Convolution | (13, 13, 384) | (13, 13, 48) | - | 21344 |
 
   */
   void Layer_11();
@@ -169,9 +169,9 @@ class CKerasSqueezeNet : public CDMP_Network {
 
   | ID | Layers | Type | Dim In | Dim Out | Param | Mem |
   | :- | :- | :-: | :-: | :-: | :-: | :-: |
-  | 12 | FPGA-Layer | Convolution | (14, 14, 48) | (14, 14, 384) | - | - |
-  | 12-0 | fire7/expand1x1 | Convolution | (14, 14, 48) | (14, 14, 192) | - | 14720 |
-  | 12-1 | fire7/expand3x3 | Convolution | (14, 14, 48) | (14, 14, 192) | - | 83840 |
+  | 12 | FPGA-Layer | Convolution | (13, 13, 48) | (13, 13, 384) | - | - |
+  | 12-0 | fire7/expand1x1 | Convolution | (13, 13, 48) | (13, 13, 192) | - | 14720 |
+  | 12-1 | fire7/expand3x3 | Convolution | (13, 13, 48) | (13, 13, 192) | - | 83840 |
 
   */
   void Layer_12();
@@ -181,8 +181,8 @@ class CKerasSqueezeNet : public CDMP_Network {
 
   | ID | Layers | Type | Dim In | Dim Out | Param | Mem |
   | :- | :- | :-: | :-: | :-: | :-: | :-: |
-  | 13 | FPGA-Layer | Convolution | (14, 14, 384) | (14, 14, 64) | - | - |
-  | 13-0 | fire8/squeeze1x1 | Convolution | (14, 14, 384) | (14, 14, 64) | - | 28288 |
+  | 13 | FPGA-Layer | Convolution | (13, 13, 384) | (13, 13, 64) | - | - |
+  | 13-0 | fire8/squeeze1x1 | Convolution | (13, 13, 384) | (13, 13, 64) | - | 28288 |
 
   */
   void Layer_13();
@@ -192,9 +192,9 @@ class CKerasSqueezeNet : public CDMP_Network {
 
   | ID | Layers | Type | Dim In | Dim Out | Param | Mem |
   | :- | :- | :-: | :-: | :-: | :-: | :-: |
-  | 14 | FPGA-Layer | Convolution | (14, 14, 64) | (14, 14, 512) | - | - |
-  | 14-0 | fire8/expand1x1 | Convolution | (14, 14, 64) | (14, 14, 256) | - | 19456 |
-  | 14-1 | fire8/expand3x3 | Convolution | (14, 14, 64) | (14, 14, 256) | - | 148480 |
+  | 14 | FPGA-Layer | Convolution | (13, 13, 64) | (13, 13, 512) | - | - |
+  | 14-0 | fire8/expand1x1 | Convolution | (13, 13, 64) | (13, 13, 256) | - | 19456 |
+  | 14-1 | fire8/expand3x3 | Convolution | (13, 13, 64) | (13, 13, 256) | - | 148480 |
 
   */
   void Layer_14();
@@ -204,8 +204,8 @@ class CKerasSqueezeNet : public CDMP_Network {
 
   | ID | Layers | Type | Dim In | Dim Out | Param | Mem |
   | :- | :- | :-: | :-: | :-: | :-: | :-: |
-  | 15 | FPGA-Layer | Convolution | (14, 14, 512) | (14, 14, 64) | - | - |
-  | 15-0 | fire9/squeeze1x1 | Convolution | (14, 14, 512) | (14, 14, 64) | - | 37504 |
+  | 15 | FPGA-Layer | Convolution | (13, 13, 512) | (13, 13, 64) | - | - |
+  | 15-0 | fire9/squeeze1x1 | Convolution | (13, 13, 512) | (13, 13, 64) | - | 37504 |
 
   */
   void Layer_15();
@@ -215,9 +215,9 @@ class CKerasSqueezeNet : public CDMP_Network {
 
   | ID | Layers | Type | Dim In | Dim Out | Param | Mem |
   | :- | :- | :-: | :-: | :-: | :-: | :-: |
-  | 16 | FPGA-Layer | Convolution | (14, 14, 64) | (14, 14, 512) | - | - |
-  | 16-0 | fire9/expand1x1 | Convolution | (14, 14, 64) | (14, 14, 256) | - | 19456 |
-  | 16-1 | fire9/expand3x3 | Convolution | (14, 14, 64) | (14, 14, 256) | - | 148480 |
+  | 16 | FPGA-Layer | Convolution | (13, 13, 64) | (13, 13, 512) | - | - |
+  | 16-0 | fire9/expand1x1 | Convolution | (13, 13, 64) | (13, 13, 256) | - | 19456 |
+  | 16-1 | fire9/expand3x3 | Convolution | (13, 13, 64) | (13, 13, 256) | - | 148480 |
 
   */
   void Layer_16();
@@ -227,8 +227,8 @@ class CKerasSqueezeNet : public CDMP_Network {
 
   | ID | Layers | Type | Dim In | Dim Out | Param | Mem |
   | :- | :- | :-: | :-: | :-: | :-: | :-: |
-  | 17 | FPGA-Layer | Convolution | (14, 14, 512) | (14, 14, 1000) | - | - |
-  | 17-0 | conv10 | Convolution | (14, 14, 512) | (14, 14, 1000) | - | 578512 |
+  | 17 | FPGA-Layer | Convolution | (13, 13, 512) | (13, 13, 1000) | - | - |
+  | 17-0 | conv10 | Convolution | (13, 13, 512) | (13, 13, 1000) | - | 578512 |
 
   */
   void Layer_17();
@@ -238,8 +238,8 @@ class CKerasSqueezeNet : public CDMP_Network {
 
   | ID | Layers | Type | Dim In | Dim Out | Param | Mem |
   | :- | :- | :-: | :-: | :-: | :-: | :-: |
-  | 18 | FPGA-Layer | Convolution | (14, 14, 1000) | (2, 2, 1000) | - | - |
-  | 18-0 | global_average_pooling2d_1_7 | Pooling | (14, 14, 1000) | (2, 2, 1000) | - | - |
+  | 18 | FPGA-Layer | Convolution | (13, 13, 1000) | (2, 2, 1000) | - | - |
+  | 18-0 | global_average_pooling2d_1_7 | Pooling | (13, 13, 1000) | (2, 2, 1000) | - | - |
 
   */
   void Layer_18();

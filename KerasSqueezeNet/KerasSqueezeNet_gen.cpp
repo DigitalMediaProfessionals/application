@@ -99,7 +99,7 @@ void CKerasSqueezeNet::Layer_0() {
   //->: pool1
   conf.run[0].m = 64;  // Output Channels
   conf.run[0].conv_enable = 1;  // 1 = Enabled, 0 = Disabled
-  conf.run[0].p = 3;  // Filter Width and Height
+  conf.run[0].p = 0x3;  // Filter Width and Height
   conf.run[0].pz = 1;  // Filter Depth
   conf.run[0].weight_buf.mem = weights_mem_;
   conf.run[0].weight_buf.offs = 0;
@@ -111,7 +111,7 @@ void CKerasSqueezeNet::Layer_0() {
   conf.run[0].pool_size = 0x303;  // bits [7:0] = width, bits [15:8] = height
   conf.run[0].pool_stride = 0x202;  // bits [7:0] = X stride, bits [15:8] = Y stride
   conf.run[0].pool_pad = 0x0;  // bits [7:0] = left padding, bits [15:8] = right padding, bits [23:16] = top padding, bits [31:24] = bottom padding
-  conf.run[0].pool_avg_param = 0x0;  // Must be set to 1/pool_size^2 in FP16 format when using average pooling (average pooling assumes square size)
+  conf.run[0].pool_avg_param = 0x0;  // Usually set to 1/pool_size^2 in FP16 format when using average pooling (average pooling assumes square size)
   conf.run[0].actfunc = 2;  // Activation Function: 0 = None, 1 = Tanh, 2 = Leaky ReLU, 3 = Sigmoid, 4 = PReLU, 5 = ELU, 6 = ReLU6
   conf.run[0].actfunc_param = 0x0;  // Leaky ReLU parameter (NOTE: 0x2E66 is 0.1 in FP16)
   conf.run[0].rectifi_en = 0;  // Rectification, i.e. max(0, x) (NOTE: Can be applied after non-ReLU activation function)
@@ -172,7 +172,7 @@ void CKerasSqueezeNet::Layer_1() {
   //->: fire2/relu_squeeze1x1
   conf.run[0].m = 16;  // Output Channels
   conf.run[0].conv_enable = 1;  // 1 = Enabled, 0 = Disabled
-  conf.run[0].p = 1;  // Filter Width and Height
+  conf.run[0].p = 0x1;  // Filter Width and Height
   conf.run[0].pz = 1;  // Filter Depth
   conf.run[0].weight_buf.mem = weights_mem_;
   conf.run[0].weight_buf.offs = 5248;
@@ -184,7 +184,7 @@ void CKerasSqueezeNet::Layer_1() {
   conf.run[0].pool_size = 0x0;  // bits [7:0] = width, bits [15:8] = height
   conf.run[0].pool_stride = 0x101;  // bits [7:0] = X stride, bits [15:8] = Y stride
   conf.run[0].pool_pad = 0x0;  // bits [7:0] = left padding, bits [15:8] = right padding, bits [23:16] = top padding, bits [31:24] = bottom padding
-  conf.run[0].pool_avg_param = 0x0;  // Must be set to 1/pool_size^2 in FP16 format when using average pooling (average pooling assumes square size)
+  conf.run[0].pool_avg_param = 0x0;  // Usually set to 1/pool_size^2 in FP16 format when using average pooling (average pooling assumes square size)
   conf.run[0].actfunc = 2;  // Activation Function: 0 = None, 1 = Tanh, 2 = Leaky ReLU, 3 = Sigmoid, 4 = PReLU, 5 = ELU, 6 = ReLU6
   conf.run[0].actfunc_param = 0x0;  // Leaky ReLU parameter (NOTE: 0x2E66 is 0.1 in FP16)
   conf.run[0].rectifi_en = 0;  // Rectification, i.e. max(0, x) (NOTE: Can be applied after non-ReLU activation function)
@@ -247,7 +247,7 @@ void CKerasSqueezeNet::Layer_2() {
   //->: fire2/relu_expand1x1
   conf.run[0].m = 64;  // Output Channels
   conf.run[0].conv_enable = 1;  // 1 = Enabled, 0 = Disabled
-  conf.run[0].p = 1;  // Filter Width and Height
+  conf.run[0].p = 0x1;  // Filter Width and Height
   conf.run[0].pz = 1;  // Filter Depth
   conf.run[0].weight_buf.mem = weights_mem_;
   conf.run[0].weight_buf.offs = 6944;
@@ -259,7 +259,7 @@ void CKerasSqueezeNet::Layer_2() {
   conf.run[0].pool_size = 0x0;  // bits [7:0] = width, bits [15:8] = height
   conf.run[0].pool_stride = 0x101;  // bits [7:0] = X stride, bits [15:8] = Y stride
   conf.run[0].pool_pad = 0x0;  // bits [7:0] = left padding, bits [15:8] = right padding, bits [23:16] = top padding, bits [31:24] = bottom padding
-  conf.run[0].pool_avg_param = 0x0;  // Must be set to 1/pool_size^2 in FP16 format when using average pooling (average pooling assumes square size)
+  conf.run[0].pool_avg_param = 0x0;  // Usually set to 1/pool_size^2 in FP16 format when using average pooling (average pooling assumes square size)
   conf.run[0].actfunc = 2;  // Activation Function: 0 = None, 1 = Tanh, 2 = Leaky ReLU, 3 = Sigmoid, 4 = PReLU, 5 = ELU, 6 = ReLU6
   conf.run[0].actfunc_param = 0x0;  // Leaky ReLU parameter (NOTE: 0x2E66 is 0.1 in FP16)
   conf.run[0].rectifi_en = 0;  // Rectification, i.e. max(0, x) (NOTE: Can be applied after non-ReLU activation function)
@@ -271,7 +271,7 @@ void CKerasSqueezeNet::Layer_2() {
   //->: fire2/relu_expand3x3
   conf.run[1].m = 64;  // Output Channels
   conf.run[1].conv_enable = 1;  // 1 = Enabled, 0 = Disabled
-  conf.run[1].p = 3;  // Filter Width and Height
+  conf.run[1].p = 0x3;  // Filter Width and Height
   conf.run[1].pz = 1;  // Filter Depth
   conf.run[1].weight_buf.mem = weights_mem_;
   conf.run[1].weight_buf.offs = 12192;
@@ -283,7 +283,7 @@ void CKerasSqueezeNet::Layer_2() {
   conf.run[1].pool_size = 0x0;  // bits [7:0] = width, bits [15:8] = height
   conf.run[1].pool_stride = 0x101;  // bits [7:0] = X stride, bits [15:8] = Y stride
   conf.run[1].pool_pad = 0x0;  // bits [7:0] = left padding, bits [15:8] = right padding, bits [23:16] = top padding, bits [31:24] = bottom padding
-  conf.run[1].pool_avg_param = 0x0;  // Must be set to 1/pool_size^2 in FP16 format when using average pooling (average pooling assumes square size)
+  conf.run[1].pool_avg_param = 0x0;  // Usually set to 1/pool_size^2 in FP16 format when using average pooling (average pooling assumes square size)
   conf.run[1].actfunc = 2;  // Activation Function: 0 = None, 1 = Tanh, 2 = Leaky ReLU, 3 = Sigmoid, 4 = PReLU, 5 = ELU, 6 = ReLU6
   conf.run[1].actfunc_param = 0x0;  // Leaky ReLU parameter (NOTE: 0x2E66 is 0.1 in FP16)
   conf.run[1].rectifi_en = 0;  // Rectification, i.e. max(0, x) (NOTE: Can be applied after non-ReLU activation function)
@@ -344,7 +344,7 @@ void CKerasSqueezeNet::Layer_3() {
   //->: fire3/relu_squeeze1x1
   conf.run[0].m = 16;  // Output Channels
   conf.run[0].conv_enable = 1;  // 1 = Enabled, 0 = Disabled
-  conf.run[0].p = 1;  // Filter Width and Height
+  conf.run[0].p = 0x1;  // Filter Width and Height
   conf.run[0].pz = 1;  // Filter Depth
   conf.run[0].weight_buf.mem = weights_mem_;
   conf.run[0].weight_buf.offs = 22048;
@@ -356,7 +356,7 @@ void CKerasSqueezeNet::Layer_3() {
   conf.run[0].pool_size = 0x0;  // bits [7:0] = width, bits [15:8] = height
   conf.run[0].pool_stride = 0x101;  // bits [7:0] = X stride, bits [15:8] = Y stride
   conf.run[0].pool_pad = 0x0;  // bits [7:0] = left padding, bits [15:8] = right padding, bits [23:16] = top padding, bits [31:24] = bottom padding
-  conf.run[0].pool_avg_param = 0x0;  // Must be set to 1/pool_size^2 in FP16 format when using average pooling (average pooling assumes square size)
+  conf.run[0].pool_avg_param = 0x0;  // Usually set to 1/pool_size^2 in FP16 format when using average pooling (average pooling assumes square size)
   conf.run[0].actfunc = 2;  // Activation Function: 0 = None, 1 = Tanh, 2 = Leaky ReLU, 3 = Sigmoid, 4 = PReLU, 5 = ELU, 6 = ReLU6
   conf.run[0].actfunc_param = 0x0;  // Leaky ReLU parameter (NOTE: 0x2E66 is 0.1 in FP16)
   conf.run[0].rectifi_en = 0;  // Rectification, i.e. max(0, x) (NOTE: Can be applied after non-ReLU activation function)
@@ -422,7 +422,7 @@ void CKerasSqueezeNet::Layer_4() {
   //->: pool3
   conf.run[0].m = 64;  // Output Channels
   conf.run[0].conv_enable = 1;  // 1 = Enabled, 0 = Disabled
-  conf.run[0].p = 1;  // Filter Width and Height
+  conf.run[0].p = 0x1;  // Filter Width and Height
   conf.run[0].pz = 1;  // Filter Depth
   conf.run[0].weight_buf.mem = weights_mem_;
   conf.run[0].weight_buf.offs = 24896;
@@ -433,8 +433,8 @@ void CKerasSqueezeNet::Layer_4() {
   conf.run[0].pool_enable = 1;  // 0 = disabled, 1 = max pooling, 2 = average pooling
   conf.run[0].pool_size = 0x303;  // bits [7:0] = width, bits [15:8] = height
   conf.run[0].pool_stride = 0x202;  // bits [7:0] = X stride, bits [15:8] = Y stride
-  conf.run[0].pool_pad = 0x1000100;  // bits [7:0] = left padding, bits [15:8] = right padding, bits [23:16] = top padding, bits [31:24] = bottom padding
-  conf.run[0].pool_avg_param = 0x0;  // Must be set to 1/pool_size^2 in FP16 format when using average pooling (average pooling assumes square size)
+  conf.run[0].pool_pad = 0x0;  // bits [7:0] = left padding, bits [15:8] = right padding, bits [23:16] = top padding, bits [31:24] = bottom padding
+  conf.run[0].pool_avg_param = 0x0;  // Usually set to 1/pool_size^2 in FP16 format when using average pooling (average pooling assumes square size)
   conf.run[0].actfunc = 2;  // Activation Function: 0 = None, 1 = Tanh, 2 = Leaky ReLU, 3 = Sigmoid, 4 = PReLU, 5 = ELU, 6 = ReLU6
   conf.run[0].actfunc_param = 0x0;  // Leaky ReLU parameter (NOTE: 0x2E66 is 0.1 in FP16)
   conf.run[0].rectifi_en = 0;  // Rectification, i.e. max(0, x) (NOTE: Can be applied after non-ReLU activation function)
@@ -447,7 +447,7 @@ void CKerasSqueezeNet::Layer_4() {
   //->: pool3
   conf.run[1].m = 64;  // Output Channels
   conf.run[1].conv_enable = 1;  // 1 = Enabled, 0 = Disabled
-  conf.run[1].p = 3;  // Filter Width and Height
+  conf.run[1].p = 0x3;  // Filter Width and Height
   conf.run[1].pz = 1;  // Filter Depth
   conf.run[1].weight_buf.mem = weights_mem_;
   conf.run[1].weight_buf.offs = 30144;
@@ -458,8 +458,8 @@ void CKerasSqueezeNet::Layer_4() {
   conf.run[1].pool_enable = 1;  // 0 = disabled, 1 = max pooling, 2 = average pooling
   conf.run[1].pool_size = 0x303;  // bits [7:0] = width, bits [15:8] = height
   conf.run[1].pool_stride = 0x202;  // bits [7:0] = X stride, bits [15:8] = Y stride
-  conf.run[1].pool_pad = 0x1000100;  // bits [7:0] = left padding, bits [15:8] = right padding, bits [23:16] = top padding, bits [31:24] = bottom padding
-  conf.run[1].pool_avg_param = 0x0;  // Must be set to 1/pool_size^2 in FP16 format when using average pooling (average pooling assumes square size)
+  conf.run[1].pool_pad = 0x0;  // bits [7:0] = left padding, bits [15:8] = right padding, bits [23:16] = top padding, bits [31:24] = bottom padding
+  conf.run[1].pool_avg_param = 0x0;  // Usually set to 1/pool_size^2 in FP16 format when using average pooling (average pooling assumes square size)
   conf.run[1].actfunc = 2;  // Activation Function: 0 = None, 1 = Tanh, 2 = Leaky ReLU, 3 = Sigmoid, 4 = PReLU, 5 = ELU, 6 = ReLU6
   conf.run[1].actfunc_param = 0x0;  // Leaky ReLU parameter (NOTE: 0x2E66 is 0.1 in FP16)
   conf.run[1].rectifi_en = 0;  // Rectification, i.e. max(0, x) (NOTE: Can be applied after non-ReLU activation function)
@@ -469,13 +469,13 @@ void CKerasSqueezeNet::Layer_4() {
   layer.type = LT_CONV;
   layer.input_offs = 0;
   layer.output_offs = 100352;
-  layer.output_size = 200704;
+  layer.output_size = 186624;
   layer.input_dim[0] = 56;
   layer.input_dim[1] = 56;
   layer.input_dim[2] = 16;
   layer.input_dim_size = 3;
-  layer.output_dim[0] = 28;
-  layer.output_dim[1] = 28;
+  layer.output_dim[0] = 27;
+  layer.output_dim[1] = 27;
   layer.output_dim[2] = 128;
   layer.output_dim_size = 3;
   layer.is_output = false;
@@ -496,8 +496,8 @@ void CKerasSqueezeNet::Layer_5() {
   conf.topo = 0x1;  // [31:0] Output Destination of each run, 0 = UBUF, 1 = EXTMEM
 
   // Input Configuration:
-  conf.w = 28;  // Input Width
-  conf.h = 28;  // Input Height
+  conf.w = 27;  // Input Width
+  conf.h = 27;  // Input Height
   conf.z = 1;  // Input Depth
   conf.c = 128;  // Input Channels
   conf.input_buf.mem = io_mem_;
@@ -520,7 +520,7 @@ void CKerasSqueezeNet::Layer_5() {
   //->: fire4/relu_squeeze1x1
   conf.run[0].m = 32;  // Output Channels
   conf.run[0].conv_enable = 1;  // 1 = Enabled, 0 = Disabled
-  conf.run[0].p = 1;  // Filter Width and Height
+  conf.run[0].p = 0x1;  // Filter Width and Height
   conf.run[0].pz = 1;  // Filter Depth
   conf.run[0].weight_buf.mem = weights_mem_;
   conf.run[0].weight_buf.offs = 40000;
@@ -532,7 +532,7 @@ void CKerasSqueezeNet::Layer_5() {
   conf.run[0].pool_size = 0x0;  // bits [7:0] = width, bits [15:8] = height
   conf.run[0].pool_stride = 0x101;  // bits [7:0] = X stride, bits [15:8] = Y stride
   conf.run[0].pool_pad = 0x0;  // bits [7:0] = left padding, bits [15:8] = right padding, bits [23:16] = top padding, bits [31:24] = bottom padding
-  conf.run[0].pool_avg_param = 0x0;  // Must be set to 1/pool_size^2 in FP16 format when using average pooling (average pooling assumes square size)
+  conf.run[0].pool_avg_param = 0x0;  // Usually set to 1/pool_size^2 in FP16 format when using average pooling (average pooling assumes square size)
   conf.run[0].actfunc = 2;  // Activation Function: 0 = None, 1 = Tanh, 2 = Leaky ReLU, 3 = Sigmoid, 4 = PReLU, 5 = ELU, 6 = ReLU6
   conf.run[0].actfunc_param = 0x0;  // Leaky ReLU parameter (NOTE: 0x2E66 is 0.1 in FP16)
   conf.run[0].rectifi_en = 0;  // Rectification, i.e. max(0, x) (NOTE: Can be applied after non-ReLU activation function)
@@ -542,13 +542,13 @@ void CKerasSqueezeNet::Layer_5() {
   layer.type = LT_CONV;
   layer.input_offs = 100352;
   layer.output_offs = 0;
-  layer.output_size = 50176;
-  layer.input_dim[0] = 28;
-  layer.input_dim[1] = 28;
+  layer.output_size = 46656;
+  layer.input_dim[0] = 27;
+  layer.input_dim[1] = 27;
   layer.input_dim[2] = 128;
   layer.input_dim_size = 3;
-  layer.output_dim[0] = 28;
-  layer.output_dim[1] = 28;
+  layer.output_dim[0] = 27;
+  layer.output_dim[1] = 27;
   layer.output_dim[2] = 32;
   layer.output_dim_size = 3;
   layer.is_output = false;
@@ -571,8 +571,8 @@ void CKerasSqueezeNet::Layer_6() {
   conf.topo = 0x3;  // [31:0] Output Destination of each run, 0 = UBUF, 1 = EXTMEM
 
   // Input Configuration:
-  conf.w = 28;  // Input Width
-  conf.h = 28;  // Input Height
+  conf.w = 27;  // Input Width
+  conf.h = 27;  // Input Height
   conf.z = 1;  // Input Depth
   conf.c = 32;  // Input Channels
   conf.input_buf.mem = io_mem_;
@@ -580,7 +580,7 @@ void CKerasSqueezeNet::Layer_6() {
 
   // Output Configuration:
   conf.output_buf.mem = io_mem_;
-  conf.output_buf.offs = 50176;
+  conf.output_buf.offs = 46656;
 
   conf.eltwise_buf.mem = NULL;
   conf.eltwise_buf.offs = 0;  // Input byte address for elementwise add (0 = UBUF Input Buffer)
@@ -595,7 +595,7 @@ void CKerasSqueezeNet::Layer_6() {
   //->: fire4/relu_expand1x1
   conf.run[0].m = 128;  // Output Channels
   conf.run[0].conv_enable = 1;  // 1 = Enabled, 0 = Disabled
-  conf.run[0].p = 1;  // Filter Width and Height
+  conf.run[0].p = 0x1;  // Filter Width and Height
   conf.run[0].pz = 1;  // Filter Depth
   conf.run[0].weight_buf.mem = weights_mem_;
   conf.run[0].weight_buf.offs = 45184;
@@ -607,7 +607,7 @@ void CKerasSqueezeNet::Layer_6() {
   conf.run[0].pool_size = 0x0;  // bits [7:0] = width, bits [15:8] = height
   conf.run[0].pool_stride = 0x101;  // bits [7:0] = X stride, bits [15:8] = Y stride
   conf.run[0].pool_pad = 0x0;  // bits [7:0] = left padding, bits [15:8] = right padding, bits [23:16] = top padding, bits [31:24] = bottom padding
-  conf.run[0].pool_avg_param = 0x0;  // Must be set to 1/pool_size^2 in FP16 format when using average pooling (average pooling assumes square size)
+  conf.run[0].pool_avg_param = 0x0;  // Usually set to 1/pool_size^2 in FP16 format when using average pooling (average pooling assumes square size)
   conf.run[0].actfunc = 2;  // Activation Function: 0 = None, 1 = Tanh, 2 = Leaky ReLU, 3 = Sigmoid, 4 = PReLU, 5 = ELU, 6 = ReLU6
   conf.run[0].actfunc_param = 0x0;  // Leaky ReLU parameter (NOTE: 0x2E66 is 0.1 in FP16)
   conf.run[0].rectifi_en = 0;  // Rectification, i.e. max(0, x) (NOTE: Can be applied after non-ReLU activation function)
@@ -619,7 +619,7 @@ void CKerasSqueezeNet::Layer_6() {
   //->: fire4/relu_expand3x3
   conf.run[1].m = 128;  // Output Channels
   conf.run[1].conv_enable = 1;  // 1 = Enabled, 0 = Disabled
-  conf.run[1].p = 3;  // Filter Width and Height
+  conf.run[1].p = 0x3;  // Filter Width and Height
   conf.run[1].pz = 1;  // Filter Depth
   conf.run[1].weight_buf.mem = weights_mem_;
   conf.run[1].weight_buf.offs = 55168;
@@ -631,7 +631,7 @@ void CKerasSqueezeNet::Layer_6() {
   conf.run[1].pool_size = 0x0;  // bits [7:0] = width, bits [15:8] = height
   conf.run[1].pool_stride = 0x101;  // bits [7:0] = X stride, bits [15:8] = Y stride
   conf.run[1].pool_pad = 0x0;  // bits [7:0] = left padding, bits [15:8] = right padding, bits [23:16] = top padding, bits [31:24] = bottom padding
-  conf.run[1].pool_avg_param = 0x0;  // Must be set to 1/pool_size^2 in FP16 format when using average pooling (average pooling assumes square size)
+  conf.run[1].pool_avg_param = 0x0;  // Usually set to 1/pool_size^2 in FP16 format when using average pooling (average pooling assumes square size)
   conf.run[1].actfunc = 2;  // Activation Function: 0 = None, 1 = Tanh, 2 = Leaky ReLU, 3 = Sigmoid, 4 = PReLU, 5 = ELU, 6 = ReLU6
   conf.run[1].actfunc_param = 0x0;  // Leaky ReLU parameter (NOTE: 0x2E66 is 0.1 in FP16)
   conf.run[1].rectifi_en = 0;  // Rectification, i.e. max(0, x) (NOTE: Can be applied after non-ReLU activation function)
@@ -640,14 +640,14 @@ void CKerasSqueezeNet::Layer_6() {
   fpga_layer& layer = get_layer(6);
   layer.type = LT_CONV;
   layer.input_offs = 0;
-  layer.output_offs = 50176;
-  layer.output_size = 401408;
-  layer.input_dim[0] = 28;
-  layer.input_dim[1] = 28;
+  layer.output_offs = 46656;
+  layer.output_size = 373248;
+  layer.input_dim[0] = 27;
+  layer.input_dim[1] = 27;
   layer.input_dim[2] = 32;
   layer.input_dim_size = 3;
-  layer.output_dim[0] = 28;
-  layer.output_dim[1] = 28;
+  layer.output_dim[0] = 27;
+  layer.output_dim[1] = 27;
   layer.output_dim[2] = 256;
   layer.output_dim_size = 3;
   layer.is_output = false;
@@ -668,12 +668,12 @@ void CKerasSqueezeNet::Layer_7() {
   conf.topo = 0x1;  // [31:0] Output Destination of each run, 0 = UBUF, 1 = EXTMEM
 
   // Input Configuration:
-  conf.w = 28;  // Input Width
-  conf.h = 28;  // Input Height
+  conf.w = 27;  // Input Width
+  conf.h = 27;  // Input Height
   conf.z = 1;  // Input Depth
   conf.c = 256;  // Input Channels
   conf.input_buf.mem = io_mem_;
-  conf.input_buf.offs = 50176;
+  conf.input_buf.offs = 46656;
 
   // Output Configuration:
   conf.output_buf.mem = io_mem_;
@@ -692,7 +692,7 @@ void CKerasSqueezeNet::Layer_7() {
   //->: fire5/relu_squeeze1x1
   conf.run[0].m = 32;  // Output Channels
   conf.run[0].conv_enable = 1;  // 1 = Enabled, 0 = Disabled
-  conf.run[0].p = 1;  // Filter Width and Height
+  conf.run[0].p = 0x1;  // Filter Width and Height
   conf.run[0].pz = 1;  // Filter Depth
   conf.run[0].weight_buf.mem = weights_mem_;
   conf.run[0].weight_buf.offs = 92800;
@@ -704,7 +704,7 @@ void CKerasSqueezeNet::Layer_7() {
   conf.run[0].pool_size = 0x0;  // bits [7:0] = width, bits [15:8] = height
   conf.run[0].pool_stride = 0x101;  // bits [7:0] = X stride, bits [15:8] = Y stride
   conf.run[0].pool_pad = 0x0;  // bits [7:0] = left padding, bits [15:8] = right padding, bits [23:16] = top padding, bits [31:24] = bottom padding
-  conf.run[0].pool_avg_param = 0x0;  // Must be set to 1/pool_size^2 in FP16 format when using average pooling (average pooling assumes square size)
+  conf.run[0].pool_avg_param = 0x0;  // Usually set to 1/pool_size^2 in FP16 format when using average pooling (average pooling assumes square size)
   conf.run[0].actfunc = 2;  // Activation Function: 0 = None, 1 = Tanh, 2 = Leaky ReLU, 3 = Sigmoid, 4 = PReLU, 5 = ELU, 6 = ReLU6
   conf.run[0].actfunc_param = 0x0;  // Leaky ReLU parameter (NOTE: 0x2E66 is 0.1 in FP16)
   conf.run[0].rectifi_en = 0;  // Rectification, i.e. max(0, x) (NOTE: Can be applied after non-ReLU activation function)
@@ -712,15 +712,15 @@ void CKerasSqueezeNet::Layer_7() {
 
   fpga_layer& layer = get_layer(7);
   layer.type = LT_CONV;
-  layer.input_offs = 50176;
+  layer.input_offs = 46656;
   layer.output_offs = 0;
-  layer.output_size = 50176;
-  layer.input_dim[0] = 28;
-  layer.input_dim[1] = 28;
+  layer.output_size = 46656;
+  layer.input_dim[0] = 27;
+  layer.input_dim[1] = 27;
   layer.input_dim[2] = 256;
   layer.input_dim_size = 3;
-  layer.output_dim[0] = 28;
-  layer.output_dim[1] = 28;
+  layer.output_dim[0] = 27;
+  layer.output_dim[1] = 27;
   layer.output_dim[2] = 32;
   layer.output_dim_size = 3;
   layer.is_output = false;
@@ -745,8 +745,8 @@ void CKerasSqueezeNet::Layer_8() {
   conf.topo = 0x3;  // [31:0] Output Destination of each run, 0 = UBUF, 1 = EXTMEM
 
   // Input Configuration:
-  conf.w = 28;  // Input Width
-  conf.h = 28;  // Input Height
+  conf.w = 27;  // Input Width
+  conf.h = 27;  // Input Height
   conf.z = 1;  // Input Depth
   conf.c = 32;  // Input Channels
   conf.input_buf.mem = io_mem_;
@@ -754,7 +754,7 @@ void CKerasSqueezeNet::Layer_8() {
 
   // Output Configuration:
   conf.output_buf.mem = io_mem_;
-  conf.output_buf.offs = 50176;
+  conf.output_buf.offs = 46656;
 
   conf.eltwise_buf.mem = NULL;
   conf.eltwise_buf.offs = 0;  // Input byte address for elementwise add (0 = UBUF Input Buffer)
@@ -770,7 +770,7 @@ void CKerasSqueezeNet::Layer_8() {
   //->: pool5
   conf.run[0].m = 128;  // Output Channels
   conf.run[0].conv_enable = 1;  // 1 = Enabled, 0 = Disabled
-  conf.run[0].p = 1;  // Filter Width and Height
+  conf.run[0].p = 0x1;  // Filter Width and Height
   conf.run[0].pz = 1;  // Filter Depth
   conf.run[0].weight_buf.mem = weights_mem_;
   conf.run[0].weight_buf.offs = 102592;
@@ -781,8 +781,8 @@ void CKerasSqueezeNet::Layer_8() {
   conf.run[0].pool_enable = 1;  // 0 = disabled, 1 = max pooling, 2 = average pooling
   conf.run[0].pool_size = 0x303;  // bits [7:0] = width, bits [15:8] = height
   conf.run[0].pool_stride = 0x202;  // bits [7:0] = X stride, bits [15:8] = Y stride
-  conf.run[0].pool_pad = 0x1000100;  // bits [7:0] = left padding, bits [15:8] = right padding, bits [23:16] = top padding, bits [31:24] = bottom padding
-  conf.run[0].pool_avg_param = 0x0;  // Must be set to 1/pool_size^2 in FP16 format when using average pooling (average pooling assumes square size)
+  conf.run[0].pool_pad = 0x0;  // bits [7:0] = left padding, bits [15:8] = right padding, bits [23:16] = top padding, bits [31:24] = bottom padding
+  conf.run[0].pool_avg_param = 0x0;  // Usually set to 1/pool_size^2 in FP16 format when using average pooling (average pooling assumes square size)
   conf.run[0].actfunc = 2;  // Activation Function: 0 = None, 1 = Tanh, 2 = Leaky ReLU, 3 = Sigmoid, 4 = PReLU, 5 = ELU, 6 = ReLU6
   conf.run[0].actfunc_param = 0x0;  // Leaky ReLU parameter (NOTE: 0x2E66 is 0.1 in FP16)
   conf.run[0].rectifi_en = 0;  // Rectification, i.e. max(0, x) (NOTE: Can be applied after non-ReLU activation function)
@@ -795,7 +795,7 @@ void CKerasSqueezeNet::Layer_8() {
   //->: pool5
   conf.run[1].m = 128;  // Output Channels
   conf.run[1].conv_enable = 1;  // 1 = Enabled, 0 = Disabled
-  conf.run[1].p = 3;  // Filter Width and Height
+  conf.run[1].p = 0x3;  // Filter Width and Height
   conf.run[1].pz = 1;  // Filter Depth
   conf.run[1].weight_buf.mem = weights_mem_;
   conf.run[1].weight_buf.offs = 112576;
@@ -806,8 +806,8 @@ void CKerasSqueezeNet::Layer_8() {
   conf.run[1].pool_enable = 1;  // 0 = disabled, 1 = max pooling, 2 = average pooling
   conf.run[1].pool_size = 0x303;  // bits [7:0] = width, bits [15:8] = height
   conf.run[1].pool_stride = 0x202;  // bits [7:0] = X stride, bits [15:8] = Y stride
-  conf.run[1].pool_pad = 0x1000100;  // bits [7:0] = left padding, bits [15:8] = right padding, bits [23:16] = top padding, bits [31:24] = bottom padding
-  conf.run[1].pool_avg_param = 0x0;  // Must be set to 1/pool_size^2 in FP16 format when using average pooling (average pooling assumes square size)
+  conf.run[1].pool_pad = 0x0;  // bits [7:0] = left padding, bits [15:8] = right padding, bits [23:16] = top padding, bits [31:24] = bottom padding
+  conf.run[1].pool_avg_param = 0x0;  // Usually set to 1/pool_size^2 in FP16 format when using average pooling (average pooling assumes square size)
   conf.run[1].actfunc = 2;  // Activation Function: 0 = None, 1 = Tanh, 2 = Leaky ReLU, 3 = Sigmoid, 4 = PReLU, 5 = ELU, 6 = ReLU6
   conf.run[1].actfunc_param = 0x0;  // Leaky ReLU parameter (NOTE: 0x2E66 is 0.1 in FP16)
   conf.run[1].rectifi_en = 0;  // Rectification, i.e. max(0, x) (NOTE: Can be applied after non-ReLU activation function)
@@ -816,14 +816,14 @@ void CKerasSqueezeNet::Layer_8() {
   fpga_layer& layer = get_layer(8);
   layer.type = LT_CONV;
   layer.input_offs = 0;
-  layer.output_offs = 50176;
-  layer.output_size = 100352;
-  layer.input_dim[0] = 28;
-  layer.input_dim[1] = 28;
+  layer.output_offs = 46656;
+  layer.output_size = 86528;
+  layer.input_dim[0] = 27;
+  layer.input_dim[1] = 27;
   layer.input_dim[2] = 32;
   layer.input_dim_size = 3;
-  layer.output_dim[0] = 14;
-  layer.output_dim[1] = 14;
+  layer.output_dim[0] = 13;
+  layer.output_dim[1] = 13;
   layer.output_dim[2] = 256;
   layer.output_dim_size = 3;
   layer.is_output = false;
@@ -844,12 +844,12 @@ void CKerasSqueezeNet::Layer_9() {
   conf.topo = 0x1;  // [31:0] Output Destination of each run, 0 = UBUF, 1 = EXTMEM
 
   // Input Configuration:
-  conf.w = 14;  // Input Width
-  conf.h = 14;  // Input Height
+  conf.w = 13;  // Input Width
+  conf.h = 13;  // Input Height
   conf.z = 1;  // Input Depth
   conf.c = 256;  // Input Channels
   conf.input_buf.mem = io_mem_;
-  conf.input_buf.offs = 50176;
+  conf.input_buf.offs = 46656;
 
   // Output Configuration:
   conf.output_buf.mem = io_mem_;
@@ -868,7 +868,7 @@ void CKerasSqueezeNet::Layer_9() {
   //->: fire6/relu_squeeze1x1
   conf.run[0].m = 48;  // Output Channels
   conf.run[0].conv_enable = 1;  // 1 = Enabled, 0 = Disabled
-  conf.run[0].p = 1;  // Filter Width and Height
+  conf.run[0].p = 0x1;  // Filter Width and Height
   conf.run[0].pz = 1;  // Filter Depth
   conf.run[0].weight_buf.mem = weights_mem_;
   conf.run[0].weight_buf.offs = 150208;
@@ -880,7 +880,7 @@ void CKerasSqueezeNet::Layer_9() {
   conf.run[0].pool_size = 0x0;  // bits [7:0] = width, bits [15:8] = height
   conf.run[0].pool_stride = 0x101;  // bits [7:0] = X stride, bits [15:8] = Y stride
   conf.run[0].pool_pad = 0x0;  // bits [7:0] = left padding, bits [15:8] = right padding, bits [23:16] = top padding, bits [31:24] = bottom padding
-  conf.run[0].pool_avg_param = 0x0;  // Must be set to 1/pool_size^2 in FP16 format when using average pooling (average pooling assumes square size)
+  conf.run[0].pool_avg_param = 0x0;  // Usually set to 1/pool_size^2 in FP16 format when using average pooling (average pooling assumes square size)
   conf.run[0].actfunc = 2;  // Activation Function: 0 = None, 1 = Tanh, 2 = Leaky ReLU, 3 = Sigmoid, 4 = PReLU, 5 = ELU, 6 = ReLU6
   conf.run[0].actfunc_param = 0x0;  // Leaky ReLU parameter (NOTE: 0x2E66 is 0.1 in FP16)
   conf.run[0].rectifi_en = 0;  // Rectification, i.e. max(0, x) (NOTE: Can be applied after non-ReLU activation function)
@@ -888,15 +888,15 @@ void CKerasSqueezeNet::Layer_9() {
 
   fpga_layer& layer = get_layer(9);
   layer.type = LT_CONV;
-  layer.input_offs = 50176;
+  layer.input_offs = 46656;
   layer.output_offs = 0;
-  layer.output_size = 18816;
-  layer.input_dim[0] = 14;
-  layer.input_dim[1] = 14;
+  layer.output_size = 16224;
+  layer.input_dim[0] = 13;
+  layer.input_dim[1] = 13;
   layer.input_dim[2] = 256;
   layer.input_dim_size = 3;
-  layer.output_dim[0] = 14;
-  layer.output_dim[1] = 14;
+  layer.output_dim[0] = 13;
+  layer.output_dim[1] = 13;
   layer.output_dim[2] = 48;
   layer.output_dim_size = 3;
   layer.is_output = false;
@@ -919,8 +919,8 @@ void CKerasSqueezeNet::Layer_10() {
   conf.topo = 0x3;  // [31:0] Output Destination of each run, 0 = UBUF, 1 = EXTMEM
 
   // Input Configuration:
-  conf.w = 14;  // Input Width
-  conf.h = 14;  // Input Height
+  conf.w = 13;  // Input Width
+  conf.h = 13;  // Input Height
   conf.z = 1;  // Input Depth
   conf.c = 48;  // Input Channels
   conf.input_buf.mem = io_mem_;
@@ -928,7 +928,7 @@ void CKerasSqueezeNet::Layer_10() {
 
   // Output Configuration:
   conf.output_buf.mem = io_mem_;
-  conf.output_buf.offs = 18816;
+  conf.output_buf.offs = 16224;
 
   conf.eltwise_buf.mem = NULL;
   conf.eltwise_buf.offs = 0;  // Input byte address for elementwise add (0 = UBUF Input Buffer)
@@ -943,7 +943,7 @@ void CKerasSqueezeNet::Layer_10() {
   //->: fire6/relu_expand1x1
   conf.run[0].m = 192;  // Output Channels
   conf.run[0].conv_enable = 1;  // 1 = Enabled, 0 = Disabled
-  conf.run[0].p = 1;  // Filter Width and Height
+  conf.run[0].p = 0x1;  // Filter Width and Height
   conf.run[0].pz = 1;  // Filter Depth
   conf.run[0].weight_buf.mem = weights_mem_;
   conf.run[0].weight_buf.offs = 164640;
@@ -955,7 +955,7 @@ void CKerasSqueezeNet::Layer_10() {
   conf.run[0].pool_size = 0x0;  // bits [7:0] = width, bits [15:8] = height
   conf.run[0].pool_stride = 0x101;  // bits [7:0] = X stride, bits [15:8] = Y stride
   conf.run[0].pool_pad = 0x0;  // bits [7:0] = left padding, bits [15:8] = right padding, bits [23:16] = top padding, bits [31:24] = bottom padding
-  conf.run[0].pool_avg_param = 0x0;  // Must be set to 1/pool_size^2 in FP16 format when using average pooling (average pooling assumes square size)
+  conf.run[0].pool_avg_param = 0x0;  // Usually set to 1/pool_size^2 in FP16 format when using average pooling (average pooling assumes square size)
   conf.run[0].actfunc = 2;  // Activation Function: 0 = None, 1 = Tanh, 2 = Leaky ReLU, 3 = Sigmoid, 4 = PReLU, 5 = ELU, 6 = ReLU6
   conf.run[0].actfunc_param = 0x0;  // Leaky ReLU parameter (NOTE: 0x2E66 is 0.1 in FP16)
   conf.run[0].rectifi_en = 0;  // Rectification, i.e. max(0, x) (NOTE: Can be applied after non-ReLU activation function)
@@ -967,7 +967,7 @@ void CKerasSqueezeNet::Layer_10() {
   //->: fire6/relu_expand3x3
   conf.run[1].m = 192;  // Output Channels
   conf.run[1].conv_enable = 1;  // 1 = Enabled, 0 = Disabled
-  conf.run[1].p = 3;  // Filter Width and Height
+  conf.run[1].p = 0x3;  // Filter Width and Height
   conf.run[1].pz = 1;  // Filter Depth
   conf.run[1].weight_buf.mem = weights_mem_;
   conf.run[1].weight_buf.offs = 179360;
@@ -979,7 +979,7 @@ void CKerasSqueezeNet::Layer_10() {
   conf.run[1].pool_size = 0x0;  // bits [7:0] = width, bits [15:8] = height
   conf.run[1].pool_stride = 0x101;  // bits [7:0] = X stride, bits [15:8] = Y stride
   conf.run[1].pool_pad = 0x0;  // bits [7:0] = left padding, bits [15:8] = right padding, bits [23:16] = top padding, bits [31:24] = bottom padding
-  conf.run[1].pool_avg_param = 0x0;  // Must be set to 1/pool_size^2 in FP16 format when using average pooling (average pooling assumes square size)
+  conf.run[1].pool_avg_param = 0x0;  // Usually set to 1/pool_size^2 in FP16 format when using average pooling (average pooling assumes square size)
   conf.run[1].actfunc = 2;  // Activation Function: 0 = None, 1 = Tanh, 2 = Leaky ReLU, 3 = Sigmoid, 4 = PReLU, 5 = ELU, 6 = ReLU6
   conf.run[1].actfunc_param = 0x0;  // Leaky ReLU parameter (NOTE: 0x2E66 is 0.1 in FP16)
   conf.run[1].rectifi_en = 0;  // Rectification, i.e. max(0, x) (NOTE: Can be applied after non-ReLU activation function)
@@ -988,14 +988,14 @@ void CKerasSqueezeNet::Layer_10() {
   fpga_layer& layer = get_layer(10);
   layer.type = LT_CONV;
   layer.input_offs = 0;
-  layer.output_offs = 18816;
-  layer.output_size = 150528;
-  layer.input_dim[0] = 14;
-  layer.input_dim[1] = 14;
+  layer.output_offs = 16224;
+  layer.output_size = 129792;
+  layer.input_dim[0] = 13;
+  layer.input_dim[1] = 13;
   layer.input_dim[2] = 48;
   layer.input_dim_size = 3;
-  layer.output_dim[0] = 14;
-  layer.output_dim[1] = 14;
+  layer.output_dim[0] = 13;
+  layer.output_dim[1] = 13;
   layer.output_dim[2] = 384;
   layer.output_dim_size = 3;
   layer.is_output = false;
@@ -1016,12 +1016,12 @@ void CKerasSqueezeNet::Layer_11() {
   conf.topo = 0x1;  // [31:0] Output Destination of each run, 0 = UBUF, 1 = EXTMEM
 
   // Input Configuration:
-  conf.w = 14;  // Input Width
-  conf.h = 14;  // Input Height
+  conf.w = 13;  // Input Width
+  conf.h = 13;  // Input Height
   conf.z = 1;  // Input Depth
   conf.c = 384;  // Input Channels
   conf.input_buf.mem = io_mem_;
-  conf.input_buf.offs = 18816;
+  conf.input_buf.offs = 16224;
 
   // Output Configuration:
   conf.output_buf.mem = io_mem_;
@@ -1040,7 +1040,7 @@ void CKerasSqueezeNet::Layer_11() {
   //->: fire7/relu_squeeze1x1
   conf.run[0].m = 48;  // Output Channels
   conf.run[0].conv_enable = 1;  // 1 = Enabled, 0 = Disabled
-  conf.run[0].p = 1;  // Filter Width and Height
+  conf.run[0].p = 0x1;  // Filter Width and Height
   conf.run[0].pz = 1;  // Filter Depth
   conf.run[0].weight_buf.mem = weights_mem_;
   conf.run[0].weight_buf.offs = 263200;
@@ -1052,7 +1052,7 @@ void CKerasSqueezeNet::Layer_11() {
   conf.run[0].pool_size = 0x0;  // bits [7:0] = width, bits [15:8] = height
   conf.run[0].pool_stride = 0x101;  // bits [7:0] = X stride, bits [15:8] = Y stride
   conf.run[0].pool_pad = 0x0;  // bits [7:0] = left padding, bits [15:8] = right padding, bits [23:16] = top padding, bits [31:24] = bottom padding
-  conf.run[0].pool_avg_param = 0x0;  // Must be set to 1/pool_size^2 in FP16 format when using average pooling (average pooling assumes square size)
+  conf.run[0].pool_avg_param = 0x0;  // Usually set to 1/pool_size^2 in FP16 format when using average pooling (average pooling assumes square size)
   conf.run[0].actfunc = 2;  // Activation Function: 0 = None, 1 = Tanh, 2 = Leaky ReLU, 3 = Sigmoid, 4 = PReLU, 5 = ELU, 6 = ReLU6
   conf.run[0].actfunc_param = 0x0;  // Leaky ReLU parameter (NOTE: 0x2E66 is 0.1 in FP16)
   conf.run[0].rectifi_en = 0;  // Rectification, i.e. max(0, x) (NOTE: Can be applied after non-ReLU activation function)
@@ -1060,15 +1060,15 @@ void CKerasSqueezeNet::Layer_11() {
 
   fpga_layer& layer = get_layer(11);
   layer.type = LT_CONV;
-  layer.input_offs = 18816;
+  layer.input_offs = 16224;
   layer.output_offs = 0;
-  layer.output_size = 18816;
-  layer.input_dim[0] = 14;
-  layer.input_dim[1] = 14;
+  layer.output_size = 16224;
+  layer.input_dim[0] = 13;
+  layer.input_dim[1] = 13;
   layer.input_dim[2] = 384;
   layer.input_dim_size = 3;
-  layer.output_dim[0] = 14;
-  layer.output_dim[1] = 14;
+  layer.output_dim[0] = 13;
+  layer.output_dim[1] = 13;
   layer.output_dim[2] = 48;
   layer.output_dim_size = 3;
   layer.is_output = false;
@@ -1091,8 +1091,8 @@ void CKerasSqueezeNet::Layer_12() {
   conf.topo = 0x3;  // [31:0] Output Destination of each run, 0 = UBUF, 1 = EXTMEM
 
   // Input Configuration:
-  conf.w = 14;  // Input Width
-  conf.h = 14;  // Input Height
+  conf.w = 13;  // Input Width
+  conf.h = 13;  // Input Height
   conf.z = 1;  // Input Depth
   conf.c = 48;  // Input Channels
   conf.input_buf.mem = io_mem_;
@@ -1100,7 +1100,7 @@ void CKerasSqueezeNet::Layer_12() {
 
   // Output Configuration:
   conf.output_buf.mem = io_mem_;
-  conf.output_buf.offs = 18816;
+  conf.output_buf.offs = 16224;
 
   conf.eltwise_buf.mem = NULL;
   conf.eltwise_buf.offs = 0;  // Input byte address for elementwise add (0 = UBUF Input Buffer)
@@ -1115,7 +1115,7 @@ void CKerasSqueezeNet::Layer_12() {
   //->: fire7/relu_expand1x1
   conf.run[0].m = 192;  // Output Channels
   conf.run[0].conv_enable = 1;  // 1 = Enabled, 0 = Disabled
-  conf.run[0].p = 1;  // Filter Width and Height
+  conf.run[0].p = 0x1;  // Filter Width and Height
   conf.run[0].pz = 1;  // Filter Depth
   conf.run[0].weight_buf.mem = weights_mem_;
   conf.run[0].weight_buf.offs = 284544;
@@ -1127,7 +1127,7 @@ void CKerasSqueezeNet::Layer_12() {
   conf.run[0].pool_size = 0x0;  // bits [7:0] = width, bits [15:8] = height
   conf.run[0].pool_stride = 0x101;  // bits [7:0] = X stride, bits [15:8] = Y stride
   conf.run[0].pool_pad = 0x0;  // bits [7:0] = left padding, bits [15:8] = right padding, bits [23:16] = top padding, bits [31:24] = bottom padding
-  conf.run[0].pool_avg_param = 0x0;  // Must be set to 1/pool_size^2 in FP16 format when using average pooling (average pooling assumes square size)
+  conf.run[0].pool_avg_param = 0x0;  // Usually set to 1/pool_size^2 in FP16 format when using average pooling (average pooling assumes square size)
   conf.run[0].actfunc = 2;  // Activation Function: 0 = None, 1 = Tanh, 2 = Leaky ReLU, 3 = Sigmoid, 4 = PReLU, 5 = ELU, 6 = ReLU6
   conf.run[0].actfunc_param = 0x0;  // Leaky ReLU parameter (NOTE: 0x2E66 is 0.1 in FP16)
   conf.run[0].rectifi_en = 0;  // Rectification, i.e. max(0, x) (NOTE: Can be applied after non-ReLU activation function)
@@ -1139,7 +1139,7 @@ void CKerasSqueezeNet::Layer_12() {
   //->: fire7/relu_expand3x3
   conf.run[1].m = 192;  // Output Channels
   conf.run[1].conv_enable = 1;  // 1 = Enabled, 0 = Disabled
-  conf.run[1].p = 3;  // Filter Width and Height
+  conf.run[1].p = 0x3;  // Filter Width and Height
   conf.run[1].pz = 1;  // Filter Depth
   conf.run[1].weight_buf.mem = weights_mem_;
   conf.run[1].weight_buf.offs = 299264;
@@ -1151,7 +1151,7 @@ void CKerasSqueezeNet::Layer_12() {
   conf.run[1].pool_size = 0x0;  // bits [7:0] = width, bits [15:8] = height
   conf.run[1].pool_stride = 0x101;  // bits [7:0] = X stride, bits [15:8] = Y stride
   conf.run[1].pool_pad = 0x0;  // bits [7:0] = left padding, bits [15:8] = right padding, bits [23:16] = top padding, bits [31:24] = bottom padding
-  conf.run[1].pool_avg_param = 0x0;  // Must be set to 1/pool_size^2 in FP16 format when using average pooling (average pooling assumes square size)
+  conf.run[1].pool_avg_param = 0x0;  // Usually set to 1/pool_size^2 in FP16 format when using average pooling (average pooling assumes square size)
   conf.run[1].actfunc = 2;  // Activation Function: 0 = None, 1 = Tanh, 2 = Leaky ReLU, 3 = Sigmoid, 4 = PReLU, 5 = ELU, 6 = ReLU6
   conf.run[1].actfunc_param = 0x0;  // Leaky ReLU parameter (NOTE: 0x2E66 is 0.1 in FP16)
   conf.run[1].rectifi_en = 0;  // Rectification, i.e. max(0, x) (NOTE: Can be applied after non-ReLU activation function)
@@ -1160,14 +1160,14 @@ void CKerasSqueezeNet::Layer_12() {
   fpga_layer& layer = get_layer(12);
   layer.type = LT_CONV;
   layer.input_offs = 0;
-  layer.output_offs = 18816;
-  layer.output_size = 150528;
-  layer.input_dim[0] = 14;
-  layer.input_dim[1] = 14;
+  layer.output_offs = 16224;
+  layer.output_size = 129792;
+  layer.input_dim[0] = 13;
+  layer.input_dim[1] = 13;
   layer.input_dim[2] = 48;
   layer.input_dim_size = 3;
-  layer.output_dim[0] = 14;
-  layer.output_dim[1] = 14;
+  layer.output_dim[0] = 13;
+  layer.output_dim[1] = 13;
   layer.output_dim[2] = 384;
   layer.output_dim_size = 3;
   layer.is_output = false;
@@ -1188,16 +1188,16 @@ void CKerasSqueezeNet::Layer_13() {
   conf.topo = 0x1;  // [31:0] Output Destination of each run, 0 = UBUF, 1 = EXTMEM
 
   // Input Configuration:
-  conf.w = 14;  // Input Width
-  conf.h = 14;  // Input Height
+  conf.w = 13;  // Input Width
+  conf.h = 13;  // Input Height
   conf.z = 1;  // Input Depth
   conf.c = 384;  // Input Channels
   conf.input_buf.mem = io_mem_;
-  conf.input_buf.offs = 18816;
+  conf.input_buf.offs = 16224;
 
   // Output Configuration:
   conf.output_buf.mem = io_mem_;
-  conf.output_buf.offs = 169344;
+  conf.output_buf.offs = 146016;
 
   conf.eltwise_buf.mem = NULL;
   conf.eltwise_buf.offs = 0;  // Input byte address for elementwise add (0 = UBUF Input Buffer)
@@ -1212,7 +1212,7 @@ void CKerasSqueezeNet::Layer_13() {
   //->: fire8/relu_squeeze1x1
   conf.run[0].m = 64;  // Output Channels
   conf.run[0].conv_enable = 1;  // 1 = Enabled, 0 = Disabled
-  conf.run[0].p = 1;  // Filter Width and Height
+  conf.run[0].p = 0x1;  // Filter Width and Height
   conf.run[0].pz = 1;  // Filter Depth
   conf.run[0].weight_buf.mem = weights_mem_;
   conf.run[0].weight_buf.offs = 383104;
@@ -1224,7 +1224,7 @@ void CKerasSqueezeNet::Layer_13() {
   conf.run[0].pool_size = 0x0;  // bits [7:0] = width, bits [15:8] = height
   conf.run[0].pool_stride = 0x101;  // bits [7:0] = X stride, bits [15:8] = Y stride
   conf.run[0].pool_pad = 0x0;  // bits [7:0] = left padding, bits [15:8] = right padding, bits [23:16] = top padding, bits [31:24] = bottom padding
-  conf.run[0].pool_avg_param = 0x0;  // Must be set to 1/pool_size^2 in FP16 format when using average pooling (average pooling assumes square size)
+  conf.run[0].pool_avg_param = 0x0;  // Usually set to 1/pool_size^2 in FP16 format when using average pooling (average pooling assumes square size)
   conf.run[0].actfunc = 2;  // Activation Function: 0 = None, 1 = Tanh, 2 = Leaky ReLU, 3 = Sigmoid, 4 = PReLU, 5 = ELU, 6 = ReLU6
   conf.run[0].actfunc_param = 0x0;  // Leaky ReLU parameter (NOTE: 0x2E66 is 0.1 in FP16)
   conf.run[0].rectifi_en = 0;  // Rectification, i.e. max(0, x) (NOTE: Can be applied after non-ReLU activation function)
@@ -1232,15 +1232,15 @@ void CKerasSqueezeNet::Layer_13() {
 
   fpga_layer& layer = get_layer(13);
   layer.type = LT_CONV;
-  layer.input_offs = 18816;
-  layer.output_offs = 169344;
-  layer.output_size = 25088;
-  layer.input_dim[0] = 14;
-  layer.input_dim[1] = 14;
+  layer.input_offs = 16224;
+  layer.output_offs = 146016;
+  layer.output_size = 21632;
+  layer.input_dim[0] = 13;
+  layer.input_dim[1] = 13;
   layer.input_dim[2] = 384;
   layer.input_dim_size = 3;
-  layer.output_dim[0] = 14;
-  layer.output_dim[1] = 14;
+  layer.output_dim[0] = 13;
+  layer.output_dim[1] = 13;
   layer.output_dim[2] = 64;
   layer.output_dim_size = 3;
   layer.is_output = false;
@@ -1263,16 +1263,16 @@ void CKerasSqueezeNet::Layer_14() {
   conf.topo = 0x3;  // [31:0] Output Destination of each run, 0 = UBUF, 1 = EXTMEM
 
   // Input Configuration:
-  conf.w = 14;  // Input Width
-  conf.h = 14;  // Input Height
+  conf.w = 13;  // Input Width
+  conf.h = 13;  // Input Height
   conf.z = 1;  // Input Depth
   conf.c = 64;  // Input Channels
   conf.input_buf.mem = io_mem_;
-  conf.input_buf.offs = 169344;
+  conf.input_buf.offs = 146016;
 
   // Output Configuration:
   conf.output_buf.mem = io_mem_;
-  conf.output_buf.offs = 194432;
+  conf.output_buf.offs = 167648;
 
   conf.eltwise_buf.mem = NULL;
   conf.eltwise_buf.offs = 0;  // Input byte address for elementwise add (0 = UBUF Input Buffer)
@@ -1287,7 +1287,7 @@ void CKerasSqueezeNet::Layer_14() {
   //->: fire8/relu_expand1x1
   conf.run[0].m = 256;  // Output Channels
   conf.run[0].conv_enable = 1;  // 1 = Enabled, 0 = Disabled
-  conf.run[0].p = 1;  // Filter Width and Height
+  conf.run[0].p = 0x1;  // Filter Width and Height
   conf.run[0].pz = 1;  // Filter Depth
   conf.run[0].weight_buf.mem = weights_mem_;
   conf.run[0].weight_buf.offs = 411392;
@@ -1299,7 +1299,7 @@ void CKerasSqueezeNet::Layer_14() {
   conf.run[0].pool_size = 0x0;  // bits [7:0] = width, bits [15:8] = height
   conf.run[0].pool_stride = 0x101;  // bits [7:0] = X stride, bits [15:8] = Y stride
   conf.run[0].pool_pad = 0x0;  // bits [7:0] = left padding, bits [15:8] = right padding, bits [23:16] = top padding, bits [31:24] = bottom padding
-  conf.run[0].pool_avg_param = 0x0;  // Must be set to 1/pool_size^2 in FP16 format when using average pooling (average pooling assumes square size)
+  conf.run[0].pool_avg_param = 0x0;  // Usually set to 1/pool_size^2 in FP16 format when using average pooling (average pooling assumes square size)
   conf.run[0].actfunc = 2;  // Activation Function: 0 = None, 1 = Tanh, 2 = Leaky ReLU, 3 = Sigmoid, 4 = PReLU, 5 = ELU, 6 = ReLU6
   conf.run[0].actfunc_param = 0x0;  // Leaky ReLU parameter (NOTE: 0x2E66 is 0.1 in FP16)
   conf.run[0].rectifi_en = 0;  // Rectification, i.e. max(0, x) (NOTE: Can be applied after non-ReLU activation function)
@@ -1311,7 +1311,7 @@ void CKerasSqueezeNet::Layer_14() {
   //->: fire8/relu_expand3x3
   conf.run[1].m = 256;  // Output Channels
   conf.run[1].conv_enable = 1;  // 1 = Enabled, 0 = Disabled
-  conf.run[1].p = 3;  // Filter Width and Height
+  conf.run[1].p = 0x3;  // Filter Width and Height
   conf.run[1].pz = 1;  // Filter Depth
   conf.run[1].weight_buf.mem = weights_mem_;
   conf.run[1].weight_buf.offs = 430848;
@@ -1323,7 +1323,7 @@ void CKerasSqueezeNet::Layer_14() {
   conf.run[1].pool_size = 0x0;  // bits [7:0] = width, bits [15:8] = height
   conf.run[1].pool_stride = 0x101;  // bits [7:0] = X stride, bits [15:8] = Y stride
   conf.run[1].pool_pad = 0x0;  // bits [7:0] = left padding, bits [15:8] = right padding, bits [23:16] = top padding, bits [31:24] = bottom padding
-  conf.run[1].pool_avg_param = 0x0;  // Must be set to 1/pool_size^2 in FP16 format when using average pooling (average pooling assumes square size)
+  conf.run[1].pool_avg_param = 0x0;  // Usually set to 1/pool_size^2 in FP16 format when using average pooling (average pooling assumes square size)
   conf.run[1].actfunc = 2;  // Activation Function: 0 = None, 1 = Tanh, 2 = Leaky ReLU, 3 = Sigmoid, 4 = PReLU, 5 = ELU, 6 = ReLU6
   conf.run[1].actfunc_param = 0x0;  // Leaky ReLU parameter (NOTE: 0x2E66 is 0.1 in FP16)
   conf.run[1].rectifi_en = 0;  // Rectification, i.e. max(0, x) (NOTE: Can be applied after non-ReLU activation function)
@@ -1331,15 +1331,15 @@ void CKerasSqueezeNet::Layer_14() {
 
   fpga_layer& layer = get_layer(14);
   layer.type = LT_CONV;
-  layer.input_offs = 169344;
-  layer.output_offs = 194432;
-  layer.output_size = 200704;
-  layer.input_dim[0] = 14;
-  layer.input_dim[1] = 14;
+  layer.input_offs = 146016;
+  layer.output_offs = 167648;
+  layer.output_size = 173056;
+  layer.input_dim[0] = 13;
+  layer.input_dim[1] = 13;
   layer.input_dim[2] = 64;
   layer.input_dim_size = 3;
-  layer.output_dim[0] = 14;
-  layer.output_dim[1] = 14;
+  layer.output_dim[0] = 13;
+  layer.output_dim[1] = 13;
   layer.output_dim[2] = 512;
   layer.output_dim_size = 3;
   layer.is_output = false;
@@ -1360,12 +1360,12 @@ void CKerasSqueezeNet::Layer_15() {
   conf.topo = 0x1;  // [31:0] Output Destination of each run, 0 = UBUF, 1 = EXTMEM
 
   // Input Configuration:
-  conf.w = 14;  // Input Width
-  conf.h = 14;  // Input Height
+  conf.w = 13;  // Input Width
+  conf.h = 13;  // Input Height
   conf.z = 1;  // Input Depth
   conf.c = 512;  // Input Channels
   conf.input_buf.mem = io_mem_;
-  conf.input_buf.offs = 194432;
+  conf.input_buf.offs = 167648;
 
   // Output Configuration:
   conf.output_buf.mem = io_mem_;
@@ -1384,7 +1384,7 @@ void CKerasSqueezeNet::Layer_15() {
   //->: fire9/relu_squeeze1x1
   conf.run[0].m = 64;  // Output Channels
   conf.run[0].conv_enable = 1;  // 1 = Enabled, 0 = Disabled
-  conf.run[0].p = 1;  // Filter Width and Height
+  conf.run[0].p = 0x1;  // Filter Width and Height
   conf.run[0].pz = 1;  // Filter Depth
   conf.run[0].weight_buf.mem = weights_mem_;
   conf.run[0].weight_buf.offs = 579328;
@@ -1396,7 +1396,7 @@ void CKerasSqueezeNet::Layer_15() {
   conf.run[0].pool_size = 0x0;  // bits [7:0] = width, bits [15:8] = height
   conf.run[0].pool_stride = 0x101;  // bits [7:0] = X stride, bits [15:8] = Y stride
   conf.run[0].pool_pad = 0x0;  // bits [7:0] = left padding, bits [15:8] = right padding, bits [23:16] = top padding, bits [31:24] = bottom padding
-  conf.run[0].pool_avg_param = 0x0;  // Must be set to 1/pool_size^2 in FP16 format when using average pooling (average pooling assumes square size)
+  conf.run[0].pool_avg_param = 0x0;  // Usually set to 1/pool_size^2 in FP16 format when using average pooling (average pooling assumes square size)
   conf.run[0].actfunc = 2;  // Activation Function: 0 = None, 1 = Tanh, 2 = Leaky ReLU, 3 = Sigmoid, 4 = PReLU, 5 = ELU, 6 = ReLU6
   conf.run[0].actfunc_param = 0x0;  // Leaky ReLU parameter (NOTE: 0x2E66 is 0.1 in FP16)
   conf.run[0].rectifi_en = 0;  // Rectification, i.e. max(0, x) (NOTE: Can be applied after non-ReLU activation function)
@@ -1404,15 +1404,15 @@ void CKerasSqueezeNet::Layer_15() {
 
   fpga_layer& layer = get_layer(15);
   layer.type = LT_CONV;
-  layer.input_offs = 194432;
+  layer.input_offs = 167648;
   layer.output_offs = 0;
-  layer.output_size = 25088;
-  layer.input_dim[0] = 14;
-  layer.input_dim[1] = 14;
+  layer.output_size = 21632;
+  layer.input_dim[0] = 13;
+  layer.input_dim[1] = 13;
   layer.input_dim[2] = 512;
   layer.input_dim_size = 3;
-  layer.output_dim[0] = 14;
-  layer.output_dim[1] = 14;
+  layer.output_dim[0] = 13;
+  layer.output_dim[1] = 13;
   layer.output_dim[2] = 64;
   layer.output_dim_size = 3;
   layer.is_output = false;
@@ -1435,8 +1435,8 @@ void CKerasSqueezeNet::Layer_16() {
   conf.topo = 0x3;  // [31:0] Output Destination of each run, 0 = UBUF, 1 = EXTMEM
 
   // Input Configuration:
-  conf.w = 14;  // Input Width
-  conf.h = 14;  // Input Height
+  conf.w = 13;  // Input Width
+  conf.h = 13;  // Input Height
   conf.z = 1;  // Input Depth
   conf.c = 64;  // Input Channels
   conf.input_buf.mem = io_mem_;
@@ -1444,7 +1444,7 @@ void CKerasSqueezeNet::Layer_16() {
 
   // Output Configuration:
   conf.output_buf.mem = io_mem_;
-  conf.output_buf.offs = 25088;
+  conf.output_buf.offs = 21632;
 
   conf.eltwise_buf.mem = NULL;
   conf.eltwise_buf.offs = 0;  // Input byte address for elementwise add (0 = UBUF Input Buffer)
@@ -1459,7 +1459,7 @@ void CKerasSqueezeNet::Layer_16() {
   //->: fire9/relu_expand1x1
   conf.run[0].m = 256;  // Output Channels
   conf.run[0].conv_enable = 1;  // 1 = Enabled, 0 = Disabled
-  conf.run[0].p = 1;  // Filter Width and Height
+  conf.run[0].p = 0x1;  // Filter Width and Height
   conf.run[0].pz = 1;  // Filter Depth
   conf.run[0].weight_buf.mem = weights_mem_;
   conf.run[0].weight_buf.offs = 616832;
@@ -1471,7 +1471,7 @@ void CKerasSqueezeNet::Layer_16() {
   conf.run[0].pool_size = 0x0;  // bits [7:0] = width, bits [15:8] = height
   conf.run[0].pool_stride = 0x101;  // bits [7:0] = X stride, bits [15:8] = Y stride
   conf.run[0].pool_pad = 0x0;  // bits [7:0] = left padding, bits [15:8] = right padding, bits [23:16] = top padding, bits [31:24] = bottom padding
-  conf.run[0].pool_avg_param = 0x0;  // Must be set to 1/pool_size^2 in FP16 format when using average pooling (average pooling assumes square size)
+  conf.run[0].pool_avg_param = 0x0;  // Usually set to 1/pool_size^2 in FP16 format when using average pooling (average pooling assumes square size)
   conf.run[0].actfunc = 2;  // Activation Function: 0 = None, 1 = Tanh, 2 = Leaky ReLU, 3 = Sigmoid, 4 = PReLU, 5 = ELU, 6 = ReLU6
   conf.run[0].actfunc_param = 0x0;  // Leaky ReLU parameter (NOTE: 0x2E66 is 0.1 in FP16)
   conf.run[0].rectifi_en = 0;  // Rectification, i.e. max(0, x) (NOTE: Can be applied after non-ReLU activation function)
@@ -1483,7 +1483,7 @@ void CKerasSqueezeNet::Layer_16() {
   //->: fire9/relu_expand3x3
   conf.run[1].m = 256;  // Output Channels
   conf.run[1].conv_enable = 1;  // 1 = Enabled, 0 = Disabled
-  conf.run[1].p = 3;  // Filter Width and Height
+  conf.run[1].p = 0x3;  // Filter Width and Height
   conf.run[1].pz = 1;  // Filter Depth
   conf.run[1].weight_buf.mem = weights_mem_;
   conf.run[1].weight_buf.offs = 636288;
@@ -1495,7 +1495,7 @@ void CKerasSqueezeNet::Layer_16() {
   conf.run[1].pool_size = 0x0;  // bits [7:0] = width, bits [15:8] = height
   conf.run[1].pool_stride = 0x101;  // bits [7:0] = X stride, bits [15:8] = Y stride
   conf.run[1].pool_pad = 0x0;  // bits [7:0] = left padding, bits [15:8] = right padding, bits [23:16] = top padding, bits [31:24] = bottom padding
-  conf.run[1].pool_avg_param = 0x0;  // Must be set to 1/pool_size^2 in FP16 format when using average pooling (average pooling assumes square size)
+  conf.run[1].pool_avg_param = 0x0;  // Usually set to 1/pool_size^2 in FP16 format when using average pooling (average pooling assumes square size)
   conf.run[1].actfunc = 2;  // Activation Function: 0 = None, 1 = Tanh, 2 = Leaky ReLU, 3 = Sigmoid, 4 = PReLU, 5 = ELU, 6 = ReLU6
   conf.run[1].actfunc_param = 0x0;  // Leaky ReLU parameter (NOTE: 0x2E66 is 0.1 in FP16)
   conf.run[1].rectifi_en = 0;  // Rectification, i.e. max(0, x) (NOTE: Can be applied after non-ReLU activation function)
@@ -1504,14 +1504,14 @@ void CKerasSqueezeNet::Layer_16() {
   fpga_layer& layer = get_layer(16);
   layer.type = LT_CONV;
   layer.input_offs = 0;
-  layer.output_offs = 25088;
-  layer.output_size = 200704;
-  layer.input_dim[0] = 14;
-  layer.input_dim[1] = 14;
+  layer.output_offs = 21632;
+  layer.output_size = 173056;
+  layer.input_dim[0] = 13;
+  layer.input_dim[1] = 13;
   layer.input_dim[2] = 64;
   layer.input_dim_size = 3;
-  layer.output_dim[0] = 14;
-  layer.output_dim[1] = 14;
+  layer.output_dim[0] = 13;
+  layer.output_dim[1] = 13;
   layer.output_dim[2] = 512;
   layer.output_dim_size = 3;
   layer.is_output = false;
@@ -1532,16 +1532,16 @@ void CKerasSqueezeNet::Layer_17() {
   conf.topo = 0x1;  // [31:0] Output Destination of each run, 0 = UBUF, 1 = EXTMEM
 
   // Input Configuration:
-  conf.w = 14;  // Input Width
-  conf.h = 14;  // Input Height
+  conf.w = 13;  // Input Width
+  conf.h = 13;  // Input Height
   conf.z = 1;  // Input Depth
   conf.c = 512;  // Input Channels
   conf.input_buf.mem = io_mem_;
-  conf.input_buf.offs = 25088;
+  conf.input_buf.offs = 21632;
 
   // Output Configuration:
   conf.output_buf.mem = io_mem_;
-  conf.output_buf.offs = 225792;
+  conf.output_buf.offs = 194688;
 
   conf.eltwise_buf.mem = NULL;
   conf.eltwise_buf.offs = 0;  // Input byte address for elementwise add (0 = UBUF Input Buffer)
@@ -1556,7 +1556,7 @@ void CKerasSqueezeNet::Layer_17() {
   //->: relu_conv10
   conf.run[0].m = 1000;  // Output Channels
   conf.run[0].conv_enable = 1;  // 1 = Enabled, 0 = Disabled
-  conf.run[0].p = 1;  // Filter Width and Height
+  conf.run[0].p = 0x1;  // Filter Width and Height
   conf.run[0].pz = 1;  // Filter Depth
   conf.run[0].weight_buf.mem = weights_mem_;
   conf.run[0].weight_buf.offs = 784768;
@@ -1568,7 +1568,7 @@ void CKerasSqueezeNet::Layer_17() {
   conf.run[0].pool_size = 0x0;  // bits [7:0] = width, bits [15:8] = height
   conf.run[0].pool_stride = 0x101;  // bits [7:0] = X stride, bits [15:8] = Y stride
   conf.run[0].pool_pad = 0x0;  // bits [7:0] = left padding, bits [15:8] = right padding, bits [23:16] = top padding, bits [31:24] = bottom padding
-  conf.run[0].pool_avg_param = 0x0;  // Must be set to 1/pool_size^2 in FP16 format when using average pooling (average pooling assumes square size)
+  conf.run[0].pool_avg_param = 0x0;  // Usually set to 1/pool_size^2 in FP16 format when using average pooling (average pooling assumes square size)
   conf.run[0].actfunc = 2;  // Activation Function: 0 = None, 1 = Tanh, 2 = Leaky ReLU, 3 = Sigmoid, 4 = PReLU, 5 = ELU, 6 = ReLU6
   conf.run[0].actfunc_param = 0x0;  // Leaky ReLU parameter (NOTE: 0x2E66 is 0.1 in FP16)
   conf.run[0].rectifi_en = 0;  // Rectification, i.e. max(0, x) (NOTE: Can be applied after non-ReLU activation function)
@@ -1576,15 +1576,15 @@ void CKerasSqueezeNet::Layer_17() {
 
   fpga_layer& layer = get_layer(17);
   layer.type = LT_CONV;
-  layer.input_offs = 25088;
-  layer.output_offs = 225792;
-  layer.output_size = 392000;
-  layer.input_dim[0] = 14;
-  layer.input_dim[1] = 14;
+  layer.input_offs = 21632;
+  layer.output_offs = 194688;
+  layer.output_size = 338000;
+  layer.input_dim[0] = 13;
+  layer.input_dim[1] = 13;
   layer.input_dim[2] = 512;
   layer.input_dim_size = 3;
-  layer.output_dim[0] = 14;
-  layer.output_dim[1] = 14;
+  layer.output_dim[0] = 13;
+  layer.output_dim[1] = 13;
   layer.output_dim[2] = 1000;
   layer.output_dim_size = 3;
   layer.is_output = false;
@@ -1604,12 +1604,12 @@ void CKerasSqueezeNet::Layer_18() {
   conf.topo = 0x1;  // [31:0] Output Destination of each run, 0 = UBUF, 1 = EXTMEM
 
   // Input Configuration:
-  conf.w = 14;  // Input Width
-  conf.h = 14;  // Input Height
+  conf.w = 13;  // Input Width
+  conf.h = 13;  // Input Height
   conf.z = 1;  // Input Depth
   conf.c = 1000;  // Input Channels
   conf.input_buf.mem = io_mem_;
-  conf.input_buf.offs = 225792;
+  conf.input_buf.offs = 194688;
 
   // Output Configuration:
   conf.output_buf.mem = io_mem_;
@@ -1627,7 +1627,7 @@ void CKerasSqueezeNet::Layer_18() {
   //->: global_average_pooling2d_1_7
   conf.run[0].m = 1000;  // Output Channels
   conf.run[0].conv_enable = 0;  // 1 = Enabled, 0 = Disabled
-  conf.run[0].p = 1;  // Filter Width and Height
+  conf.run[0].p = 0x1;  // Filter Width and Height
   conf.run[0].pz = 1;  // Filter Depth
   conf.run[0].weight_buf.mem = weights_mem_;
   conf.run[0].weight_buf.offs = 1363280;
@@ -1638,8 +1638,8 @@ void CKerasSqueezeNet::Layer_18() {
   conf.run[0].pool_enable = 2;  // 0 = disabled, 1 = max pooling, 2 = average pooling
   conf.run[0].pool_size = 0x707;  // bits [7:0] = width, bits [15:8] = height
   conf.run[0].pool_stride = 0x707;  // bits [7:0] = X stride, bits [15:8] = Y stride
-  conf.run[0].pool_pad = 0x0;  // bits [7:0] = left padding, bits [15:8] = right padding, bits [23:16] = top padding, bits [31:24] = bottom padding
-  conf.run[0].pool_avg_param = 0x2539;  // Must be set to 1/pool_size^2 in FP16 format when using average pooling (average pooling assumes square size)
+  conf.run[0].pool_pad = 0x1000100;  // bits [7:0] = left padding, bits [15:8] = right padding, bits [23:16] = top padding, bits [31:24] = bottom padding
+  conf.run[0].pool_avg_param = 0x2539;  // Usually set to 1/pool_size^2 in FP16 format when using average pooling (average pooling assumes square size)
   conf.run[0].actfunc = 0;  // Activation Function: 0 = None, 1 = Tanh, 2 = Leaky ReLU, 3 = Sigmoid, 4 = PReLU, 5 = ELU, 6 = ReLU6
   conf.run[0].actfunc_param = 0x0;  // Leaky ReLU parameter (NOTE: 0x2E66 is 0.1 in FP16)
   conf.run[0].rectifi_en = 0;  // Rectification, i.e. max(0, x) (NOTE: Can be applied after non-ReLU activation function)
@@ -1647,11 +1647,11 @@ void CKerasSqueezeNet::Layer_18() {
 
   fpga_layer& layer = get_layer(18);
   layer.type = LT_CONV;
-  layer.input_offs = 225792;
+  layer.input_offs = 194688;
   layer.output_offs = 0;
   layer.output_size = 8000;
-  layer.input_dim[0] = 14;
-  layer.input_dim[1] = 14;
+  layer.input_dim[0] = 13;
+  layer.input_dim[1] = 13;
   layer.input_dim[2] = 1000;
   layer.input_dim_size = 3;
   layer.output_dim[0] = 2;
@@ -1698,7 +1698,7 @@ void CKerasSqueezeNet::Layer_19() {
   //->: global_average_pooling2d_1_2
   conf.run[0].m = 1000;  // Output Channels
   conf.run[0].conv_enable = 0;  // 1 = Enabled, 0 = Disabled
-  conf.run[0].p = 1;  // Filter Width and Height
+  conf.run[0].p = 0x1;  // Filter Width and Height
   conf.run[0].pz = 1;  // Filter Depth
   conf.run[0].weight_buf.mem = weights_mem_;
   conf.run[0].weight_buf.offs = 1363280;
@@ -1710,7 +1710,7 @@ void CKerasSqueezeNet::Layer_19() {
   conf.run[0].pool_size = 0x202;  // bits [7:0] = width, bits [15:8] = height
   conf.run[0].pool_stride = 0x101;  // bits [7:0] = X stride, bits [15:8] = Y stride
   conf.run[0].pool_pad = 0x0;  // bits [7:0] = left padding, bits [15:8] = right padding, bits [23:16] = top padding, bits [31:24] = bottom padding
-  conf.run[0].pool_avg_param = 0x3400;  // Must be set to 1/pool_size^2 in FP16 format when using average pooling (average pooling assumes square size)
+  conf.run[0].pool_avg_param = 0x34A4;  // Usually set to 1/pool_size^2 in FP16 format when using average pooling (average pooling assumes square size)
   conf.run[0].actfunc = 0;  // Activation Function: 0 = None, 1 = Tanh, 2 = Leaky ReLU, 3 = Sigmoid, 4 = PReLU, 5 = ELU, 6 = ReLU6
   conf.run[0].actfunc_param = 0x0;  // Leaky ReLU parameter (NOTE: 0x2E66 is 0.1 in FP16)
   conf.run[0].rectifi_en = 0;  // Rectification, i.e. max(0, x) (NOTE: Can be applied after non-ReLU activation function)

@@ -114,7 +114,7 @@ void CYOLOv3Pywrap::Layer_0() {
   conf.run[0].pool_size = 0x0;  // bits [7:0] = width, bits [15:8] = height
   conf.run[0].pool_stride = 0x101;  // bits [7:0] = X stride, bits [15:8] = Y stride
   conf.run[0].pool_pad = 0x0;  // bits [7:0] = left padding, bits [15:8] = right padding, bits [23:16] = top padding, bits [31:24] = bottom padding
-  conf.run[0].pool_avg_param = 0x0;  // Must be set to 1/pool_size^2 in FP16 format when using average pooling (average pooling assumes square size)
+  conf.run[0].pool_avg_param = 0x0;  // Usually set to 1/pool_size^2 in FP16 format when using average pooling (average pooling assumes square size)
   conf.run[0].actfunc = 2;  // Activation Function: 0 = None, 1 = Tanh, 2 = Leaky ReLU, 3 = Sigmoid, 4 = PReLU, 5 = ELU, 6 = ReLU6
   conf.run[0].actfunc_param = 0x2E66;  // Leaky ReLU parameter (NOTE: 0x2E66 is 0.1 in FP16)
   conf.run[0].rectifi_en = 0;  // Rectification, i.e. max(0, x) (NOTE: Can be applied after non-ReLU activation function)
@@ -185,7 +185,7 @@ void CYOLOv3Pywrap::Layer_1() {
   conf.run[0].pool_size = 0x202;  // bits [7:0] = width, bits [15:8] = height
   conf.run[0].pool_stride = 0x202;  // bits [7:0] = X stride, bits [15:8] = Y stride
   conf.run[0].pool_pad = 0x0;  // bits [7:0] = left padding, bits [15:8] = right padding, bits [23:16] = top padding, bits [31:24] = bottom padding
-  conf.run[0].pool_avg_param = 0x0;  // Must be set to 1/pool_size^2 in FP16 format when using average pooling (average pooling assumes square size)
+  conf.run[0].pool_avg_param = 0x0;  // Usually set to 1/pool_size^2 in FP16 format when using average pooling (average pooling assumes square size)
   conf.run[0].actfunc = 0;  // Activation Function: 0 = None, 1 = Tanh, 2 = Leaky ReLU, 3 = Sigmoid, 4 = PReLU, 5 = ELU, 6 = ReLU6
   conf.run[0].actfunc_param = 0x0;  // Leaky ReLU parameter (NOTE: 0x2E66 is 0.1 in FP16)
   conf.run[0].rectifi_en = 0;  // Rectification, i.e. max(0, x) (NOTE: Can be applied after non-ReLU activation function)
@@ -262,7 +262,7 @@ void CYOLOv3Pywrap::Layer_2() {
   conf.run[0].pool_size = 0x0;  // bits [7:0] = width, bits [15:8] = height
   conf.run[0].pool_stride = 0x101;  // bits [7:0] = X stride, bits [15:8] = Y stride
   conf.run[0].pool_pad = 0x0;  // bits [7:0] = left padding, bits [15:8] = right padding, bits [23:16] = top padding, bits [31:24] = bottom padding
-  conf.run[0].pool_avg_param = 0x0;  // Must be set to 1/pool_size^2 in FP16 format when using average pooling (average pooling assumes square size)
+  conf.run[0].pool_avg_param = 0x0;  // Usually set to 1/pool_size^2 in FP16 format when using average pooling (average pooling assumes square size)
   conf.run[0].actfunc = 2;  // Activation Function: 0 = None, 1 = Tanh, 2 = Leaky ReLU, 3 = Sigmoid, 4 = PReLU, 5 = ELU, 6 = ReLU6
   conf.run[0].actfunc_param = 0x2E66;  // Leaky ReLU parameter (NOTE: 0x2E66 is 0.1 in FP16)
   conf.run[0].rectifi_en = 0;  // Rectification, i.e. max(0, x) (NOTE: Can be applied after non-ReLU activation function)
@@ -333,7 +333,7 @@ void CYOLOv3Pywrap::Layer_3() {
   conf.run[0].pool_size = 0x202;  // bits [7:0] = width, bits [15:8] = height
   conf.run[0].pool_stride = 0x202;  // bits [7:0] = X stride, bits [15:8] = Y stride
   conf.run[0].pool_pad = 0x0;  // bits [7:0] = left padding, bits [15:8] = right padding, bits [23:16] = top padding, bits [31:24] = bottom padding
-  conf.run[0].pool_avg_param = 0x0;  // Must be set to 1/pool_size^2 in FP16 format when using average pooling (average pooling assumes square size)
+  conf.run[0].pool_avg_param = 0x0;  // Usually set to 1/pool_size^2 in FP16 format when using average pooling (average pooling assumes square size)
   conf.run[0].actfunc = 0;  // Activation Function: 0 = None, 1 = Tanh, 2 = Leaky ReLU, 3 = Sigmoid, 4 = PReLU, 5 = ELU, 6 = ReLU6
   conf.run[0].actfunc_param = 0x0;  // Leaky ReLU parameter (NOTE: 0x2E66 is 0.1 in FP16)
   conf.run[0].rectifi_en = 0;  // Rectification, i.e. max(0, x) (NOTE: Can be applied after non-ReLU activation function)
@@ -410,7 +410,7 @@ void CYOLOv3Pywrap::Layer_4() {
   conf.run[0].pool_size = 0x0;  // bits [7:0] = width, bits [15:8] = height
   conf.run[0].pool_stride = 0x101;  // bits [7:0] = X stride, bits [15:8] = Y stride
   conf.run[0].pool_pad = 0x0;  // bits [7:0] = left padding, bits [15:8] = right padding, bits [23:16] = top padding, bits [31:24] = bottom padding
-  conf.run[0].pool_avg_param = 0x0;  // Must be set to 1/pool_size^2 in FP16 format when using average pooling (average pooling assumes square size)
+  conf.run[0].pool_avg_param = 0x0;  // Usually set to 1/pool_size^2 in FP16 format when using average pooling (average pooling assumes square size)
   conf.run[0].actfunc = 2;  // Activation Function: 0 = None, 1 = Tanh, 2 = Leaky ReLU, 3 = Sigmoid, 4 = PReLU, 5 = ELU, 6 = ReLU6
   conf.run[0].actfunc_param = 0x2E66;  // Leaky ReLU parameter (NOTE: 0x2E66 is 0.1 in FP16)
   conf.run[0].rectifi_en = 0;  // Rectification, i.e. max(0, x) (NOTE: Can be applied after non-ReLU activation function)
@@ -481,7 +481,7 @@ void CYOLOv3Pywrap::Layer_5() {
   conf.run[0].pool_size = 0x202;  // bits [7:0] = width, bits [15:8] = height
   conf.run[0].pool_stride = 0x202;  // bits [7:0] = X stride, bits [15:8] = Y stride
   conf.run[0].pool_pad = 0x0;  // bits [7:0] = left padding, bits [15:8] = right padding, bits [23:16] = top padding, bits [31:24] = bottom padding
-  conf.run[0].pool_avg_param = 0x0;  // Must be set to 1/pool_size^2 in FP16 format when using average pooling (average pooling assumes square size)
+  conf.run[0].pool_avg_param = 0x0;  // Usually set to 1/pool_size^2 in FP16 format when using average pooling (average pooling assumes square size)
   conf.run[0].actfunc = 0;  // Activation Function: 0 = None, 1 = Tanh, 2 = Leaky ReLU, 3 = Sigmoid, 4 = PReLU, 5 = ELU, 6 = ReLU6
   conf.run[0].actfunc_param = 0x0;  // Leaky ReLU parameter (NOTE: 0x2E66 is 0.1 in FP16)
   conf.run[0].rectifi_en = 0;  // Rectification, i.e. max(0, x) (NOTE: Can be applied after non-ReLU activation function)
@@ -560,7 +560,7 @@ void CYOLOv3Pywrap::Layer_6() {
   conf.run[0].pool_size = 0x202;  // bits [7:0] = width, bits [15:8] = height
   conf.run[0].pool_stride = 0x202;  // bits [7:0] = X stride, bits [15:8] = Y stride
   conf.run[0].pool_pad = 0x0;  // bits [7:0] = left padding, bits [15:8] = right padding, bits [23:16] = top padding, bits [31:24] = bottom padding
-  conf.run[0].pool_avg_param = 0x0;  // Must be set to 1/pool_size^2 in FP16 format when using average pooling (average pooling assumes square size)
+  conf.run[0].pool_avg_param = 0x0;  // Usually set to 1/pool_size^2 in FP16 format when using average pooling (average pooling assumes square size)
   conf.run[0].actfunc = 2;  // Activation Function: 0 = None, 1 = Tanh, 2 = Leaky ReLU, 3 = Sigmoid, 4 = PReLU, 5 = ELU, 6 = ReLU6
   conf.run[0].actfunc_param = 0x2E66;  // Leaky ReLU parameter (NOTE: 0x2E66 is 0.1 in FP16)
   conf.run[0].rectifi_en = 0;  // Rectification, i.e. max(0, x) (NOTE: Can be applied after non-ReLU activation function)
@@ -637,7 +637,7 @@ void CYOLOv3Pywrap::Layer_7() {
   conf.run[0].pool_size = 0x0;  // bits [7:0] = width, bits [15:8] = height
   conf.run[0].pool_stride = 0x101;  // bits [7:0] = X stride, bits [15:8] = Y stride
   conf.run[0].pool_pad = 0x0;  // bits [7:0] = left padding, bits [15:8] = right padding, bits [23:16] = top padding, bits [31:24] = bottom padding
-  conf.run[0].pool_avg_param = 0x0;  // Must be set to 1/pool_size^2 in FP16 format when using average pooling (average pooling assumes square size)
+  conf.run[0].pool_avg_param = 0x0;  // Usually set to 1/pool_size^2 in FP16 format when using average pooling (average pooling assumes square size)
   conf.run[0].actfunc = 2;  // Activation Function: 0 = None, 1 = Tanh, 2 = Leaky ReLU, 3 = Sigmoid, 4 = PReLU, 5 = ELU, 6 = ReLU6
   conf.run[0].actfunc_param = 0x2E66;  // Leaky ReLU parameter (NOTE: 0x2E66 is 0.1 in FP16)
   conf.run[0].rectifi_en = 0;  // Rectification, i.e. max(0, x) (NOTE: Can be applied after non-ReLU activation function)
@@ -708,7 +708,7 @@ void CYOLOv3Pywrap::Layer_8() {
   conf.run[0].pool_size = 0x202;  // bits [7:0] = width, bits [15:8] = height
   conf.run[0].pool_stride = 0x202;  // bits [7:0] = X stride, bits [15:8] = Y stride
   conf.run[0].pool_pad = 0x0;  // bits [7:0] = left padding, bits [15:8] = right padding, bits [23:16] = top padding, bits [31:24] = bottom padding
-  conf.run[0].pool_avg_param = 0x0;  // Must be set to 1/pool_size^2 in FP16 format when using average pooling (average pooling assumes square size)
+  conf.run[0].pool_avg_param = 0x0;  // Usually set to 1/pool_size^2 in FP16 format when using average pooling (average pooling assumes square size)
   conf.run[0].actfunc = 0;  // Activation Function: 0 = None, 1 = Tanh, 2 = Leaky ReLU, 3 = Sigmoid, 4 = PReLU, 5 = ELU, 6 = ReLU6
   conf.run[0].actfunc_param = 0x0;  // Leaky ReLU parameter (NOTE: 0x2E66 is 0.1 in FP16)
   conf.run[0].rectifi_en = 0;  // Rectification, i.e. max(0, x) (NOTE: Can be applied after non-ReLU activation function)
@@ -787,7 +787,7 @@ void CYOLOv3Pywrap::Layer_9() {
   conf.run[0].pool_size = 0x202;  // bits [7:0] = width, bits [15:8] = height
   conf.run[0].pool_stride = 0x101;  // bits [7:0] = X stride, bits [15:8] = Y stride
   conf.run[0].pool_pad = 0x1000100;  // bits [7:0] = left padding, bits [15:8] = right padding, bits [23:16] = top padding, bits [31:24] = bottom padding
-  conf.run[0].pool_avg_param = 0x0;  // Must be set to 1/pool_size^2 in FP16 format when using average pooling (average pooling assumes square size)
+  conf.run[0].pool_avg_param = 0x0;  // Usually set to 1/pool_size^2 in FP16 format when using average pooling (average pooling assumes square size)
   conf.run[0].actfunc = 2;  // Activation Function: 0 = None, 1 = Tanh, 2 = Leaky ReLU, 3 = Sigmoid, 4 = PReLU, 5 = ELU, 6 = ReLU6
   conf.run[0].actfunc_param = 0x2E66;  // Leaky ReLU parameter (NOTE: 0x2E66 is 0.1 in FP16)
   conf.run[0].rectifi_en = 0;  // Rectification, i.e. max(0, x) (NOTE: Can be applied after non-ReLU activation function)
@@ -864,7 +864,7 @@ void CYOLOv3Pywrap::Layer_10() {
   conf.run[0].pool_size = 0x0;  // bits [7:0] = width, bits [15:8] = height
   conf.run[0].pool_stride = 0x101;  // bits [7:0] = X stride, bits [15:8] = Y stride
   conf.run[0].pool_pad = 0x0;  // bits [7:0] = left padding, bits [15:8] = right padding, bits [23:16] = top padding, bits [31:24] = bottom padding
-  conf.run[0].pool_avg_param = 0x0;  // Must be set to 1/pool_size^2 in FP16 format when using average pooling (average pooling assumes square size)
+  conf.run[0].pool_avg_param = 0x0;  // Usually set to 1/pool_size^2 in FP16 format when using average pooling (average pooling assumes square size)
   conf.run[0].actfunc = 2;  // Activation Function: 0 = None, 1 = Tanh, 2 = Leaky ReLU, 3 = Sigmoid, 4 = PReLU, 5 = ELU, 6 = ReLU6
   conf.run[0].actfunc_param = 0x2E66;  // Leaky ReLU parameter (NOTE: 0x2E66 is 0.1 in FP16)
   conf.run[0].rectifi_en = 0;  // Rectification, i.e. max(0, x) (NOTE: Can be applied after non-ReLU activation function)
@@ -941,7 +941,7 @@ void CYOLOv3Pywrap::Layer_11() {
   conf.run[0].pool_size = 0x0;  // bits [7:0] = width, bits [15:8] = height
   conf.run[0].pool_stride = 0x101;  // bits [7:0] = X stride, bits [15:8] = Y stride
   conf.run[0].pool_pad = 0x0;  // bits [7:0] = left padding, bits [15:8] = right padding, bits [23:16] = top padding, bits [31:24] = bottom padding
-  conf.run[0].pool_avg_param = 0x0;  // Must be set to 1/pool_size^2 in FP16 format when using average pooling (average pooling assumes square size)
+  conf.run[0].pool_avg_param = 0x0;  // Usually set to 1/pool_size^2 in FP16 format when using average pooling (average pooling assumes square size)
   conf.run[0].actfunc = 2;  // Activation Function: 0 = None, 1 = Tanh, 2 = Leaky ReLU, 3 = Sigmoid, 4 = PReLU, 5 = ELU, 6 = ReLU6
   conf.run[0].actfunc_param = 0x2E66;  // Leaky ReLU parameter (NOTE: 0x2E66 is 0.1 in FP16)
   conf.run[0].rectifi_en = 0;  // Rectification, i.e. max(0, x) (NOTE: Can be applied after non-ReLU activation function)
@@ -1018,7 +1018,7 @@ void CYOLOv3Pywrap::Layer_12() {
   conf.run[0].pool_size = 0x0;  // bits [7:0] = width, bits [15:8] = height
   conf.run[0].pool_stride = 0x101;  // bits [7:0] = X stride, bits [15:8] = Y stride
   conf.run[0].pool_pad = 0x0;  // bits [7:0] = left padding, bits [15:8] = right padding, bits [23:16] = top padding, bits [31:24] = bottom padding
-  conf.run[0].pool_avg_param = 0x0;  // Must be set to 1/pool_size^2 in FP16 format when using average pooling (average pooling assumes square size)
+  conf.run[0].pool_avg_param = 0x0;  // Usually set to 1/pool_size^2 in FP16 format when using average pooling (average pooling assumes square size)
   conf.run[0].actfunc = 2;  // Activation Function: 0 = None, 1 = Tanh, 2 = Leaky ReLU, 3 = Sigmoid, 4 = PReLU, 5 = ELU, 6 = ReLU6
   conf.run[0].actfunc_param = 0x2E66;  // Leaky ReLU parameter (NOTE: 0x2E66 is 0.1 in FP16)
   conf.run[0].rectifi_en = 0;  // Rectification, i.e. max(0, x) (NOTE: Can be applied after non-ReLU activation function)
@@ -1089,7 +1089,7 @@ void CYOLOv3Pywrap::Layer_13() {
   conf.run[0].pool_size = 0x0;  // bits [7:0] = width, bits [15:8] = height
   conf.run[0].pool_stride = 0x101;  // bits [7:0] = X stride, bits [15:8] = Y stride
   conf.run[0].pool_pad = 0x0;  // bits [7:0] = left padding, bits [15:8] = right padding, bits [23:16] = top padding, bits [31:24] = bottom padding
-  conf.run[0].pool_avg_param = 0x0;  // Must be set to 1/pool_size^2 in FP16 format when using average pooling (average pooling assumes square size)
+  conf.run[0].pool_avg_param = 0x0;  // Usually set to 1/pool_size^2 in FP16 format when using average pooling (average pooling assumes square size)
   conf.run[0].actfunc = 0;  // Activation Function: 0 = None, 1 = Tanh, 2 = Leaky ReLU, 3 = Sigmoid, 4 = PReLU, 5 = ELU, 6 = ReLU6
   conf.run[0].actfunc_param = 0x0;  // Leaky ReLU parameter (NOTE: 0x2E66 is 0.1 in FP16)
   conf.run[0].rectifi_en = 0;  // Rectification, i.e. max(0, x) (NOTE: Can be applied after non-ReLU activation function)
@@ -1185,7 +1185,7 @@ void CYOLOv3Pywrap::Layer_15() {
   conf.run[0].pool_size = 0x0;  // bits [7:0] = width, bits [15:8] = height
   conf.run[0].pool_stride = 0x101;  // bits [7:0] = X stride, bits [15:8] = Y stride
   conf.run[0].pool_pad = 0x0;  // bits [7:0] = left padding, bits [15:8] = right padding, bits [23:16] = top padding, bits [31:24] = bottom padding
-  conf.run[0].pool_avg_param = 0x0;  // Must be set to 1/pool_size^2 in FP16 format when using average pooling (average pooling assumes square size)
+  conf.run[0].pool_avg_param = 0x0;  // Usually set to 1/pool_size^2 in FP16 format when using average pooling (average pooling assumes square size)
   conf.run[0].actfunc = 2;  // Activation Function: 0 = None, 1 = Tanh, 2 = Leaky ReLU, 3 = Sigmoid, 4 = PReLU, 5 = ELU, 6 = ReLU6
   conf.run[0].actfunc_param = 0x2E66;  // Leaky ReLU parameter (NOTE: 0x2E66 is 0.1 in FP16)
   conf.run[0].rectifi_en = 0;  // Rectification, i.e. max(0, x) (NOTE: Can be applied after non-ReLU activation function)
@@ -1256,7 +1256,7 @@ void CYOLOv3Pywrap::Layer_16() {
   conf.run[0].pool_size = 0x202;  // bits [7:0] = width, bits [15:8] = height
   conf.run[0].pool_stride = 0x101;  // bits [7:0] = X stride, bits [15:8] = Y stride
   conf.run[0].pool_pad = 0x0;  // bits [7:0] = left padding, bits [15:8] = right padding, bits [23:16] = top padding, bits [31:24] = bottom padding
-  conf.run[0].pool_avg_param = 0x0;  // Must be set to 1/pool_size^2 in FP16 format when using average pooling (average pooling assumes square size)
+  conf.run[0].pool_avg_param = 0x0;  // Usually set to 1/pool_size^2 in FP16 format when using average pooling (average pooling assumes square size)
   conf.run[0].actfunc = 0;  // Activation Function: 0 = None, 1 = Tanh, 2 = Leaky ReLU, 3 = Sigmoid, 4 = PReLU, 5 = ELU, 6 = ReLU6
   conf.run[0].actfunc_param = 0x0;  // Leaky ReLU parameter (NOTE: 0x2E66 is 0.1 in FP16)
   conf.run[0].rectifi_en = 0;  // Rectification, i.e. max(0, x) (NOTE: Can be applied after non-ReLU activation function)
@@ -1354,7 +1354,7 @@ void CYOLOv3Pywrap::Layer_18() {
   conf.run[0].pool_size = 0x0;  // bits [7:0] = width, bits [15:8] = height
   conf.run[0].pool_stride = 0x101;  // bits [7:0] = X stride, bits [15:8] = Y stride
   conf.run[0].pool_pad = 0x0;  // bits [7:0] = left padding, bits [15:8] = right padding, bits [23:16] = top padding, bits [31:24] = bottom padding
-  conf.run[0].pool_avg_param = 0x0;  // Must be set to 1/pool_size^2 in FP16 format when using average pooling (average pooling assumes square size)
+  conf.run[0].pool_avg_param = 0x0;  // Usually set to 1/pool_size^2 in FP16 format when using average pooling (average pooling assumes square size)
   conf.run[0].actfunc = 2;  // Activation Function: 0 = None, 1 = Tanh, 2 = Leaky ReLU, 3 = Sigmoid, 4 = PReLU, 5 = ELU, 6 = ReLU6
   conf.run[0].actfunc_param = 0x2E66;  // Leaky ReLU parameter (NOTE: 0x2E66 is 0.1 in FP16)
   conf.run[0].rectifi_en = 0;  // Rectification, i.e. max(0, x) (NOTE: Can be applied after non-ReLU activation function)
@@ -1425,7 +1425,7 @@ void CYOLOv3Pywrap::Layer_19() {
   conf.run[0].pool_size = 0x0;  // bits [7:0] = width, bits [15:8] = height
   conf.run[0].pool_stride = 0x101;  // bits [7:0] = X stride, bits [15:8] = Y stride
   conf.run[0].pool_pad = 0x0;  // bits [7:0] = left padding, bits [15:8] = right padding, bits [23:16] = top padding, bits [31:24] = bottom padding
-  conf.run[0].pool_avg_param = 0x0;  // Must be set to 1/pool_size^2 in FP16 format when using average pooling (average pooling assumes square size)
+  conf.run[0].pool_avg_param = 0x0;  // Usually set to 1/pool_size^2 in FP16 format when using average pooling (average pooling assumes square size)
   conf.run[0].actfunc = 0;  // Activation Function: 0 = None, 1 = Tanh, 2 = Leaky ReLU, 3 = Sigmoid, 4 = PReLU, 5 = ELU, 6 = ReLU6
   conf.run[0].actfunc_param = 0x0;  // Leaky ReLU parameter (NOTE: 0x2E66 is 0.1 in FP16)
   conf.run[0].rectifi_en = 0;  // Rectification, i.e. max(0, x) (NOTE: Can be applied after non-ReLU activation function)
