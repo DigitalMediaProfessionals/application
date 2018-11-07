@@ -11,7 +11,8 @@ SUBDIRS = common/src \
 	YOLOv3 \
 	YOLOv3Camera \
 	YOLOv3Pywrap \
-	KerasDepthMap
+	KerasDepthMap \
+	JointFace
 
 .PHONY: all clean
 
