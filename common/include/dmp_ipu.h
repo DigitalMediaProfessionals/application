@@ -23,7 +23,7 @@ class DMPIPUConfig(void) {
   public:
 
     DMPIPUConfig(void) {
-      memset(&cmd, 0, sizeof(cmd));
+      Clear();
     }
 
     /// @brief configure to use texture buffer
@@ -60,6 +60,9 @@ class DMPIPUConfig(void) {
     /// @brief configure to use BLF
     void ConfigUseBLF(void);
 
+    /// @brief clear configuration
+    void Clear(void);
+
     /// @brief getter for cmd
     const struct dmp_dv_cmdraw_ipu_v0 *get_dmp_dv_cmdraw_ipu_v0(void);
 
@@ -78,10 +81,12 @@ class DMPIPU {
     Initialize(const DMPIPUConfig &initializer);
 
     /// @brief initializer for preprocessing network input
-    Initialize(const DMPIPUConfig &initializer, const CDMP_Network &net);
+    /// @detail an input buffer of net is assigned to a write buffer of IPU
+    InitializePreproc(const DMPIPUConfig &initializer, const CDMP_Network &net);
 
     /// @brief initializer for postprocessing network output
-    Initialize(const DMPIPUConfig &initializer, const CDMP_Network &net, int i_output);
+    /// @detail an output buffer of net is assigned to a texture buffer of IPU
+    InitializePostproc(const DMPIPUConfig &initializer, const CDMP_Network &net, int i_output = 0);
 
     /// @brief run
     int Run(void);
