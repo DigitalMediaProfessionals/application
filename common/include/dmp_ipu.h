@@ -20,10 +20,10 @@
 #include "dmp_dv_cmdraw_v0.h"
 #include "dmp_network.h"
 
-class DMPIPUConfig(void) {
+class DMPIPUConfig {
   public:
 
-    DMPIPUConfig(void) {
+    DMPIPUConfig() {
       Clear();
     }
 
@@ -65,17 +65,17 @@ class DMPIPUConfig(void) {
     void ConfigUseConstAlpha(uint8_t alpha);
 
     /// @brief configure to use BLF
-    void ConfigUseBLF(void);
+    void ConfigUseBLF();
 
     /// @brief clear configuration
-    void Clear(void);
+    void Clear();
 
     /// @brief getter for cmd
-    const struct dmp_dv_cmdraw_ipu_v0 *get_dmp_dv_cmdraw_ipu_v0(void);
+    struct dmp_dv_cmdraw_ipu_v0 *get_dmp_dv_cmdraw_ipu_v0();
 
   private:
     struct dmp_dv_cmdraw_ipu_v0 cmd;
-}
+};
 
 class DMPIPU {
   public:
