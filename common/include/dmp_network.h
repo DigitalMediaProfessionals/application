@@ -42,6 +42,7 @@
 #include "dmp_dv.h"
 #include "dmp_dv_cmdraw_v0.h"
 
+class DMPIPU;
 
 /// @brief Layer type enumeration.
 enum layer_type {
@@ -265,6 +266,8 @@ class CDMP_Network {
   int last_cpu_usec_;
 
  private:
+  friend class DMPIPU;
+
   /// @brief Releases held resources.
   void ReleaseResources() {
     for (auto it = cmdlists_.rbegin(); it != cmdlists_.rend(); ++it) {
