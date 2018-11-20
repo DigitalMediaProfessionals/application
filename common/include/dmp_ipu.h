@@ -23,9 +23,7 @@
 class DMPIPUConfig {
   public:
 
-    DMPIPUConfig() {
-      Clear();
-    }
+    DMPIPUConfig();
 
     /// @brief configure to use texture buffer
     /// @param width Width. This can be 0 if a texture buffer is given from CDMP_Network object.
