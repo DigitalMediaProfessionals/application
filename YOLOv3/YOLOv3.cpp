@@ -54,6 +54,8 @@ CYOLOv3 network;
 
 // Buffer for decoded image data
 uint32_t imgView[IMAGE_W * IMAGE_H];
+// Buffer for pre-processed image data
+__fp16 imgProc[IMAGE_W * IMAGE_H * 3];
 
 // Post-processing functions, defined in YOLOv3_post.cpp
 void get_bboxes(const vector<float> &tensor, vector<float> &boxes);
@@ -112,7 +114,6 @@ int main(int argc, char **argv) {
   int exit_code = -1;
   int image_nr = 0;
   bool pause = false;
-  __fp16 *imgProc = (__fp16*)network.get_network_input_addr_cpu();
   std::vector<float> tensor;
   std::vector<float> boxes;
   // Enter main loop
@@ -129,6 +130,7 @@ int main(int argc, char **argv) {
     }
 
     // Run network in HW
+    memcpy(network.get_network_input_addr_cpu(), imgProc, IMAGE_W * IMAGE_H * 6);
     network.RunNetwork();
 
     // Handle output from HW
