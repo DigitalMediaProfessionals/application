@@ -179,7 +179,7 @@ int DMPIPU::AllocAndMapEachMem(struct dmp_dv_cmdraw_ipu_v0 *cmd) {
     this->rd.offs = offs;
     this->rd_map  = map;
     cmd->rd.mem   = this->rd.mem;
-    cmd->rd.offs  = this->rd.offs + (cmd->stride_rd < 0; rd_sz - cmd->rect_width : 0);
+    cmd->rd.offs  = this->rd.offs + (cmd->stride_rd < 0 ? rd_sz - cmd->rect_width : 0);
     offs += rd_sz;
   }
   if(wr_sz) {
