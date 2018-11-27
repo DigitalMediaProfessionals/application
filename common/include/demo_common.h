@@ -25,6 +25,8 @@
 void get_jpeg_image_names(const std::string &input_image_path, std::vector<std::string> &image_names);
 void print_demo_title(dmp::util::COverlayRGB &bg_overlay, const char *titles[2]);
 void print_conv_time(dmp::util::COverlayRGB &bg_overlay, int y, int conv_time, const std::string &conv_freq);
+void print_fc_time(dmp::util::COverlayRGB &bg_overlay, int y, int fc_time, const std::string &fc_freq);
+void print_total_time(dmp::util::COverlayRGB &bg_overlay, int y, int total_time);
 void handle_keyboard_input(int &exit_code, bool &pause);
 
 #endif

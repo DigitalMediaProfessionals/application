@@ -82,6 +82,39 @@ void print_conv_time(dmp::util::COverlayRGB &bg_overlay, int y,
   overlay_time.print_to_display(x, y);
 }
 
+void print_fc_time(dmp::util::COverlayRGB &bg_overlay, int y,
+                   int fc_time, const std::string &fc_freq) {
+  string text = COverlayRGB::convert_time_to_text("Fully Connected (" + fc_freq + " MHz HW ACC) : ", fc_time);
+  unsigned text_size = 14;
+
+  unsigned w = 0;
+  unsigned h = 0;
+  COverlayRGB::calculate_boundary_text(text, text_size, w, h);
+  int x = ((get_screen_width() - w) / 2);
+
+  COverlayRGB overlay_time(get_screen_width(), get_screen_height());
+  overlay_time.alloc_mem_overlay(w, h);
+  overlay_time.copy_overlay(bg_overlay, x, y);
+  overlay_time.set_text(0, 0, text, text_size, 0x00f4419d);
+  overlay_time.print_to_display(x, y);
+}
+
+void print_total_time(dmp::util::COverlayRGB &bg_overlay, int y, int total_time) {
+  string text = COverlayRGB::convert_time_to_text("Total Processing Time           : ", total_time);
+  unsigned text_size = 14;
+
+  unsigned w = 0;
+  unsigned h = 0;
+  COverlayRGB::calculate_boundary_text(text, text_size, w, h);
+  int x = ((get_screen_width() - w) / 2);
+
+  COverlayRGB overlay_time(get_screen_width(), get_screen_height());
+  overlay_time.alloc_mem_overlay(w, h);
+  overlay_time.copy_overlay(bg_overlay, x, y);
+  overlay_time.set_text(0, 0, text, text_size, 0x00f4419d);
+  overlay_time.print_to_display(x, y);
+}
+
 void handle_keyboard_input(int &exit_code, bool &pause) {
   int key = getchar();
   switch (key) {

@@ -7,7 +7,7 @@ CFLAGS = -pthread -std=c++11 $(OPT) -Wall -Werror -c $(INC)
 LFLAGS = -pthread -std=c++11 $(OPT)
 
 DEPS = SegNetBasic_gen.h
-OBJS = SegNetBasic_gen.o segnet.o
+OBJS = SegNetBasic_gen.o segnet_post.o segnet.o
 TGT  = ../bin/SegNetBasic
 
 %.o: %.cpp $(DEPS)

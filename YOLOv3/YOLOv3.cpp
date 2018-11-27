@@ -122,7 +122,7 @@ int main(int argc, char **argv) {
     if (!pause) {
       decode_jpg_file(image_names[image_nr], imgView, IMAGE_W, IMAGE_H);
       cam_overlay.convert_to_overlay_pixel_format(imgView, IMAGE_W*IMAGE_H);
-      // Pre-process and pass image data to HW
+      // Pre-process the image data
       preproc_image(imgView, imgProc, IMAGE_W, IMAGE_H, 0.0f, 0.0f, 0.0f,
                     1.0f / 255.0f, true, false);
       ++image_nr;
