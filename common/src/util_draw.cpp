@@ -15,11 +15,6 @@
  */
 
 #include "util_draw.h"
-#include "../include/font/Arial_round_16x24.h"
-#include "../include/font/GroteskBold24x48.h"
-#include "../include/font/font8x8_basic.h"
-#include "../include/font/font8x8_ext_latin.h"
-#include "../include/font/hallfetica_normal.h"
 
 #include <stdio.h>
 #include <math.h>

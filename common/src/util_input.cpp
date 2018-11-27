@@ -65,7 +65,7 @@ std::vector<std::string> get_input_image_names(
       bool suffix_ok = false;
       for (size_t i = 0; i < suffix_list.size(); i++)
         suffix_ok = suffix_ok || has_suffix(image_name, suffix_list[i]);
-      if (suffix_ok) image_names.push_back(image_name);
+      if (suffix_ok) image_names.push_back(dir_name + image_name);
     }
     closedir(dirp);
   }
