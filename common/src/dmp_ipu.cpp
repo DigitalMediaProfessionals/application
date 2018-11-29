@@ -225,6 +225,10 @@ int DMPIPU::Initialize(DMPIPUConfig &initializer) {
     goto error;
   }
   ret = InitializeCmdlist(&cmd);
+  if(ret) {
+    ERR("Failed to initialize dmp_dv_cmdlist for IPU: %s\n", dmp_dv_get_last_error_message());
+    goto error;
+  }
 
 error:
   if(ret) {
@@ -345,6 +349,10 @@ int DMPIPU::InitializePostproc(DMPIPUConfig &initializer, const CDMP_Network &ne
     goto error;
   }
   ret = InitializeCmdlist(&cmd);
+  if(ret){
+    ERR("Failed to allocate and map dmp_dv_mem for IPU: %s\n", dmp_dv_get_last_error_message());
+    goto error;
+  }
 
 error:
   if(ret) {
