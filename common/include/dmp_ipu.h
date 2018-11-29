@@ -22,7 +22,7 @@
 
 class DMPIPUConfig {
   public:
-
+    /// @brief Constructor
     DMPIPUConfig();
 
     /// @brief configure to use texture buffer
@@ -78,12 +78,11 @@ class DMPIPUConfig {
 
 class DMPIPU {
   public:
+    /// @brief Constructor
     DMPIPU();
 
     /// @brief Destructor.
-    virtual ~DMPIPU() {
-      Clear();
-    };
+    virtual ~DMPIPU();
 
     /// @brief initializer
     /// @detail This does not accociate IPU with Network

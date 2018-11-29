@@ -122,6 +122,10 @@ DMPIPU::DMPIPU() {
   Clear(false);
 }
 
+DMPIPU::~DMPIPU() {
+  Clear(false);
+}
+
 static inline size_t CalcEntireImageSize(uint32_t width, uint32_t height, int32_t stride, int pixel_size) {
   uint32_t st_abs = std::abs(floor((float)stride / pixel_size));
   return height * std::max(st_abs, width);
