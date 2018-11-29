@@ -127,8 +127,8 @@ DMPIPU::~DMPIPU() {
 }
 
 static inline size_t CalcEntireImageSize(uint32_t width, uint32_t height, int32_t stride, int pixel_size) {
-  uint32_t st_abs = std::abs(floor((float)stride / pixel_size));
-  return height * std::max(st_abs, width);
+  uint32_t st_abs = std::abs(stride);
+  return st_abs * (height - 1) + width * pixel_size;
 }
 
 static int AllocAndMapDMPDVMem(dmp_dv_context ctx, 
@@ -167,10 +167,10 @@ int DMPIPU::AllocAndMapEachMem(struct dmp_dv_cmdraw_ipu_v0 *cmd) {
             ? cmd->tex_width * cmd->tex_height * tex_pixel_sz
             : 0;
   rd_sz = cmd->use_rd != 0 && cmd->rd.mem == nullptr 
-            ? CalcEntireImageSize(cmd->rect_width, cmd->rect_height, cmd->stride_rd, rd_pixel_sz) * rd_pixel_sz
+            ? CalcEntireImageSize(cmd->rect_width, cmd->rect_height, cmd->stride_rd, rd_pixel_sz)
             : 0;
   wr_sz = cmd->wr.mem == nullptr
-            ? CalcEntireImageSize(cmd->rect_width, cmd->rect_height, cmd->stride_wr, wr_pixel_sz) * wr_pixel_sz
+            ? CalcEntireImageSize(cmd->rect_width, cmd->rect_height, cmd->stride_wr, wr_pixel_sz)
             : 0;
 
   ret = AllocAndMapDMPDVMem(this->ctx, mem, map, tex_sz + rd_sz + wr_sz);
