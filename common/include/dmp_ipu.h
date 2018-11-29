@@ -41,7 +41,7 @@ class DMPIPUConfig {
     ///
     void ConfigUseTEX(uint8_t format, uint16_t width = 0, uint16_t height = 0, uint8_t transpose = 0,
                       int8_t ridx = 2, int8_t gidx = 1, int8_t bidx = 0, int8_t aidx = -1,
-                      uint8_t cnv_type = DMP_DV_CNV_FP16_SUB, const uint8_t *cnv_param = nullptr,
+                      uint8_t cnv_type = DMP_DV_CNV_FP16_DIV_255, const uint8_t *cnv_param = nullptr,
                       uint8_t ncolor_lut = 0, uint32_t *lut = nullptr);
  
     /// @brief configure to use read buffer
