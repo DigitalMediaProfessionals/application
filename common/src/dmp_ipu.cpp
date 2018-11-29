@@ -23,6 +23,25 @@
 #define LOG(...) fprintf(stdout, __VA_ARGS__); fflush(stdout);
 #define ERR(...) fprintf(stderr, __VA_ARGS__); fflush(stderr);
 
+static int GetPixelSize(int fmt) {
+  switch(fmt) {
+    case DMP_DV_RGBFP16:
+      return 6;
+    case DMP_DV_RGB888:
+      return 3;
+    case DMP_DV_RGBA8888:
+      return 4;
+    case DMP_DV_LUT:
+      return 1;
+    default:
+      return -1;
+  }
+}
+
+DMPIPUConfig::DMPIPUConfig() {
+  Clear();
+}
+
 void DMPIPUConfig::ConfigUseTEX(uint8_t format, uint16_t width, uint16_t height, uint8_t transpose,
                                 int8_t ridx, int8_t gidx, int8_t bidx, int8_t aidx,
                                 uint8_t cnv_type, const uint8_t *cnv_param, 
@@ -59,7 +78,7 @@ int DMPIPUConfig::ConfigUseRD(uint8_t format, uint16_t width, uint16_t height, i
   cmd.fmt_rd      = format;
   cmd.rect_width  = width;
   cmd.rect_height = height;
-  cmd.stride_rd   = stride ? stride : width;
+  cmd.stride_rd   = stride ? stride : width * GetPixelSize(format);
 
   return 0;
 }
@@ -74,7 +93,7 @@ int DMPIPUConfig::ConfigWR(uint8_t format, uint16_t width, uint16_t height, int3
   cmd.fmt_wr      = format;
   cmd.rect_width  = width;
   cmd.rect_height = height;
-  cmd.stride_wr   = stride ? stride : width;
+  cmd.stride_wr   = stride ? stride : width * GetPixelSize(format);
 
   return 0;
 }
@@ -103,24 +122,9 @@ DMPIPU::DMPIPU() {
   Clear(false);
 }
 
-static inline size_t CalcEntireImageSize(uint32_t width, uint32_t height, int32_t stride) {
-  uint32_t st_abs = std::abs(stride);
+static inline size_t CalcEntireImageSize(uint32_t width, uint32_t height, int32_t stride, int pixel_size) {
+  uint32_t st_abs = std::abs(floor((float)stride / pixel_size));
   return height * std::max(st_abs, width);
-}
-
-static int GetPixelSize(int fmt) {
-  switch(fmt) {
-    case DMP_DV_RGBFP16:
-      return 6;
-    case DMP_DV_RGB888:
-      return 3;
-    case DMP_DV_RGBA8888:
-      return 4;
-    case DMP_DV_LUT:
-      return 1;
-    default:
-      return -1;
-  }
 }
 
 static int AllocAndMapDMPDVMem(dmp_dv_context ctx, 
@@ -150,16 +154,19 @@ int DMPIPU::AllocAndMapEachMem(struct dmp_dv_cmdraw_ipu_v0 *cmd) {
   size_t tex_sz = 0;
   size_t rd_sz = 0;
   size_t wr_sz = 0;
+  size_t tex_pixel_sz = GetPixelSize(cmd->fmt_tex);
+  size_t rd_pixel_sz = GetPixelSize(cmd->fmt_rd);
+  size_t wr_pixel_sz = GetPixelSize(cmd->fmt_wr);
   int ret = 0;
 
   tex_sz = cmd->use_tex != 0 && cmd->tex.mem == nullptr 
-            ? CalcEntireImageSize(cmd->tex_width, cmd->tex_height, cmd->tex_width) * GetPixelSize(cmd->fmt_tex)
+            ? CalcEntireImageSize(cmd->tex_width, cmd->tex_height, cmd->tex_width, tex_pixel_sz) * tex_pixel_sz
             : 0;
   rd_sz = cmd->use_rd != 0 && cmd->rd.mem == nullptr 
-            ? CalcEntireImageSize(cmd->rect_width, cmd->rect_height, cmd->stride_rd) * GetPixelSize(cmd->fmt_rd)
+            ? CalcEntireImageSize(cmd->rect_width, cmd->rect_height, cmd->stride_rd, rd_pixel_sz) * rd_pixel_sz
             : 0;
   wr_sz = cmd->wr.mem == nullptr
-            ? CalcEntireImageSize(cmd->rect_width, cmd->rect_height, cmd->stride_wr) * GetPixelSize(cmd->fmt_wr)
+            ? CalcEntireImageSize(cmd->rect_width, cmd->rect_height, cmd->stride_wr, wr_pixel_sz) * wr_pixel_sz
             : 0;
 
   ret = AllocAndMapDMPDVMem(this->ctx, mem, map, tex_sz + rd_sz + wr_sz);
@@ -179,7 +186,7 @@ int DMPIPU::AllocAndMapEachMem(struct dmp_dv_cmdraw_ipu_v0 *cmd) {
     this->rd.offs = offs;
     this->rd_map  = map;
     cmd->rd.mem   = this->rd.mem;
-    cmd->rd.offs  = this->rd.offs + (cmd->stride_rd < 0 ? rd_sz - cmd->rect_width : 0);
+    cmd->rd.offs  = this->rd.offs + (cmd->stride_rd < 0 ? rd_sz - cmd->rect_width * rd_pixel_sz : 0);
     offs += rd_sz;
   }
   if(wr_sz) {
@@ -187,7 +194,7 @@ int DMPIPU::AllocAndMapEachMem(struct dmp_dv_cmdraw_ipu_v0 *cmd) {
     this->wr.offs = offs;
     this->wr_map  = map;
     cmd->wr.mem   = this->wr.mem;
-    cmd->wr.offs  = this->wr.offs + (cmd->stride_wr < 0 ? wr_sz - cmd->rect_width : 0);
+    cmd->wr.offs  = this->wr.offs + (cmd->stride_wr < 0 ? wr_sz - cmd->rect_width * wr_pixel_sz : 0);
     offs += wr_sz;
   }
 
@@ -255,7 +262,7 @@ int DMPIPU::InitializePreproc(DMPIPUConfig &initializer, const CDMP_Network &net
     cmd.rect_width = layer.input_dim[1];
   }
   if(!cmd.stride_wr) {
-    cmd.stride_wr = layer.input_dim[1];
+    cmd.stride_wr = layer.input_dim[1] * GetPixelSize(DMP_DV_RGBFP16);
   }
 
   // get members from net
