@@ -160,7 +160,7 @@ int DMPIPU::AllocAndMapEachMem(struct dmp_dv_cmdraw_ipu_v0 *cmd) {
   int ret = 0;
 
   tex_sz = cmd->use_tex != 0 && cmd->tex.mem == nullptr 
-            ? CalcEntireImageSize(cmd->tex_width, cmd->tex_height, cmd->tex_width, tex_pixel_sz) * tex_pixel_sz
+            ? cmd->tex_width * cmd->tex_height * tex_pixel_sz
             : 0;
   rd_sz = cmd->use_rd != 0 && cmd->rd.mem == nullptr 
             ? CalcEntireImageSize(cmd->rect_width, cmd->rect_height, cmd->stride_rd, rd_pixel_sz) * rd_pixel_sz
@@ -215,11 +215,13 @@ int DMPIPU::Initialize(DMPIPUConfig &initializer) {
 
   ctx = dmp_dv_context_create();
   if(!ctx) {
+    ERR("Failed to create dmp_dv_context for IPU: %s\n", dmp_dv_get_last_error_message());
     ret = -1;
     goto error;
   }
   ret = AllocAndMapEachMem(&cmd);
   if(ret){
+    ERR("Failed to allocate and map dmp_dv_mem for IPU: %s\n", dmp_dv_get_last_error_message());
     goto error;
   }
   ret = InitializeCmdlist(&cmd);
@@ -247,6 +249,7 @@ int DMPIPU::InitializePreproc(DMPIPUConfig &initializer, const CDMP_Network &net
   memcpy(&cmd, initializer.get_rawcmd(), sizeof(cmd));
 
   if(!cmd.fmt_wr && cmd.fmt_wr != DMP_DV_RGBFP16) {
+    ERR("Format of the write buffer must be DMP_DV_RGBFP16\n");
     ret = -2;
     goto error;
   }
@@ -275,15 +278,21 @@ int DMPIPU::InitializePreproc(DMPIPUConfig &initializer, const CDMP_Network &net
   dmp_dv_context_retain(this->ctx);
   this->wr_map = dmp_dv_mem_map(this->wr.mem);
   if(!this->wr_map) {
+    ERR("Failed to map write buffer for IPU: %s\n", dmp_dv_get_last_error_message());
     ret = -1;
     goto error;
   }
 
   ret = AllocAndMapEachMem(&cmd);
   if(ret) {
+    ERR("Failed to allocate and map dmp_dv_mem for IPU: %s\n", dmp_dv_get_last_error_message());
     goto error;
   }
   ret = InitializeCmdlist(&cmd);
+  if(ret) {
+    ERR("Failed to initialize dmp_dv_cmdlist for IPU: %s\n", dmp_dv_get_last_error_message());
+    goto error;
+  }
 
 error:
   if(ret) {
@@ -325,12 +334,14 @@ int DMPIPU::InitializePostproc(DMPIPUConfig &initializer, const CDMP_Network &ne
   dmp_dv_context_retain(this->ctx);
   this->tex_map = dmp_dv_mem_map(this->tex.mem);
   if(!this->tex_map) {
+    ERR("Failed to map dmp_dv_mem of texture buffer for IPU: %s\n", dmp_dv_get_last_error_message());
     ret = -1;
     goto error;
   }
 
   ret = AllocAndMapEachMem(&cmd);
   if(ret) {
+    ERR("Failed to allocate and map dmp_dv_mem for IPU: %s\n", dmp_dv_get_last_error_message());
     goto error;
   }
   ret = InitializeCmdlist(&cmd);
@@ -348,10 +359,16 @@ error:
 int DMPIPU::Run() {
   int64_t id = dmp_dv_cmdlist_exec(cmdlist);
   if(id < 0) {
+    ERR("Failed to execute cmdlist for IPU: %s\n", dmp_dv_get_last_error_message());
     return -1;
   }
 
-  return dmp_dv_cmdlist_wait(cmdlist, id);
+  int ret = dmp_dv_cmdlist_wait(cmdlist, id);
+  if(ret) {
+    ERR("Failed on wainting execution of dmp_dv_cmdlist for IPU: %s\n", dmp_dv_get_last_error_message());
+  }
+
+  return ret;
 }
 
 uint8_t *DMPIPU::get_tex_addr_cpu() const {
