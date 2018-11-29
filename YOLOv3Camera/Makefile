@@ -7,7 +7,7 @@ CFLAGS = -pthread -std=c++11 $(OPT) -Wall -Werror -c $(INC)
 LFLAGS = -pthread -std=c++11 $(OPT)
 
 DEPS = YOLOv3_gen.h
-OBJS = YOLOv3_gen.o YOLOv3.o
+OBJS = YOLOv3_gen.o YOLOv3_post.o YOLOv3.o
 TGT  = ../bin/YOLOv3Camera
 
 %.o: %.cpp $(DEPS)
