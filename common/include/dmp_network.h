@@ -43,6 +43,7 @@
 #include "dmp_dv_cmdraw_v0.h"
 
 class DMPIPU;
+class DMPMaximizer;
 
 /// @brief Layer type enumeration.
 enum layer_type {
@@ -267,6 +268,7 @@ class CDMP_Network {
 
  private:
   friend class DMPIPU;
+  friend class DMPMaximizer;
 
   /// @brief Releases held resources.
   void ReleaseResources() {
