@@ -123,7 +123,20 @@ error:
 }
 
 int DMPMaximizer::Run() {
-  // TODO:impl
+  int64_t id = dmp_dv_cmdlist_exec(cmdlist);
+  if(id < 0) {
+    ERR("Failed to execute cmdlist for Maximizer: %s\n",
+        dmp_dv_get_last_error_message());
+    return -1;
+  }
+
+  int ret = dmp_dv_cmdlist_wait(cmdlist, id);
+  if(ret) {
+    ERR("Failed on wainting execution of dmp_dv_cmdlist for Maximizer: %s\n",
+        dmp_dv_get_last_error_message());
+  }
+
+  return ret;
 }
 
 uint16_t DMPMaximizer::get_width() {
