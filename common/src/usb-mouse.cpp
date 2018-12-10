@@ -283,27 +283,21 @@ int mouse_open(){
 
   const char *mouse_event = _mouse_event.c_str();
   const char *mouse_name = _mouse_name.c_str();
-  // Check whether you have root access to open files in root folders
-  if ((getuid ()) != 0){
-    ERR ("could not open mouse event! Please run the application with sudo");
+  // Events from the mouse are packed into a file
+  fid = open( mouse_event, O_NONBLOCK);// use O_RDONLY if you want a non-stop reading input event until something is read
+  if (fid == 0){
+    ERR("Could not open %s!\n", mouse_event);
     return EXIT_FAILURE;
   }
-  else {
-    // Events from the mouse are packed into a file
-    fid = open( mouse_event, O_NONBLOCK);// use O_RDONLY if you want a non-stop reading input event until something is read
-    if (fid == 0){
-      ERR("Could not open %s!\n", mouse_event);
-      return EXIT_FAILURE;
-    }
-    else if (fid == -1){
-      ERR ("%s is not a valid device!\n", mouse_event );
-      return EXIT_FAILURE;
-    }
-
-    //Print Device Name
-    //ioctl (fid, EVIOCGNAME (sizeof (name)), name);
-    ERR ("%s (%s) is opened!\n", mouse_event, mouse_name);
+  else if (fid == -1){
+    ERR ("%s is not a valid device!\n", mouse_event );
+    return EXIT_FAILURE;
   }
+
+  //Print Device Name
+  //ioctl (fid, EVIOCGNAME (sizeof (name)), name);
+  ERR ("%s (%s) is opened!\n", mouse_event, mouse_name);
+
   return EXIT_SUCCESS;
 }
 

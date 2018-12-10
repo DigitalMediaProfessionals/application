@@ -664,11 +664,10 @@ int main(int argc, char **argv) {
   if (mouse_open() == EXIT_FAILURE) return 0;
 
   bool l_just_pressed = false;
-  bool m_just_pressed = false;
 
   int pressed_zone = 0;
-  int capture_no = 0;
   pid_t pid;
+  int pipe_fd[2];
 
   while (exit_code == false) {
     mouse_read(m_cur);
@@ -717,6 +716,8 @@ int main(int argc, char **argv) {
         screen_update();
         usleep(50);
 #endif
+        if (pipe2(pipe_fd, O_NONBLOCK))
+          exit(-1);
         pid = fork();
         if (pid == 0) {
           int app_run = pressed_zone - 3 + 6 * next_page;
@@ -725,6 +726,9 @@ int main(int argc, char **argv) {
           char path_dir[128];
           char path_file[128];
           int pos = -1;
+          dup2(pipe_fd[0], STDIN_FILENO);
+          close(pipe_fd[0]);
+          close(pipe_fd[1]);
           for (pos = strlen(path) - 1; pos >= 0; --pos) {
             if ('/' == path[pos]) break;
           }
@@ -746,16 +750,27 @@ int main(int argc, char **argv) {
             execl(path_file, name.c_str(), NULL);
           printf("execl() failed");
         } else if (pid > 0) {
+          int m_pressed = false;
+          int r_pressed = false;
+          close(pipe_fd[0]);
           // wait for right button clicked
-          while (m_cur.r_pressed == false) {
+          while (true) {
             mouse_read(m_cur);
+            if (m_pressed && !m_cur.m_pressed) {
+              // send space key to pause
+              if (write(pipe_fd[1], " ", 1) < 1)
+                exit(-1);
+            }
+            if (r_pressed && !m_cur.r_pressed) {
+              // send esc key to stop
+              if (write(pipe_fd[1], "\x1B", 1) < 1)
+                exit(-1);
+              break;
+            }
+            m_pressed = m_cur.m_pressed;
+            r_pressed = m_cur.r_pressed;
           }
-          // wait for right button released
-          while (m_cur.r_pressed == true) {
-            mouse_read(m_cur);
-          }
-          // kill child process
-          kill(pid, SIGINT);
+          close(pipe_fd[1]);
           wait(NULL);
 
           // Re-update the screen
@@ -788,19 +803,6 @@ int main(int argc, char **argv) {
       } else {
       }
     }
-
-    if ((m_cur.m_pressed == true) && (m_just_pressed == false)) {
-      m_just_pressed = true;
-    }
-
-    if ((m_cur.m_pressed == false) && (m_just_pressed == true)) {
-      fprintf(stderr, "Captured!\n");
-      string txt = "pic_" + to_string(capture_no);
-      capture_no++;
-      boxes_overlay.save_as_ppm_img(txt);
-      m_just_pressed = false;
-    }
-
   }  // end while
 
   mouse_close();
