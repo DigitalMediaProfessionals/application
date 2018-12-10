@@ -337,7 +337,7 @@ int DMPIPU::InitializePostproc(DMPIPUConfig &initializer, const CDMP_Network &ne
   this->tex.offs = layer->output_offs;
   this->ctx      = net.ctx_;
   this->net      = &net;
-  this->i_output = -1;
+  this->i_output = i_output;
   dmp_dv_mem_retain(this->tex.mem);
   dmp_dv_context_retain(this->ctx);
   this->tex_map = dmp_dv_mem_map(this->tex.mem);
