@@ -14,6 +14,8 @@
  *  limitations under the License.
  */
 
+#pragma once
+
 #include "dmp_dv.h"
 #include "dmp_dv_cmdraw_v0.h"
 #include "dmp_network.h"
