@@ -16,6 +16,8 @@
 
 #include "dmp_maximizer.h"
 
+#define LOG(...) fprintf(stdout, __VA_ARGS__); fflush(stdout);
+#define ERR(...) fprintf(stderr, __VA_ARGS__); fflush(stderr);
 
 DMPMaximizer::DMPMaximizer() {
   Clear(false);
@@ -25,9 +27,99 @@ DMPMaximizer::~DMPMaximizer() {
   Clear();
 }
 
+static int AllocAndMapDMPDVMem(dmp_dv_context ctx, dmp_dv_mem &mem,
+                                     uint8_t *&map, size_t size) {
+  mem = nullptr;
+  map = nullptr;
+
+  mem = dmp_dv_mem_alloc(ctx, size);
+  if(!mem) {
+    return -1;
+  }
+  map = dmp_dv_mem_map(mem);
+  if(!map) {
+    dmp_dv_mem_release(mem);
+    mem = nullptr;
+    return -1;
+  }
+
+  return 0;
+}
+
 int DMPMaximizer::Initialize(uint16_t width, uint16_t height, uint8_t nclass,
                               CDMP_Network *net, int i_output) {
-  // TODO:impl
+  struct dmp_dv_cmdraw_maximizer_v0 cmd;
+  const fpga_layer *layer = net->output_layers_[i_output];
+  size_t tmp_sz = 0;
+  int r = 0;
+
+  if(initialized) {
+    ERR("DMPIPU is already initialized\n");
+    return -1;
+  }
+
+  this->width = width;
+  this->height = height;
+  this->nclass = nclass;
+
+  // create context
+  if(net) {
+    ctx = net.ctx_;
+  } else {
+    ctx = dmp_dv_context_create();
+    if(!ctx) {
+      ERR("Failed to create dmp_dv_context for Maximizer: %s\n", dmp_dv_get_last_error_message());
+      r = -1;
+      goto error;
+    }
+  }
+
+  // allocate and map input buffer
+  if(net) {
+    in.mem = net.io_mem_;
+    in.offs = layer->output_offs;
+  } else {
+    tmp_sz = width * height * nclass * sizeof(__fp16);
+    r = AllocAndMapDMPDVMem(ctx, in, in_map, tmp_sz);
+    if(r) {
+      ERR("Failed to allocate and map %uB dmp_dv_mem for input buffer to Maximizer: %s\n",
+          tmp_sz, dmp_dv_get_last_error_message());
+      goto error;
+    }
+  }
+
+  // allocate and map output buffer
+  tmp_sz = width * height * sizeof(uint8_t);
+  r = AllocAndMapDMPDVMem(ctx, out, out_map, tmp_sz);
+  if(r) {
+    ERR("Failed to allocate and map %uB dmp_dv_mem for output buffer to Maximizer: %s\n",
+        tmp_sz, dmp_dv_get_last_error_message());
+    goto error;
+  }
+
+  // initialize cmdlist
+  cmd.header.version     = 0;
+  cmd.header.size        = sizeof(cmd);
+  cmd.header.device_type = DMP_DV_DEV_MAXIMIZER;
+  cmd.input_buffer.mem   = in.mem;
+  cmd.input_buffer.offs  = in.offs;
+  cmd.output_buffer.mem  = out.mem;
+  cmd.output_buffer.offs = out.offs;
+  cmd.width  = width;
+  cmd.height = height;
+  cmd.nclass = nclass;
+  r = InitializeCmdlist(&cmd);
+  if(r) {
+    ERR("Failed to initialize cmdlist for Maximizer: %s\n",
+        dmp_dv_get_last_error_message());
+    goto error;
+  }
+
+error:
+  if(r) {
+    Clear();
+  }
+  return r;
 }
 
 int DMPMaximizer::Run() {
@@ -52,6 +144,35 @@ uint8_t *get_in_addr_cpu() const {
 
 uint8_t *get_out_addr_cpu() const {
   return out.mem ? out_map + out.offs : nullptr;
+}
+
+
+int DMPMaximizer::InitializeCmdlist(struct dmp_dv_cmdraw_maximizer_v0 *cmd) {
+  int ret = 0;
+
+  cmdlist = dmp_dv_cmdlist_create(ctx);
+  if(!cmdlist) {
+    ret = -1;
+    goto error;
+  }
+
+  ret = dmp_dv_cmdlist_add_raw(cmdlist, reinterpret_cast<dmp_dv_cmdraw*>(cmd));
+  if(ret) {
+    goto error;
+  }
+
+  ret = dmp_dv_cmdlist_commit(cmdlist);
+  if(ret) {
+    goto error;
+  }
+
+error:
+  if(ret) {
+    dmp_dv_cmdlist_release(cmdlist);
+    cmdlist = nullptr;
+  }
+
+  return ret;
 }
 
 void DMPMaximizer::Clear(bool release_resources) {
