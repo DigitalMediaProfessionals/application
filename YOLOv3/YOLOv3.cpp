@@ -44,8 +44,10 @@ using namespace util;
 #define SCREEN_W (get_screen_width())
 #define SCREEN_H (get_screen_height())
 
-#define IMAGE_W 512
-#define IMAGE_H 288
+#define IMAGE_W 720
+#define IMAGE_H 360
+#define PROC_W 512
+#define PROC_H 288
 
 #define FILENAME_WEIGHTS "YOLOv3_weights.bin"
 
@@ -55,7 +57,7 @@ CYOLOv3 network;
 // Buffer for decoded image data
 uint32_t imgView[IMAGE_W * IMAGE_H];
 // Buffer for pre-processed image data
-__fp16 imgProc[IMAGE_W * IMAGE_H * 3];
+__fp16 imgProc[PROC_W * PROC_H * 3];
 
 // Post-processing functions, defined in YOLOv3_post.cpp
 void get_bboxes(const vector<float> &tensor, vector<float> &boxes);
@@ -123,14 +125,14 @@ int main(int argc, char **argv) {
       decode_jpg_file(image_names[image_nr], imgView, IMAGE_W, IMAGE_H);
       cam_overlay.convert_to_overlay_pixel_format(imgView, IMAGE_W*IMAGE_H);
       // Pre-process the image data
-      preproc_image(imgView, imgProc, IMAGE_W, IMAGE_H, 0.0f, 0.0f, 0.0f,
-                    1.0f / 255.0f, true, false);
+      preproc_image(imgView, imgProc, IMAGE_W, IMAGE_H, PROC_W, PROC_H,
+                    0.0f, 0.0f, 0.0f, 1.0f / 255.0f, true, false);
       ++image_nr;
       image_nr %= num_images;
     }
 
     // Run network in HW
-    memcpy(network.get_network_input_addr_cpu(), imgProc, IMAGE_W * IMAGE_H * 6);
+    memcpy(network.get_network_input_addr_cpu(), imgProc, PROC_W * PROC_H * 6);
     network.RunNetwork();
 
     // Handle output from HW
@@ -139,7 +141,7 @@ int main(int argc, char **argv) {
     draw_bboxes(boxes, cam_overlay);
 
     // Draw detection result to screen
-    cam_overlay.print_to_display(((SCREEN_W - IMAGE_W) / 2), 201);
+    cam_overlay.print_to_display(((SCREEN_W - IMAGE_W) / 2), 150);
 
     // Output HW processing times
     int conv_time_tot = network.get_conv_usec();
