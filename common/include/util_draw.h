@@ -181,8 +181,8 @@ class COverlayRGB
     * @param[in] color color of box
     * @param[in] text text content
     */
-    void set_box_with_text(uint32_t x0pos, uint32_t y0pos, uint32_t x1pos,
-                                  uint32_t y1pos, uint32_t color, string text);
+    void set_box_with_text(int32_t x0pos, int32_t y0pos, int32_t x1pos,
+                                  int32_t y1pos, uint32_t color, string text);
 
     /*! Utility function to draw text, color is argb format.
      * This function depends on calculate_boundary_text()
@@ -192,21 +192,21 @@ class COverlayRGB
     * @param[in] text_size size of text
     * @param[in] color color of text
     */
-    void set_text(uint32_t xpos, uint32_t ypos, string text, 
+    void set_text(int32_t xpos, int32_t ypos, string text, 
                         uint32_t text_size, uint32_t color, double stroke_size = 1.5);
 
     /*! Utility function to draw text when using font, color is argb format.
      * This function depends on calculate_boundary_text_with_font()
     * @param[in] path_to_ttf path to font file 
-    * @param[in] x0pos top-left x position of text in overlay
-    * @param[in] y0pos top-left y position of text in overlay
+    * @param[in] xpos top-left x position of text in overlay
+    * @param[in] ypos top-left y position of text in overlay
     * @param[in] text text content
     * @param[in] text_size size of text
     * @param[in] color color of text
     * @param[in] italic set italic text
     */
     void set_text_with_font(string path_to_ttf, string text, 
-                          double x, double y, uint32_t text_size, uint32_t color);
+                          double xpos, double ypos, uint32_t text_size, uint32_t color);
 
     /*! Utility function to draw box without text, color is argb format
     * @param[in] x0pos top-left x position of box in overlay
@@ -215,8 +215,8 @@ class COverlayRGB
     * @param[in] y1pos bottom-right y position of box in overlay
     * @param[in] color color of box
     */
-    void set_box(uint32_t x0pos, uint32_t y0pos,
-                    uint32_t x1pos, uint32_t y1pos, uint32_t color);
+    void set_box(int32_t x0pos, int32_t y0pos,
+                    int32_t x1pos, int32_t y1pos, uint32_t color);
 
     /*! Utility function to blend 2 overlays with same size
     * @param[in] overlay overlay to blend
@@ -237,14 +237,14 @@ class COverlayRGB
     bool save_as_ppm_img(string filename_wo_ext);
 
     /*! Utility function for drawing a progress bar
-    * @param[in] x x-position of progress bar in overlay
-    * @param[in] y y-position of progress bar in overlay
+    * @param[in] xpos x-position of progress bar in overlay
+    * @param[in] ypos y-position of progress bar in overlay
     * @param[in] w width of progress bar in overlay
     * @param[in] h height of progress bar in overlay
     * @param[in] color color of progress bar
     * @param[in] prog_0_to_100 progress from 0 to 100
     */
-    void draw_progress_bar(uint32_t x, uint32_t y, uint32_t w, uint32_t h,
+    void draw_progress_bar(int32_t xpos, int32_t ypos, uint32_t w, uint32_t h,
             uint32_t color, uint8_t prog_0_to_100) ;
 
     /*! Utility function to print overlay to display
@@ -294,12 +294,12 @@ class COverlayRGB
 	/*! Utility function to draw mouse cursor with a specific color onto screen
 	* @param[in] m_color color of the mouse cursor
 	*/
-    void set_mouse_cursor( unsigned int m_color);
+    void set_mouse_cursor(uint32_t m_color);
 
 	/*! Utility function to set color to the buffer
 	* @param[in] m_color color of background
 	*/
-    void set_background_to_color( unsigned int m_color);
+    void set_background_to_color(uint32_t m_color);
 
 	/*! Utility function to draw a control box with text in the case of using specific font
 	* @param[in] x0pos top-left x position of the box in overlay
@@ -314,9 +314,9 @@ class COverlayRGB
 	* @param[in] text_color color of the text
 	* @param[in] c_radius radius of square corners of the box
 	*/
-    void draw_ctrlBox_with_fonts(unsigned int x0pos, unsigned int y0pos, unsigned int x1pos, unsigned int y1pos,
-        unsigned int box_color, unsigned int outline_color,
-        string path_to_ttf, string txt, unsigned txt_size, unsigned int text_color, double c_radius);
+    void draw_ctrlBox_with_fonts(int32_t x0pos, int32_t y0pos, int32_t x1pos, int32_t y1pos,
+        uint32_t box_color, uint32_t outline_color,
+        string path_to_ttf, string txt, uint32_t txt_size, uint32_t text_color, double c_radius);
 
 };
 
