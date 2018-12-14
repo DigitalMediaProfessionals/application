@@ -514,10 +514,10 @@ bool COverlayRGB::copy_overlay(COverlayRGB &src_overlay, uint32_t xpos, uint32_t
   }
   return false;
 }
-void COverlayRGB::set_box_with_text(uint32_t x0pos, uint32_t y0pos, uint32_t x1pos, 
-                                        uint32_t y1pos, uint32_t color, string text)
+void COverlayRGB::set_box_with_text(int32_t x0pos, int32_t y0pos, int32_t x1pos, 
+                                        int32_t y1pos, uint32_t color, string text)
 {
-  uint32_t text_size = 8;
+  static const uint32_t text_size = 8;
 
   if(buff_rgb_ != NULL)
   {
@@ -583,7 +583,7 @@ void COverlayRGB::calculate_boundary_text(string text, uint32_t text_size,
   }
 }
 
-void COverlayRGB::set_text(uint32_t xpos, uint32_t ypos, string text, 
+void COverlayRGB::set_text(int32_t xpos, int32_t ypos, string text, 
                               uint32_t text_size, uint32_t color, double stroke_size)
 {
   if(!text.empty() && buff_rgb_ != NULL)
@@ -656,7 +656,7 @@ void COverlayRGB::calculate_boundary_text_with_font(string path_to_ttf, string t
 }
 
 void COverlayRGB::set_text_with_font(string path_to_ttf, string text, 
-                            double x, double y, uint32_t height, uint32_t color)
+                            double xpos, double ypos, uint32_t height, uint32_t color)
 {
   font_engine_type             feng;
   font_manager_type            fman(feng);
@@ -679,27 +679,27 @@ void COverlayRGB::set_text_with_font(string path_to_ttf, string text,
     feng.hinting(true);
     feng.flip_y(true);
     const char* p = text.c_str();
-    double start_x = x;
+    double start_x = xpos;
     while(*p)
     {
       if(*p == '\n')
       {
-        x = start_x;
-        y -= height;
+        xpos = start_x;
+        ypos -= height;
         ++p;
         continue;
       }
       const agg::glyph_cache* glyph = fman.glyph(*p);
       if(glyph != NULL)
       {
-        fman.add_kerning(&x, &y);
+        fman.add_kerning(&xpos, &ypos);
         fman.init_embedded_adaptors(glyph, 0, 0);
         if(glyph->data_type == agg::glyph_data_outline)
         {
-          double ty = y;
+          double ty = ypos;
           ras.reset();
           mtx.reset();
-          mtx *= agg::trans_affine_translation(start_x + x, ty);
+          mtx *= agg::trans_affine_translation(start_x + xpos, ty);
           ras.add_path(trans);
           
           ren_solid.color(c);
@@ -707,8 +707,8 @@ void COverlayRGB::set_text_with_font(string path_to_ttf, string text,
         }
 
         // increment pen position
-        x += glyph->advance_x;
-        y += glyph->advance_y;
+        xpos += glyph->advance_x;
+        ypos += glyph->advance_y;
       }
       ++p;
     }
@@ -719,8 +719,8 @@ void COverlayRGB::set_text_with_font(string path_to_ttf, string text,
   }
 }
 
-void COverlayRGB::set_box(uint32_t x0pos, uint32_t y0pos,
-                        uint32_t x1pos, uint32_t y1pos, uint32_t color)
+void COverlayRGB::set_box(int32_t x0pos, int32_t y0pos,
+                        int32_t x1pos, int32_t y1pos, uint32_t color)
 {
   typedef agg::pixfmt_rgb24 pixfmt;
   typedef agg::renderer_base<pixfmt> renderer_base;
@@ -948,7 +948,7 @@ string COverlayRGB::convert_time_to_text(string label, long int time)
     return s;
 }
 
-void COverlayRGB::draw_progress_bar(uint32_t x, uint32_t y, uint32_t w, uint32_t h,
+void COverlayRGB::draw_progress_bar(int32_t xpos, int32_t ypos, uint32_t w, uint32_t h,
                   uint32_t color, uint8_t prog_0_to_100) 
 {
 
@@ -965,19 +965,19 @@ void COverlayRGB::draw_progress_bar(uint32_t x, uint32_t y, uint32_t w, uint32_t
     agg::rasterizer_scanline_aa<> ras;
 
     uint32_t rec_w = (w*prog_0_to_100)/100;
-    if((rec_w <= w) && ((x+w) <= overlay_rgb_width_) && ((y+h) <= overlay_rgb_height_))
+    if((rec_w <= w) && ((xpos+w) <= overlay_rgb_width_) && ((ypos+h) <= overlay_rgb_height_))
     {
       //draw boundary
       renderer_solid rs_box(rb);
       rs_box.color(agg::rgba8((color & 0x00ff0000) >> 16,
             (color & 0x0000ff00) >>  8 , (color & 0x000000ff)));
-      agg::rounded_rect rec(x, y, x+w, y+h, 0);
+      agg::rounded_rect rec(xpos, ypos, xpos+w, ypos+h, 0);
       agg::conv_stroke<agg::rounded_rect> stroke(rec);
       stroke.width(1.0);
       ras.add_path(stroke);
       agg::render_scanlines(ras, scanLine, rs_box);
       //draw progress
-      agg::rounded_rect rec_bar(x, y, x + rec_w, h, 0);
+      agg::rounded_rect rec_bar(xpos, ypos, xpos + rec_w, h, 0);
       ras.add_path(rec_bar);
       agg::render_scanlines_aa_solid(ras, scanLine, rb,
         agg::rgba8((color&0x00ff0000)>>16, (color&0x0000ff00)>>8, (color&0x000000ff)));
@@ -1007,7 +1007,7 @@ void COverlayRGB::capture_screen(std::string filename,
   fclose(fout);
 }
 
-void COverlayRGB::set_mouse_cursor( unsigned int m_color)
+void COverlayRGB::set_mouse_cursor(uint32_t m_color)
 {
 
   if( buff_rgb_ != NULL)
@@ -1050,7 +1050,7 @@ void COverlayRGB::set_mouse_cursor( unsigned int m_color)
   }
 }
 
-void COverlayRGB::set_background_to_color( unsigned int m_color){
+void COverlayRGB::set_background_to_color(uint32_t m_color){
   if( buff_rgb_ != NULL){
     pixfmt_type pixf( render_buf_overlay_rgb_);
     base_ren_type ren(pixf);
@@ -1063,19 +1063,13 @@ void COverlayRGB::set_background_to_color( unsigned int m_color){
   }
 }
 
-void COverlayRGB::draw_ctrlBox_with_fonts(unsigned int x0pos, unsigned int y0pos, unsigned int x1pos, unsigned int y1pos,
-    unsigned int box_color, unsigned int outline_color,
-    string path_to_ttf, string txt, unsigned txt_size, unsigned int text_color, double c_radius)
+void COverlayRGB::draw_ctrlBox_with_fonts(int32_t x0pos, int32_t y0pos, int32_t x1pos, int32_t y1pos,
+    uint32_t box_color, uint32_t outline_color,
+    string path_to_ttf, string txt, uint32_t txt_size, uint32_t text_color, double c_radius)
 {
-
-  x0pos = ( x0pos >= overlay_rgb_width_) ? (overlay_rgb_width_ - 1) : (( x0pos < 0) ? 0 : x0pos);
-  x1pos = ( x1pos >= overlay_rgb_width_) ? (overlay_rgb_width_ - 1) : (( x1pos < 0) ? 0 : x1pos);
-  y0pos = ( y0pos >= overlay_rgb_width_) ? (overlay_rgb_width_ - 1) : (( y0pos < 0) ? 0 : y0pos);
-  y1pos = ( y1pos >= overlay_rgb_width_) ? (overlay_rgb_width_ - 1) : (( y1pos < 0) ? 0 : y1pos);
-
   if( buff_rgb_ != NULL) {
 
-	pixfmt_type pixf( render_buf_overlay_rgb_);
+    pixfmt_type pixf( render_buf_overlay_rgb_);
     agg::scanline_u8 scanLine;
     agg::rasterizer_scanline_aa<> ras;
 
@@ -1104,8 +1098,8 @@ void COverlayRGB::draw_ctrlBox_with_fonts(unsigned int x0pos, unsigned int y0pos
       agg::conv_transform<agg::conv_curve<font_manager_type::path_adaptor_type> > trans(curves, mtx);
       agg::glyph_rendering gren = agg::glyph_ren_outline;
 
-      unsigned w = 0;
-      unsigned h = 0;
+      uint32_t w = 0;
+      uint32_t h = 0;
       // Text size that input to funtions in font engine are required in 100*inch unit.
       // That is why we need to change to pixel
       double txt_height = double( txt_size)*100/64; // 64DPI
