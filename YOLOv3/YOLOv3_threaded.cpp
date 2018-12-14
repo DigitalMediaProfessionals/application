@@ -37,39 +37,8 @@
 #include "util_input.h"
 #include "demo_common.h"
 
-#define MEASURE_TIME
-
-#ifdef MEASURE_TIME
-
-#define TVAL_START(name)  name ## _start_tv
-#define TVAL_END(name)    name ## _end_tv
-
-#define DECLARE_TVAL(name) \
-  struct timeval TVAL_START(name); \
-  struct timeval TVAL_END(name); \
-
-#define GET_TVAL_START(name)  gettimeofday(&TVAL_START(name), NULL);
-#define GET_TVAL_END(name)    gettimeofday(&TVAL_END(name), NULL);
-
-#define SHOW_TIME(name) \
-{ \
-  struct timeval tv_sub; \
-  timersub(&TVAL_END(name), &TVAL_START(name), &tv_sub); \
-  printf(#name " time : %ld.%06ld (sec)\n", tv_sub.tv_sec, tv_sub.tv_usec); \
-}
-#define GET_SHOW_TVAL_END(name) GET_TVAL_END(name); SHOW_TIME(name)
-
-#else
-
-#define TVAL_START(name)
-#define TVAL_END(name)
-#define DECLARE_TVAL(name)
-#define GET_TVAL_START(name)
-#define GET_TVAL_END(name)
-#define SHOW_TIME(name)
-#define GET_SHOW_TVAL_END(name)
-
-#endif // MEASURE_TIME
+#define DMP_MEASURE_TIME
+#include "util_time.h"
 
 
 using namespace std;
@@ -256,7 +225,7 @@ void *postproc(void*) {
 
   unsigned &rbuf_idx = postproc_rbuf_idx;  // alias
 
-#ifdef MEASURE_TIME
+#ifdef DMP_MEASURE_TIME
   DECLARE_TVAL(swap_buffer);
   TVAL_START(swap_buffer).tv_sec = 0;
 #endif
@@ -281,7 +250,7 @@ void *postproc(void*) {
     print_conv_time(bg_overlay, (SCREEN_H - 100), conv_time_tot, conv_freq);
 
     swap_buffer();
-#ifdef MEASURE_TIME
+#ifdef DMP_MEASURE_TIME
     GET_TVAL_END(swap_buffer);
     if (TVAL_START(swap_buffer).tv_sec) {
       SHOW_TIME(swap_buffer);
