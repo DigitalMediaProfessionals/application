@@ -284,7 +284,7 @@ if CONFIG.output_type not in ["jpg", "avi"]:
 p = Path(CONFIG.image_dir)
 img_paths = []
 for ext in ["jpg", "jpeg", "JPG", ".JPEG"]:
-    img_paths.extend(list(p.glob('*.' + ext)))
+    img_paths.extend(list(p.glob('**/*.' + ext)))
 if not img_paths:
     raise FileNotFoundError("No jpeg file are found in " + CONFIG.image_dir)
 img_paths = sorted(img_paths)
