@@ -11,7 +11,8 @@ SRC =  	dmp_network.cpp \
   usb-mouse.cpp \
   agg_font_freetype.cpp \
   demo_common.cpp \
-  dmp_ipu.cpp
+  dmp_ipu.cpp \
+  dmp_maximizer.cpp
 
 OBJ = $(SRC:.cpp=.o)
 
