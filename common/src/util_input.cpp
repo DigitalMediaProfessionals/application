@@ -15,6 +15,7 @@
  */
 
 #include <stdint.h>
+#include <cstring>
 
 #include "util_input.h"
 #include "nanojpeg.h"
@@ -61,11 +62,28 @@ std::vector<std::string> get_input_image_names(
 
   if (dirp) {
     while ((directory = readdir(dirp)) != NULL) {
-      std::string image_name = std::string(directory->d_name);
-      bool suffix_ok = false;
-      for (size_t i = 0; i < suffix_list.size(); i++)
-        suffix_ok = suffix_ok || has_suffix(image_name, suffix_list[i]);
-      if (suffix_ok) image_names.push_back(dir_name + image_name);
+#ifdef _DIRENT_HAVE_D_TYPE
+      if (directory->d_type == DT_REG || directory->d_type == DT_UNKNOWN) {
+#endif
+        std::string image_name = std::string(directory->d_name);
+        for (size_t i = 0; i < suffix_list.size(); i++)
+          if(has_suffix(image_name, suffix_list[i])) {
+            image_names.push_back(dir_name + image_name);
+            break;
+          }
+#ifdef _DIRENT_HAVE_D_TYPE
+      } else if (directory->d_type == DT_DIR) {
+        if (strcmp(directory->d_name, ".") != 0
+            && strcmp(directory->d_name, "..") != 0) {
+          std::vector<std::string> v = get_input_image_names(dir_name 
+              + std::string("/")
+              + directory->d_name
+              + std::string("/")
+              , suffix_list);
+          image_names.insert(image_names.end(), v.begin(), v.end());
+        }
+      }
+#endif
     }
     closedir(dirp);
   }
