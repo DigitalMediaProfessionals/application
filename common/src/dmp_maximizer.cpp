@@ -64,7 +64,7 @@ int DMPMaximizer::Initialize(uint16_t width, uint16_t height, uint8_t nclass,
 
   // create context
   if(net) {
-    ctx = net.ctx_;
+    ctx = net->ctx_;
   } else {
     ctx = dmp_dv_context_create();
     if(!ctx) {
@@ -76,13 +76,13 @@ int DMPMaximizer::Initialize(uint16_t width, uint16_t height, uint8_t nclass,
 
   // allocate and map input buffer
   if(net) {
-    in.mem = net.io_mem_;
+    in.mem = net->io_mem_;
     in.offs = layer->output_offs;
   } else {
     tmp_sz = width * height * nclass * sizeof(__fp16);
-    r = AllocAndMapDMPDVMem(ctx, in, in_map, tmp_sz);
+    r = AllocAndMapDMPDVMem(ctx, in.mem, in_map, tmp_sz);
     if(r) {
-      ERR("Failed to allocate and map %uB dmp_dv_mem for input buffer to Maximizer: %s\n",
+      ERR("Failed to allocate and map %luB dmp_dv_mem for input buffer to Maximizer: %s\n",
           tmp_sz, dmp_dv_get_last_error_message());
       goto error;
     }
@@ -90,9 +90,9 @@ int DMPMaximizer::Initialize(uint16_t width, uint16_t height, uint8_t nclass,
 
   // allocate and map output buffer
   tmp_sz = width * height * sizeof(uint8_t);
-  r = AllocAndMapDMPDVMem(ctx, out, out_map, tmp_sz);
+  r = AllocAndMapDMPDVMem(ctx, out.mem, out_map, tmp_sz);
   if(r) {
-    ERR("Failed to allocate and map %uB dmp_dv_mem for output buffer to Maximizer: %s\n",
+    ERR("Failed to allocate and map %luB dmp_dv_mem for output buffer to Maximizer: %s\n",
         tmp_sz, dmp_dv_get_last_error_message());
     goto error;
   }
@@ -101,10 +101,10 @@ int DMPMaximizer::Initialize(uint16_t width, uint16_t height, uint8_t nclass,
   cmd.header.version     = 0;
   cmd.header.size        = sizeof(cmd);
   cmd.header.device_type = DMP_DV_DEV_MAXIMIZER;
-  cmd.input_buffer.mem   = in.mem;
-  cmd.input_buffer.offs  = in.offs;
-  cmd.output_buffer.mem  = out.mem;
-  cmd.output_buffer.offs = out.offs;
+  cmd.input_buf.mem   = in.mem;
+  cmd.input_buf.offs  = in.offs;
+  cmd.output_buf.mem  = out.mem;
+  cmd.output_buf.offs = out.offs;
   cmd.width  = width;
   cmd.height = height;
   cmd.nclass = nclass;
@@ -143,19 +143,19 @@ uint16_t DMPMaximizer::get_width() {
   return width;
 }
 
-uint16_t get_height() {
+uint16_t DMPMaximizer::get_height() {
   return height;
 }
 
-uint8_t get_nclass() {
+uint8_t DMPMaximizer::get_nclass() {
   return nclass;
 }
 
-uint8_t *get_in_addr_cpu() const {
+uint8_t *DMPMaximizer::get_in_addr_cpu() const {
   return in.mem ? in_map + in.offs : nullptr;
 }
 
-uint8_t *get_out_addr_cpu() const {
+uint8_t *DMPMaximizer::get_out_addr_cpu() const {
   return out.mem ? out_map + out.offs : nullptr;
 }
 
