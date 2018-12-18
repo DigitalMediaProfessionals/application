@@ -57,9 +57,9 @@ using namespace util;
 CSegNetBasic network;
 
 #define USLEEP_TIME 50000
-#define RING_BUF_SIZE 3
+#define RING_BUF_SIZE 4
 // Buffer for pre-processed image data
-uint16_t imgProc[IMAGE_W * IMAGE_H * 3][RING_BUF_SIZE];
+uint16_t imgProc[RING_BUF_SIZE][IMAGE_W * IMAGE_H * 3];
 vector<float> netout[RING_BUF_SIZE];
 int imgProcIdx[RING_BUF_SIZE];
 
@@ -195,6 +195,7 @@ static void *postproc(void*) {
     handle_keyboard_input(exit_code, do_pause);
 
     GET_SHOW_TVAL_END(postproc);
+    cout << endl;
 
     increment_circular_variable(rbuf_idx, RING_BUF_SIZE - 1);
   }

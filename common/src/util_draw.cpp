@@ -762,11 +762,9 @@ void COverlayRGB::blend_from(COverlayRGB &overlay, double alpha)
 
   if((screen_width_ >= w) && (screen_height_ >= h) && (buff_rgb_ != NULL))
   {
-    pixfmt_type                      pix_format(overlay.get_ren_buf_ref());
-
+    pixfmt_type pix_format(overlay.get_ren_buf_ref());
     pixfmt_type pixf(render_buf_overlay_rgb_);
     ren_base_type rb(pixf);
-
     rb.blend_from(pix_format, 0, 0, 0, unsigned(alpha * 255));
   }
   else
