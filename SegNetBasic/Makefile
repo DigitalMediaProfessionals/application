@@ -3,18 +3,22 @@ include ../../env.mk
 INC = -I../../dv-user-driver/include -I../common/include -I/usr/include/agg2 `freetype-config --cflags`
 LIB = -L../../dv-user-driver -ldmpdv -L../common/lib -ldv700_util -lagg -lfreetype
 
-CFLAGS = -pthread -std=c++11 $(OPT) -Wall -Werror -c $(INC)
-LFLAGS = -pthread -std=c++11 $(OPT)
+CXXFLAGS = -pthread -std=c++11 $(OPT) -Wall -Werror -c $(INC)
+LDFLAGS = -pthread $(LIB)
 
 DEPS = SegNetBasic_gen.h
-OBJS = SegNetBasic_gen.o segnet_post.o segnet.o
-TGT  = ../bin/SegNetBasic
+OBJS = SegNetBasic_gen.o segnet_post.o
+TGT = ../bin/SegNetBasic ../bin/SegNetBasic_threaded
 
-%.o: %.cpp $(DEPS)
-	$(GPP) $(CFLAGS) -o $@ $<
+all: $(TGT)
 
-all : $(OBJS)
-	$(GPP) $(LFLAGS) $(OBJS) -o $(TGT) $(LIB)
+../bin/SegNetBasic: $(OBJS) segnet.o
+	$(CXX) -o $@ $^ $(LDFLAGS)
+
+../bin/SegNetBasic_threaded: $(OBJS) segnet_threaded.o
+	$(CXX) -o $@ $^ $(LDFLAGS)
+
+%.o: $(DEPS)
 
 clean:
 	rm -f *.o $(TGT)
