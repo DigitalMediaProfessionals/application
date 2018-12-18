@@ -43,7 +43,7 @@ static float box_iou(const float *a, const float *b) {
 }
 
 static void decode_yolo_box(
-    float *box, const float *anchor, const float *dim, int x, int y) {
+    float *box, const unsigned *anchor, const unsigned *dim, int x, int y) {
   box[2] = exp(box[2]) * anchor[0] / PROC_W;
   box[3] = exp(box[3]) * anchor[1] / PROC_H;
   box[0] = (x + box[0]) / dim[0] - box[2] / 2.0f;
@@ -56,8 +56,8 @@ void get_bboxes(const vector<float> &tensor, vector<float> &boxes) {
   float *box;
 
   static float INV_OBJ_THRESHOLD = 0;
-  static float DIM[4] = {0, 0, 0, 0};
-  static float ANCHOR[] = {81, 82, 135, 169, 344, 319, 23, 27, 37, 58, 81, 82};
+  static unsigned DIM[4] = {0, 0, 0, 0};
+  static unsigned ANCHOR[] = {81, 82, 135, 169, 344, 319, 23, 27, 37, 58, 81, 82};
   // static cosnt float DIM[] = { 10, 10, 20, 20, 40, 40 };
   // static cosnt float ANCHOR[] = { 116, 90, 156, 198, 373, 326,
   //                         30, 61, 62, 45, 59, 119,
@@ -66,16 +66,21 @@ void get_bboxes(const vector<float> &tensor, vector<float> &boxes) {
     INV_OBJ_THRESHOLD = sigmoid_inverse(OBJ_THRESHOLD);
   }
   if (!DIM[0]) {
-    DIM[0] = PROC_W / (1 << 5);
-    DIM[1] = PROC_H / (1 << 5);
-    DIM[2] = PROC_W / (1 << 4);
-    DIM[3] = PROC_H / (1 << 4);
+    DIM[0] = PROC_W;
+    DIM[1] = PROC_H;
+    for(unsigned i = 0; i < 2; i++) {
+      for(int j = 0; j < 5; j++) {
+        DIM[i] = (DIM[i] >> 1) + (DIM[i] & 0x1);
+      }
+    }
+    DIM[2] = DIM[0] << 1;
+    DIM[3] = DIM[1] << 1;
   }
 
   boxes.clear();
   for (int i = 0; i < 2; i++) {
-    for (int y = 0; y < DIM[i * 2 + 1]; y++) {
-      for (int x = 0; x < DIM[i * 2]; x++) {
+    for (unsigned y = 0; y < DIM[i * 2 + 1]; y++) {
+      for (unsigned x = 0; x < DIM[i * 2]; x++) {
         for (int n = 0; n < NUM_BOX_PER_TILE; n++) {
           if (t[4] < INV_OBJ_THRESHOLD) {
             t += NUM_TENSOR;
