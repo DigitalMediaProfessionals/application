@@ -73,5 +73,20 @@ void visualize(void *netoutCPU, COverlayRGB &overlay) {
 }
 
 void visualize(std::vector<float> &netout, COverlayRGB &overlay) {
-  visualize(reinterpret_cast<void*>(netout.data()), overlay);
+  float *networkOutput = reinterpret_cast<float *>(netout.data());
+  for (int y = 0; y < IMAGE_H; y++) {
+    for (int x = 0; x < IMAGE_W; x++) {
+      int maxIndex = 0;
+      float maxVal = networkOutput[(y * IMAGE_W + x) * CLASS_NUM];
+      for (int i = 1; i < CLASS_NUM; i++) {
+        if (networkOutput[(y * IMAGE_W + x) * CLASS_NUM + i] > maxVal) {
+          maxVal = networkOutput[(y * IMAGE_W + x) * CLASS_NUM + i];
+          maxIndex = i;
+        }
+      }
+      overlay.set_pixel(x, y, (class_color[maxIndex]>>24),
+          ((class_color[maxIndex] & 0x00ff0000)>>16),
+    		  ((class_color[maxIndex] & 0x0000ff00)>>8));
+    }
+  }
 }
