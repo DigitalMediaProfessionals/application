@@ -8,14 +8,14 @@ LDFLAGS = -pthread $(LIB)
 
 DEPS = SegNetBasic_gen.h
 OBJS = SegNetBasic_gen.o segnet_post.o
-TGT = ../bin/SegNetBasic ../bin/SegNetBasic_threaded
+TGT = ../bin/SegNetBasic ../bin/SegNetBasic_pipelined
 
 all: $(TGT)
 
 ../bin/SegNetBasic: $(OBJS) segnet.o
 	$(CXX) -o $@ $^ $(LDFLAGS)
 
-../bin/SegNetBasic_threaded: $(OBJS) segnet_threaded.o
+../bin/SegNetBasic_pipelined: $(OBJS) segnet_pipelined.o
 	$(CXX) -o $@ $^ $(LDFLAGS)
 
 %.o: $(DEPS)

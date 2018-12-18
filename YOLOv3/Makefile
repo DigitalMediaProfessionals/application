@@ -12,7 +12,7 @@ OBJS = YOLOv3_gen.o YOLOv3_post.o
 else
 OBJS = YOLOv3_gen.o YOLOv3_post.o
 endif
-TGT  = ../bin/YOLOv3 ../bin/YOLOv3_threaded
+TGT  = ../bin/YOLOv3 ../bin/YOLOv3_pipelined
 
 all: $(TGT)
 
