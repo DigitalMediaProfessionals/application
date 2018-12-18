@@ -28,7 +28,7 @@ CYOLOv3::~CYOLOv3() {
 }
 
 bool CYOLOv3::Initialize() {
-  if (!ReserveMemory(17822496, 6782976)) {
+  if (!ReserveMemory(17822496, 7630848)) {
     return false;
   }
 
@@ -76,7 +76,7 @@ void CYOLOv3::Layer_0() {
   conf.topo = 0x1;  // [31:0] Output Destination of each run, 0 = UBUF, 1 = EXTMEM
 
   // Input Configuration:
-  conf.w = 512;  // Input Width
+  conf.w = 576;  // Input Width
   conf.h = 288;  // Input Height
   conf.z = 1;  // Input Depth
   conf.c = 3;  // Input Channels
@@ -85,7 +85,7 @@ void CYOLOv3::Layer_0() {
 
   // Output Configuration:
   conf.output_buf.mem = io_mem_;
-  conf.output_buf.offs = 884736;
+  conf.output_buf.offs = 995328;
 
   conf.eltwise_buf.mem = NULL;
   conf.eltwise_buf.offs = 0;  // Input byte address for elementwise add (0 = UBUF Input Buffer)
@@ -123,13 +123,13 @@ void CYOLOv3::Layer_0() {
   fpga_layer& layer = get_layer(0);
   layer.type = LT_CONV;
   layer.input_offs = 0;
-  layer.output_offs = 884736;
-  layer.output_size = 4718592;
-  layer.input_dim[0] = 512;
+  layer.output_offs = 995328;
+  layer.output_size = 5308416;
+  layer.input_dim[0] = 576;
   layer.input_dim[1] = 288;
   layer.input_dim[2] = 3;
   layer.input_dim_size = 3;
-  layer.output_dim[0] = 512;
+  layer.output_dim[0] = 576;
   layer.output_dim[1] = 288;
   layer.output_dim[2] = 16;
   layer.output_dim_size = 3;
@@ -150,16 +150,16 @@ void CYOLOv3::Layer_1() {
   conf.topo = 0x1;  // [31:0] Output Destination of each run, 0 = UBUF, 1 = EXTMEM
 
   // Input Configuration:
-  conf.w = 512;  // Input Width
+  conf.w = 576;  // Input Width
   conf.h = 288;  // Input Height
   conf.z = 1;  // Input Depth
   conf.c = 16;  // Input Channels
   conf.input_buf.mem = io_mem_;
-  conf.input_buf.offs = 884736;
+  conf.input_buf.offs = 995328;
 
   // Output Configuration:
   conf.output_buf.mem = io_mem_;
-  conf.output_buf.offs = 5603328;
+  conf.output_buf.offs = 6303744;
 
   conf.eltwise_buf.mem = NULL;
   conf.eltwise_buf.offs = 0;  // Input byte address for elementwise add (0 = UBUF Input Buffer)
@@ -193,14 +193,14 @@ void CYOLOv3::Layer_1() {
 
   fpga_layer& layer = get_layer(1);
   layer.type = LT_CONV;
-  layer.input_offs = 884736;
-  layer.output_offs = 5603328;
-  layer.output_size = 1179648;
-  layer.input_dim[0] = 512;
+  layer.input_offs = 995328;
+  layer.output_offs = 6303744;
+  layer.output_size = 1327104;
+  layer.input_dim[0] = 576;
   layer.input_dim[1] = 288;
   layer.input_dim[2] = 16;
   layer.input_dim_size = 3;
-  layer.output_dim[0] = 256;
+  layer.output_dim[0] = 288;
   layer.output_dim[1] = 144;
   layer.output_dim[2] = 16;
   layer.output_dim_size = 3;
@@ -224,12 +224,12 @@ void CYOLOv3::Layer_2() {
   conf.topo = 0x1;  // [31:0] Output Destination of each run, 0 = UBUF, 1 = EXTMEM
 
   // Input Configuration:
-  conf.w = 256;  // Input Width
+  conf.w = 288;  // Input Width
   conf.h = 144;  // Input Height
   conf.z = 1;  // Input Depth
   conf.c = 16;  // Input Channels
   conf.input_buf.mem = io_mem_;
-  conf.input_buf.offs = 5603328;
+  conf.input_buf.offs = 6303744;
 
   // Output Configuration:
   conf.output_buf.mem = io_mem_;
@@ -270,14 +270,14 @@ void CYOLOv3::Layer_2() {
 
   fpga_layer& layer = get_layer(2);
   layer.type = LT_CONV;
-  layer.input_offs = 5603328;
+  layer.input_offs = 6303744;
   layer.output_offs = 0;
-  layer.output_size = 2359296;
-  layer.input_dim[0] = 256;
+  layer.output_size = 2654208;
+  layer.input_dim[0] = 288;
   layer.input_dim[1] = 144;
   layer.input_dim[2] = 16;
   layer.input_dim_size = 3;
-  layer.output_dim[0] = 256;
+  layer.output_dim[0] = 288;
   layer.output_dim[1] = 144;
   layer.output_dim[2] = 32;
   layer.output_dim_size = 3;
@@ -298,7 +298,7 @@ void CYOLOv3::Layer_3() {
   conf.topo = 0x1;  // [31:0] Output Destination of each run, 0 = UBUF, 1 = EXTMEM
 
   // Input Configuration:
-  conf.w = 256;  // Input Width
+  conf.w = 288;  // Input Width
   conf.h = 144;  // Input Height
   conf.z = 1;  // Input Depth
   conf.c = 32;  // Input Channels
@@ -307,7 +307,7 @@ void CYOLOv3::Layer_3() {
 
   // Output Configuration:
   conf.output_buf.mem = io_mem_;
-  conf.output_buf.offs = 2359296;
+  conf.output_buf.offs = 2654208;
 
   conf.eltwise_buf.mem = NULL;
   conf.eltwise_buf.offs = 0;  // Input byte address for elementwise add (0 = UBUF Input Buffer)
@@ -342,13 +342,13 @@ void CYOLOv3::Layer_3() {
   fpga_layer& layer = get_layer(3);
   layer.type = LT_CONV;
   layer.input_offs = 0;
-  layer.output_offs = 2359296;
-  layer.output_size = 589824;
-  layer.input_dim[0] = 256;
+  layer.output_offs = 2654208;
+  layer.output_size = 663552;
+  layer.input_dim[0] = 288;
   layer.input_dim[1] = 144;
   layer.input_dim[2] = 32;
   layer.input_dim_size = 3;
-  layer.output_dim[0] = 128;
+  layer.output_dim[0] = 144;
   layer.output_dim[1] = 72;
   layer.output_dim[2] = 32;
   layer.output_dim_size = 3;
@@ -372,12 +372,12 @@ void CYOLOv3::Layer_4() {
   conf.topo = 0x1;  // [31:0] Output Destination of each run, 0 = UBUF, 1 = EXTMEM
 
   // Input Configuration:
-  conf.w = 128;  // Input Width
+  conf.w = 144;  // Input Width
   conf.h = 72;  // Input Height
   conf.z = 1;  // Input Depth
   conf.c = 32;  // Input Channels
   conf.input_buf.mem = io_mem_;
-  conf.input_buf.offs = 2359296;
+  conf.input_buf.offs = 2654208;
 
   // Output Configuration:
   conf.output_buf.mem = io_mem_;
@@ -418,14 +418,14 @@ void CYOLOv3::Layer_4() {
 
   fpga_layer& layer = get_layer(4);
   layer.type = LT_CONV;
-  layer.input_offs = 2359296;
+  layer.input_offs = 2654208;
   layer.output_offs = 0;
-  layer.output_size = 1179648;
-  layer.input_dim[0] = 128;
+  layer.output_size = 1327104;
+  layer.input_dim[0] = 144;
   layer.input_dim[1] = 72;
   layer.input_dim[2] = 32;
   layer.input_dim_size = 3;
-  layer.output_dim[0] = 128;
+  layer.output_dim[0] = 144;
   layer.output_dim[1] = 72;
   layer.output_dim[2] = 64;
   layer.output_dim_size = 3;
@@ -446,7 +446,7 @@ void CYOLOv3::Layer_5() {
   conf.topo = 0x1;  // [31:0] Output Destination of each run, 0 = UBUF, 1 = EXTMEM
 
   // Input Configuration:
-  conf.w = 128;  // Input Width
+  conf.w = 144;  // Input Width
   conf.h = 72;  // Input Height
   conf.z = 1;  // Input Depth
   conf.c = 64;  // Input Channels
@@ -455,7 +455,7 @@ void CYOLOv3::Layer_5() {
 
   // Output Configuration:
   conf.output_buf.mem = io_mem_;
-  conf.output_buf.offs = 1179648;
+  conf.output_buf.offs = 1327104;
 
   conf.eltwise_buf.mem = NULL;
   conf.eltwise_buf.offs = 0;  // Input byte address for elementwise add (0 = UBUF Input Buffer)
@@ -490,13 +490,13 @@ void CYOLOv3::Layer_5() {
   fpga_layer& layer = get_layer(5);
   layer.type = LT_CONV;
   layer.input_offs = 0;
-  layer.output_offs = 1179648;
-  layer.output_size = 294912;
-  layer.input_dim[0] = 128;
+  layer.output_offs = 1327104;
+  layer.output_size = 331776;
+  layer.input_dim[0] = 144;
   layer.input_dim[1] = 72;
   layer.input_dim[2] = 64;
   layer.input_dim_size = 3;
-  layer.output_dim[0] = 64;
+  layer.output_dim[0] = 72;
   layer.output_dim[1] = 36;
   layer.output_dim[2] = 64;
   layer.output_dim_size = 3;
@@ -521,12 +521,12 @@ void CYOLOv3::Layer_6() {
   conf.topo = 0x1;  // [31:0] Output Destination of each run, 0 = UBUF, 1 = EXTMEM
 
   // Input Configuration:
-  conf.w = 64;  // Input Width
+  conf.w = 72;  // Input Width
   conf.h = 36;  // Input Height
   conf.z = 1;  // Input Depth
   conf.c = 64;  // Input Channels
   conf.input_buf.mem = io_mem_;
-  conf.input_buf.offs = 1179648;
+  conf.input_buf.offs = 1327104;
 
   // Output Configuration:
   conf.output_buf.mem = io_mem_;
@@ -568,14 +568,14 @@ void CYOLOv3::Layer_6() {
 
   fpga_layer& layer = get_layer(6);
   layer.type = LT_CONV;
-  layer.input_offs = 1179648;
+  layer.input_offs = 1327104;
   layer.output_offs = 0;
-  layer.output_size = 147456;
-  layer.input_dim[0] = 64;
+  layer.output_size = 165888;
+  layer.input_dim[0] = 72;
   layer.input_dim[1] = 36;
   layer.input_dim[2] = 64;
   layer.input_dim_size = 3;
-  layer.output_dim[0] = 32;
+  layer.output_dim[0] = 36;
   layer.output_dim[1] = 18;
   layer.output_dim[2] = 128;
   layer.output_dim_size = 3;
@@ -599,7 +599,7 @@ void CYOLOv3::Layer_7() {
   conf.topo = 0x1;  // [31:0] Output Destination of each run, 0 = UBUF, 1 = EXTMEM
 
   // Input Configuration:
-  conf.w = 32;  // Input Width
+  conf.w = 36;  // Input Width
   conf.h = 18;  // Input Height
   conf.z = 1;  // Input Depth
   conf.c = 128;  // Input Channels
@@ -608,7 +608,7 @@ void CYOLOv3::Layer_7() {
 
   // Output Configuration:
   conf.output_buf.mem = io_mem_;
-  conf.output_buf.offs = 294912;
+  conf.output_buf.offs = 331776;
 
   conf.eltwise_buf.mem = NULL;
   conf.eltwise_buf.offs = 0;  // Input byte address for elementwise add (0 = UBUF Input Buffer)
@@ -646,13 +646,13 @@ void CYOLOv3::Layer_7() {
   fpga_layer& layer = get_layer(7);
   layer.type = LT_CONV;
   layer.input_offs = 0;
-  layer.output_offs = 294912;
-  layer.output_size = 294912;
-  layer.input_dim[0] = 32;
+  layer.output_offs = 331776;
+  layer.output_size = 331776;
+  layer.input_dim[0] = 36;
   layer.input_dim[1] = 18;
   layer.input_dim[2] = 128;
   layer.input_dim_size = 3;
-  layer.output_dim[0] = 32;
+  layer.output_dim[0] = 36;
   layer.output_dim[1] = 18;
   layer.output_dim[2] = 256;
   layer.output_dim_size = 3;
@@ -673,12 +673,12 @@ void CYOLOv3::Layer_8() {
   conf.topo = 0x1;  // [31:0] Output Destination of each run, 0 = UBUF, 1 = EXTMEM
 
   // Input Configuration:
-  conf.w = 32;  // Input Width
+  conf.w = 36;  // Input Width
   conf.h = 18;  // Input Height
   conf.z = 1;  // Input Depth
   conf.c = 256;  // Input Channels
   conf.input_buf.mem = io_mem_;
-  conf.input_buf.offs = 294912;
+  conf.input_buf.offs = 331776;
 
   // Output Configuration:
   conf.output_buf.mem = io_mem_;
@@ -716,14 +716,14 @@ void CYOLOv3::Layer_8() {
 
   fpga_layer& layer = get_layer(8);
   layer.type = LT_CONV;
-  layer.input_offs = 294912;
+  layer.input_offs = 331776;
   layer.output_offs = 0;
-  layer.output_size = 73728;
-  layer.input_dim[0] = 32;
+  layer.output_size = 82944;
+  layer.input_dim[0] = 36;
   layer.input_dim[1] = 18;
   layer.input_dim[2] = 256;
   layer.input_dim_size = 3;
-  layer.output_dim[0] = 16;
+  layer.output_dim[0] = 18;
   layer.output_dim[1] = 9;
   layer.output_dim[2] = 256;
   layer.output_dim_size = 3;
@@ -748,7 +748,7 @@ void CYOLOv3::Layer_9() {
   conf.topo = 0x1;  // [31:0] Output Destination of each run, 0 = UBUF, 1 = EXTMEM
 
   // Input Configuration:
-  conf.w = 16;  // Input Width
+  conf.w = 18;  // Input Width
   conf.h = 9;  // Input Height
   conf.z = 1;  // Input Depth
   conf.c = 256;  // Input Channels
@@ -757,7 +757,7 @@ void CYOLOv3::Layer_9() {
 
   // Output Configuration:
   conf.output_buf.mem = io_mem_;
-  conf.output_buf.offs = 589824;
+  conf.output_buf.offs = 663552;
 
   conf.eltwise_buf.mem = NULL;
   conf.eltwise_buf.offs = 0;  // Input byte address for elementwise add (0 = UBUF Input Buffer)
@@ -796,13 +796,13 @@ void CYOLOv3::Layer_9() {
   fpga_layer& layer = get_layer(9);
   layer.type = LT_CONV;
   layer.input_offs = 0;
-  layer.output_offs = 589824;
-  layer.output_size = 147456;
-  layer.input_dim[0] = 16;
+  layer.output_offs = 663552;
+  layer.output_size = 165888;
+  layer.input_dim[0] = 18;
   layer.input_dim[1] = 9;
   layer.input_dim[2] = 256;
   layer.input_dim_size = 3;
-  layer.output_dim[0] = 16;
+  layer.output_dim[0] = 18;
   layer.output_dim[1] = 9;
   layer.output_dim[2] = 512;
   layer.output_dim_size = 3;
@@ -826,16 +826,16 @@ void CYOLOv3::Layer_10() {
   conf.topo = 0x1;  // [31:0] Output Destination of each run, 0 = UBUF, 1 = EXTMEM
 
   // Input Configuration:
-  conf.w = 16;  // Input Width
+  conf.w = 18;  // Input Width
   conf.h = 9;  // Input Height
   conf.z = 1;  // Input Depth
   conf.c = 512;  // Input Channels
   conf.input_buf.mem = io_mem_;
-  conf.input_buf.offs = 589824;
+  conf.input_buf.offs = 663552;
 
   // Output Configuration:
   conf.output_buf.mem = io_mem_;
-  conf.output_buf.offs = 737280;
+  conf.output_buf.offs = 829440;
 
   conf.eltwise_buf.mem = NULL;
   conf.eltwise_buf.offs = 0;  // Input byte address for elementwise add (0 = UBUF Input Buffer)
@@ -872,14 +872,14 @@ void CYOLOv3::Layer_10() {
 
   fpga_layer& layer = get_layer(10);
   layer.type = LT_CONV;
-  layer.input_offs = 589824;
-  layer.output_offs = 737280;
-  layer.output_size = 294912;
-  layer.input_dim[0] = 16;
+  layer.input_offs = 663552;
+  layer.output_offs = 829440;
+  layer.output_size = 331776;
+  layer.input_dim[0] = 18;
   layer.input_dim[1] = 9;
   layer.input_dim[2] = 512;
   layer.input_dim_size = 3;
-  layer.output_dim[0] = 16;
+  layer.output_dim[0] = 18;
   layer.output_dim[1] = 9;
   layer.output_dim[2] = 1024;
   layer.output_dim_size = 3;
@@ -903,12 +903,12 @@ void CYOLOv3::Layer_11() {
   conf.topo = 0x1;  // [31:0] Output Destination of each run, 0 = UBUF, 1 = EXTMEM
 
   // Input Configuration:
-  conf.w = 16;  // Input Width
+  conf.w = 18;  // Input Width
   conf.h = 9;  // Input Height
   conf.z = 1;  // Input Depth
   conf.c = 1024;  // Input Channels
   conf.input_buf.mem = io_mem_;
-  conf.input_buf.offs = 737280;
+  conf.input_buf.offs = 829440;
 
   // Output Configuration:
   conf.output_buf.mem = io_mem_;
@@ -949,14 +949,14 @@ void CYOLOv3::Layer_11() {
 
   fpga_layer& layer = get_layer(11);
   layer.type = LT_CONV;
-  layer.input_offs = 737280;
+  layer.input_offs = 829440;
   layer.output_offs = 0;
-  layer.output_size = 73728;
-  layer.input_dim[0] = 16;
+  layer.output_size = 82944;
+  layer.input_dim[0] = 18;
   layer.input_dim[1] = 9;
   layer.input_dim[2] = 1024;
   layer.input_dim_size = 3;
-  layer.output_dim[0] = 16;
+  layer.output_dim[0] = 18;
   layer.output_dim[1] = 9;
   layer.output_dim[2] = 256;
   layer.output_dim_size = 3;
@@ -980,7 +980,7 @@ void CYOLOv3::Layer_12() {
   conf.topo = 0x1;  // [31:0] Output Destination of each run, 0 = UBUF, 1 = EXTMEM
 
   // Input Configuration:
-  conf.w = 16;  // Input Width
+  conf.w = 18;  // Input Width
   conf.h = 9;  // Input Height
   conf.z = 1;  // Input Depth
   conf.c = 256;  // Input Channels
@@ -989,7 +989,7 @@ void CYOLOv3::Layer_12() {
 
   // Output Configuration:
   conf.output_buf.mem = io_mem_;
-  conf.output_buf.offs = 589824;
+  conf.output_buf.offs = 663552;
 
   conf.eltwise_buf.mem = NULL;
   conf.eltwise_buf.offs = 0;  // Input byte address for elementwise add (0 = UBUF Input Buffer)
@@ -1027,13 +1027,13 @@ void CYOLOv3::Layer_12() {
   fpga_layer& layer = get_layer(12);
   layer.type = LT_CONV;
   layer.input_offs = 0;
-  layer.output_offs = 589824;
-  layer.output_size = 147456;
-  layer.input_dim[0] = 16;
+  layer.output_offs = 663552;
+  layer.output_size = 165888;
+  layer.input_dim[0] = 18;
   layer.input_dim[1] = 9;
   layer.input_dim[2] = 256;
   layer.input_dim_size = 3;
-  layer.output_dim[0] = 16;
+  layer.output_dim[0] = 18;
   layer.output_dim[1] = 9;
   layer.output_dim[2] = 512;
   layer.output_dim_size = 3;
@@ -1054,16 +1054,16 @@ void CYOLOv3::Layer_13() {
   conf.topo = 0x1;  // [31:0] Output Destination of each run, 0 = UBUF, 1 = EXTMEM
 
   // Input Configuration:
-  conf.w = 16;  // Input Width
+  conf.w = 18;  // Input Width
   conf.h = 9;  // Input Height
   conf.z = 1;  // Input Depth
   conf.c = 512;  // Input Channels
   conf.input_buf.mem = io_mem_;
-  conf.input_buf.offs = 589824;
+  conf.input_buf.offs = 663552;
 
   // Output Configuration:
   conf.output_buf.mem = io_mem_;
-  conf.output_buf.offs = 73728;
+  conf.output_buf.offs = 82944;
 
   conf.eltwise_buf.mem = NULL;
   conf.eltwise_buf.offs = 0;  // Input byte address for elementwise add (0 = UBUF Input Buffer)
@@ -1097,14 +1097,14 @@ void CYOLOv3::Layer_13() {
 
   fpga_layer& layer = get_layer(13);
   layer.type = LT_CONV;
-  layer.input_offs = 589824;
-  layer.output_offs = 73728;
-  layer.output_size = 73440;
-  layer.input_dim[0] = 16;
+  layer.input_offs = 663552;
+  layer.output_offs = 82944;
+  layer.output_size = 82620;
+  layer.input_dim[0] = 18;
   layer.input_dim[1] = 9;
   layer.input_dim[2] = 512;
   layer.input_dim_size = 3;
-  layer.output_dim[0] = 16;
+  layer.output_dim[0] = 18;
   layer.output_dim[1] = 9;
   layer.output_dim[2] = 255;
   layer.output_dim_size = 3;
@@ -1118,14 +1118,14 @@ void CYOLOv3::Layer_13() {
 void CYOLOv3::Layer_14() {
   fpga_layer& layer = get_layer(14);
   layer.type = LT_FLATTEN;
-  layer.input_offs = 73728;
-  layer.output_offs = 589824;
-  layer.output_size = 73440;
-  layer.input_dim[0] = 16;
+  layer.input_offs = 82944;
+  layer.output_offs = 663552;
+  layer.output_size = 82620;
+  layer.input_dim[0] = 18;
   layer.input_dim[1] = 9;
   layer.input_dim[2] = 255;
   layer.input_dim_size = 3;
-  layer.output_dim[0] = 36720;
+  layer.output_dim[0] = 41310;
   layer.output_dim_size = 1;
   layer.is_output = false;
   layer.is_f32_output = false;
@@ -1147,7 +1147,7 @@ void CYOLOv3::Layer_15() {
   conf.topo = 0x1;  // [31:0] Output Destination of each run, 0 = UBUF, 1 = EXTMEM
 
   // Input Configuration:
-  conf.w = 16;  // Input Width
+  conf.w = 18;  // Input Width
   conf.h = 9;  // Input Height
   conf.z = 1;  // Input Depth
   conf.c = 256;  // Input Channels
@@ -1156,7 +1156,7 @@ void CYOLOv3::Layer_15() {
 
   // Output Configuration:
   conf.output_buf.mem = io_mem_;
-  conf.output_buf.offs = 73728;
+  conf.output_buf.offs = 82944;
 
   conf.eltwise_buf.mem = NULL;
   conf.eltwise_buf.offs = 0;  // Input byte address for elementwise add (0 = UBUF Input Buffer)
@@ -1194,13 +1194,13 @@ void CYOLOv3::Layer_15() {
   fpga_layer& layer = get_layer(15);
   layer.type = LT_CONV;
   layer.input_offs = 0;
-  layer.output_offs = 73728;
-  layer.output_size = 36864;
-  layer.input_dim[0] = 16;
+  layer.output_offs = 82944;
+  layer.output_size = 41472;
+  layer.input_dim[0] = 18;
   layer.input_dim[1] = 9;
   layer.input_dim[2] = 256;
   layer.input_dim_size = 3;
-  layer.output_dim[0] = 16;
+  layer.output_dim[0] = 18;
   layer.output_dim[1] = 9;
   layer.output_dim[2] = 128;
   layer.output_dim_size = 3;
@@ -1221,16 +1221,16 @@ void CYOLOv3::Layer_16() {
   conf.topo = 0x1;  // [31:0] Output Destination of each run, 0 = UBUF, 1 = EXTMEM
 
   // Input Configuration:
-  conf.w = 16;  // Input Width
+  conf.w = 18;  // Input Width
   conf.h = 9;  // Input Height
   conf.z = 1;  // Input Depth
   conf.c = 128;  // Input Channels
   conf.input_buf.mem = io_mem_;
-  conf.input_buf.offs = 73728;
+  conf.input_buf.offs = 82944;
 
   // Output Configuration:
   conf.output_buf.mem = io_mem_;
-  conf.output_buf.offs = 147456;
+  conf.output_buf.offs = 165888;
 
   conf.eltwise_buf.mem = NULL;
   conf.eltwise_buf.offs = 0;  // Input byte address for elementwise add (0 = UBUF Input Buffer)
@@ -1264,14 +1264,14 @@ void CYOLOv3::Layer_16() {
 
   fpga_layer& layer = get_layer(16);
   layer.type = LT_CONV;
-  layer.input_offs = 73728;
-  layer.output_offs = 147456;
-  layer.output_size = 147456;
-  layer.input_dim[0] = 16;
+  layer.input_offs = 82944;
+  layer.output_offs = 165888;
+  layer.output_size = 165888;
+  layer.input_dim[0] = 18;
   layer.input_dim[1] = 9;
   layer.input_dim[2] = 128;
   layer.input_dim_size = 3;
-  layer.output_dim[0] = 32;
+  layer.output_dim[0] = 36;
   layer.output_dim[1] = 18;
   layer.output_dim[2] = 128;
   layer.output_dim_size = 3;
@@ -1285,14 +1285,14 @@ void CYOLOv3::Layer_16() {
 void CYOLOv3::Layer_17() {
   fpga_layer& layer = get_layer(17);
   layer.type = LT_CONCAT;
-  layer.input_offs = 147456;
-  layer.output_offs = 147456;
-  layer.output_size = 442368;
-  layer.input_dim[0] = 32;
+  layer.input_offs = 165888;
+  layer.output_offs = 165888;
+  layer.output_size = 497664;
+  layer.input_dim[0] = 36;
   layer.input_dim[1] = 18;
   layer.input_dim[2] = 384;
   layer.input_dim_size = 3;
-  layer.output_dim[0] = 32;
+  layer.output_dim[0] = 36;
   layer.output_dim[1] = 18;
   layer.output_dim[2] = 384;
   layer.output_dim_size = 3;
@@ -1316,16 +1316,16 @@ void CYOLOv3::Layer_18() {
   conf.topo = 0x1;  // [31:0] Output Destination of each run, 0 = UBUF, 1 = EXTMEM
 
   // Input Configuration:
-  conf.w = 32;  // Input Width
+  conf.w = 36;  // Input Width
   conf.h = 18;  // Input Height
   conf.z = 1;  // Input Depth
   conf.c = 384;  // Input Channels
   conf.input_buf.mem = io_mem_;
-  conf.input_buf.offs = 147456;
+  conf.input_buf.offs = 165888;
 
   // Output Configuration:
   conf.output_buf.mem = io_mem_;
-  conf.output_buf.offs = 957024;
+  conf.output_buf.offs = 1076656;
 
   conf.eltwise_buf.mem = NULL;
   conf.eltwise_buf.offs = 0;  // Input byte address for elementwise add (0 = UBUF Input Buffer)
@@ -1362,14 +1362,14 @@ void CYOLOv3::Layer_18() {
 
   fpga_layer& layer = get_layer(18);
   layer.type = LT_CONV;
-  layer.input_offs = 147456;
-  layer.output_offs = 957024;
-  layer.output_size = 294912;
-  layer.input_dim[0] = 32;
+  layer.input_offs = 165888;
+  layer.output_offs = 1076656;
+  layer.output_size = 331776;
+  layer.input_dim[0] = 36;
   layer.input_dim[1] = 18;
   layer.input_dim[2] = 384;
   layer.input_dim_size = 3;
-  layer.output_dim[0] = 32;
+  layer.output_dim[0] = 36;
   layer.output_dim[1] = 18;
   layer.output_dim[2] = 256;
   layer.output_dim_size = 3;
@@ -1390,12 +1390,12 @@ void CYOLOv3::Layer_19() {
   conf.topo = 0x1;  // [31:0] Output Destination of each run, 0 = UBUF, 1 = EXTMEM
 
   // Input Configuration:
-  conf.w = 32;  // Input Width
+  conf.w = 36;  // Input Width
   conf.h = 18;  // Input Height
   conf.z = 1;  // Input Depth
   conf.c = 256;  // Input Channels
   conf.input_buf.mem = io_mem_;
-  conf.input_buf.offs = 957024;
+  conf.input_buf.offs = 1076656;
 
   // Output Configuration:
   conf.output_buf.mem = io_mem_;
@@ -1433,14 +1433,14 @@ void CYOLOv3::Layer_19() {
 
   fpga_layer& layer = get_layer(19);
   layer.type = LT_CONV;
-  layer.input_offs = 957024;
+  layer.input_offs = 1076656;
   layer.output_offs = 0;
-  layer.output_size = 293760;
-  layer.input_dim[0] = 32;
+  layer.output_size = 330480;
+  layer.input_dim[0] = 36;
   layer.input_dim[1] = 18;
   layer.input_dim[2] = 256;
   layer.input_dim_size = 3;
-  layer.output_dim[0] = 32;
+  layer.output_dim[0] = 36;
   layer.output_dim[1] = 18;
   layer.output_dim[2] = 255;
   layer.output_dim_size = 3;
@@ -1455,13 +1455,13 @@ void CYOLOv3::Layer_20() {
   fpga_layer& layer = get_layer(20);
   layer.type = LT_FLATTEN;
   layer.input_offs = 0;
-  layer.output_offs = 663264;
-  layer.output_size = 293760;
-  layer.input_dim[0] = 32;
+  layer.output_offs = 746172;
+  layer.output_size = 330480;
+  layer.input_dim[0] = 36;
   layer.input_dim[1] = 18;
   layer.input_dim[2] = 255;
   layer.input_dim_size = 3;
-  layer.output_dim[0] = 146880;
+  layer.output_dim[0] = 165240;
   layer.output_dim_size = 1;
   layer.is_output = false;
   layer.is_f32_output = false;
@@ -1473,12 +1473,12 @@ void CYOLOv3::Layer_20() {
 void CYOLOv3::Layer_21() {
   fpga_layer& layer = get_layer(21);
   layer.type = LT_CONCAT;
-  layer.input_offs = 589824;
-  layer.output_offs = 589824;
-  layer.output_size = 367200;
-  layer.input_dim[0] = 183600;
+  layer.input_offs = 663552;
+  layer.output_offs = 663552;
+  layer.output_size = 413100;
+  layer.input_dim[0] = 206550;
   layer.input_dim_size = 1;
-  layer.output_dim[0] = 183600;
+  layer.output_dim[0] = 206550;
   layer.output_dim_size = 1;
   layer.is_output = true;
   layer.is_f32_output = false;

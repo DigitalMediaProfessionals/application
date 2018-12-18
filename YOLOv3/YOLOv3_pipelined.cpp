@@ -36,6 +36,7 @@
 #include "util_draw.h"
 #include "util_input.h"
 #include "demo_common.h"
+#include "YOLOv3_param.h"
 
 #define DMP_MEASURE_TIME
 #include "util_time.h"
@@ -48,14 +49,7 @@ using namespace util;
 #define SCREEN_W (get_screen_width())
 #define SCREEN_H (get_screen_height())
 
-#define IMAGE_W 720
-#define IMAGE_H 360
-#define PROC_W 512
-#define PROC_H 288
-
-#define FILENAME_WEIGHTS "YOLOv3_weights.bin"
 #define USLEEP_TIME 1000
-
 
 // Define CNN network model object
 CYOLOv3 network;
