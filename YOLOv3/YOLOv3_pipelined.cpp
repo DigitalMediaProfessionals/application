@@ -58,10 +58,10 @@ CYOLOv3 network;
 // Buffer for detection result image
 COverlayRGB *cam_overlay[RING_BUF_SIZE];
 // Buffer for decoded image data
-uint32_t imgView[IMAGE_W * IMAGE_H][RING_BUF_SIZE];
+uint32_t imgView[RING_BUF_SIZE][IMAGE_W * IMAGE_H];
 int imgViewIdx[RING_BUF_SIZE];
 // Buffer for pre-processed image data
-__fp16 imgProc[PROC_W * PROC_H * 3][RING_BUF_SIZE];
+__fp16 imgProc[RING_BUF_SIZE][PROC_W * PROC_H * 3];
 // Buffer for network output
 vector<float> net_output[RING_BUF_SIZE];
 
