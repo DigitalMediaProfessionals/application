@@ -61,10 +61,11 @@ CSegNetBasic network;
 // Buffer for pre-processed image data
 uint16_t imgProc[IMAGE_W * IMAGE_H * 3][RING_BUF_SIZE];
 vector<float> netout[RING_BUF_SIZE];
+int imgProcIdx[RING_BUF_SIZE];
 
-unsigned preproc_rbuf_idx = 0;
+unsigned preproc_rbuf_idx   = 0;
 unsigned inference_rbuf_idx = 0;
-unsigned postproc_rbuf_idx = 0;
+unsigned postproc_rbuf_idx  = 0;
 
 int exit_code = -1;
 bool do_pause = false;
@@ -108,6 +109,9 @@ static void *preproc(void*) {
       if (image_nr == IMAGE_NUM) {
         image_nr = 0;
       }
+      imgProcIdx[rbuf_idx] = rbuf_idx;
+    } else {
+      imgProcIdx[rbuf_idx] = imgProcIdx[(rbuf_idx ? rbuf_idx : RING_BUF_SIZE) - 1];
     }
     GET_SHOW_TVAL_END(preproc);
     increment_circular_variable(rbuf_idx, RING_BUF_SIZE - 1);
@@ -127,7 +131,7 @@ static void *inference(void*) {
     GET_TVAL_START(inference);
 
     // Run network in HW
-    memcpy(net_inbuf_cpu, (void *)imgProc[rbuf_idx], IMAGE_W * IMAGE_H * 6);
+    memcpy(net_inbuf_cpu, (void *)imgProc[imgProcIdx[rbuf_idx]], IMAGE_W * IMAGE_H * 6);
     network.RunNetwork();
 
     network.get_final_output(netout[rbuf_idx]);
@@ -176,7 +180,7 @@ static void *postproc(void*) {
     GET_TVAL_START(postproc);
 
     // Handle output and draw results
-    convertimage(imgProc[rbuf_idx], overlay_movie);
+    convertimage(imgProc[imgProcIdx[rbuf_idx]], overlay_movie);
     overlay_movie.print_to_display((SCREEN_W / 2 - IMAGE_W), 185);
     visualize(netout[rbuf_idx], overlay_result);
     overlay_movie.blend_from(overlay_result, 0.5);
