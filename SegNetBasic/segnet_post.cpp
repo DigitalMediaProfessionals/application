@@ -14,6 +14,7 @@
  *  limitations under the License.
  */
 
+#include <vector>
 #include "util_draw.h"
 
 using namespace dmp;
@@ -38,7 +39,7 @@ const uint32_t class_color[] = {
     0x00000000,  // Unlabelled
 };
 
-void convertimage(uint16_t *imgProc, COverlayRGB& overlay) {
+void convertimage(uint16_t *imgProc, COverlayRGB &overlay) {
   unsigned char c[3];
   uint16_t t;
   for (int y = 0; y < IMAGE_H; y++) {
@@ -52,7 +53,7 @@ void convertimage(uint16_t *imgProc, COverlayRGB& overlay) {
   }
 }
 
-void visualize(void *netoutCPU, COverlayRGB& overlay) {
+void visualize(void *netoutCPU, COverlayRGB &overlay) {
   short *networkOutput = reinterpret_cast<short *>(netoutCPU);
   for (int y = 0; y < IMAGE_H; y++) {
     for (int x = 0; x < IMAGE_W; x++) {
@@ -71,3 +72,6 @@ void visualize(void *netoutCPU, COverlayRGB& overlay) {
   }
 }
 
+void visualize(std::vector<float> &netout, COverlayRGB &overlay) {
+  visualize(reinterpret_cast<void*>(netout.data()), overlay);
+}
