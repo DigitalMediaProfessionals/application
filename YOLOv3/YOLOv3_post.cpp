@@ -17,27 +17,16 @@
 #include <string>
 #include <vector>
 #include "util_draw.h"
+#include "YOLOv3_param.h"
 
 using namespace std;
 using namespace dmp;
 using namespace util;
 
-const int NUM_CLASS = 80;
-const int NUM_BOX = 3;
 const int NUM_TENSOR = NUM_CLASS + 5;
-// const float ANCHOR[] = { 116, 90, 156, 198, 373, 326,
-//                         30, 61, 62, 45, 59, 119,
-//                         10, 13, 16, 30, 33, 23 };
-const float ANCHOR[] = {81, 82, 135, 169, 344, 319, 23, 27, 37, 58, 81, 82};
-// const float DIM[] = { 10, 10, 20, 20, 40, 40 };
-const float DIM[] = {16, 9, 32, 18};
-const float NETDIM[] = {512, 288};
-const float SIG_THRES = -1.3863f;
-// const float SIG_THRES = 0.0f;
-const float THRESHOLD = 0.2f;
-const float NMS = 0.45f;
 
 static inline float sigmoid(float x) { return 0.5f + 0.5f * std::tanh(0.5f * x); }
+static inline float sigmoid_inverse(float x) { return std::log(x / (1.0f - x)); }
 
 static inline float overlap(float x1, float w1, float x2, float w2) {
   float left = max(x1, x2);
@@ -55,8 +44,8 @@ static float box_iou(const float *a, const float *b) {
 
 static void decode_yolo_box(
     float *box, const float *anchor, const float *dim, int x, int y) {
-  box[2] = exp(box[2]) * anchor[0] / NETDIM[0];
-  box[3] = exp(box[3]) * anchor[1] / NETDIM[1];
+  box[2] = exp(box[2]) * anchor[0] / PROC_W;
+  box[3] = exp(box[3]) * anchor[1] / PROC_H;
   box[0] = (x + box[0]) / dim[0] - box[2] / 2.0f;
   box[1] = (y + box[1]) / dim[1] - box[3] / 2.0f;
 }
@@ -66,12 +55,29 @@ void get_bboxes(const vector<float> &tensor, vector<float> &boxes) {
   const float *t = &tensor[0];
   float *box;
 
+  static float INV_OBJ_THRESHOLD = 0;
+  static float DIM[4] = {0, 0, 0, 0};
+  static float ANCHOR[] = {81, 82, 135, 169, 344, 319, 23, 27, 37, 58, 81, 82};
+  // static cosnt float DIM[] = { 10, 10, 20, 20, 40, 40 };
+  // static cosnt float ANCHOR[] = { 116, 90, 156, 198, 373, 326,
+  //                         30, 61, 62, 45, 59, 119,
+  //                         10, 13, 16, 30, 33, 23 };
+  if (!INV_OBJ_THRESHOLD) {
+    INV_OBJ_THRESHOLD = sigmoid_inverse(OBJ_THRESHOLD);
+  }
+  if (!DIM[0]) {
+    DIM[0] = PROC_W / (1 << 5);
+    DIM[1] = PROC_H / (1 << 5);
+    DIM[2] = PROC_W / (1 << 4);
+    DIM[3] = PROC_H / (1 << 4);
+  }
+
   boxes.clear();
   for (int i = 0; i < 2; i++) {
     for (int y = 0; y < DIM[i * 2 + 1]; y++) {
       for (int x = 0; x < DIM[i * 2]; x++) {
-        for (int n = 0; n < NUM_BOX; n++) {
-          if (t[4] < SIG_THRES) {
+        for (int n = 0; n < NUM_BOX_PER_TILE; n++) {
+          if (t[4] < INV_OBJ_THRESHOLD) {
             t += NUM_TENSOR;
             continue;
           }
@@ -88,10 +94,10 @@ void get_bboxes(const vector<float> &tensor, vector<float> &boxes) {
           box[4] = sigmoid(box[4]);
           for (int j = 5; j < NUM_TENSOR; j++) {
             box[j] = box[4] * sigmoid(box[j]);
-            if (box[j] < THRESHOLD) box[j] = 0.0f;
+            if (box[j] < CLS_THRESHOLD) box[j] = 0.0f;
           }
 
-          decode_yolo_box(box, ANCHOR + (i * NUM_BOX + n) * 2, DIM + i * 2, x, y);
+          decode_yolo_box(box, ANCHOR + (i * NUM_BOX_PER_TILE + n) * 2, DIM + i * 2, x, y);
         }
       }
     }
@@ -114,7 +120,7 @@ void get_bboxes(const vector<float> &tensor, vector<float> &boxes) {
         for (int j = 0; j < box_num; j++) {
           box = &boxes[j * NUM_TENSOR];
           if (box[5 + i] == 0.0f or mbox == box) continue;
-          if (box_iou(mbox, box) > NMS) box[5 + i] = 0.0f;
+          if (box_iou(mbox, box) > NMS_THRESHOLD) box[5 + i] = 0.0f;
         }
       }
     } while (lastprob > 0.0f);

@@ -7,12 +7,10 @@ CXXFLAGS = -pthread -std=c++11 $(OPT) -Wall -Werror -c $(INC)
 LDFLAGS = -pthread $(LIB)
 
 DEPS = YOLOv3_gen.h
-ifeq ($(NONTHREADED_APP),)
 OBJS = YOLOv3_gen.o YOLOv3_post.o
-else
-OBJS = YOLOv3_gen.o YOLOv3_post.o
-endif
 TGT  = ../bin/YOLOv3 ../bin/YOLOv3_pipelined
+
+CXX = $(GPP)
 
 all: $(TGT)
 
