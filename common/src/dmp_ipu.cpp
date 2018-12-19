@@ -44,7 +44,6 @@ DMPIPUConfig::DMPIPUConfig() {
 
 void DMPIPUConfig::ConfigUseTEX(uint8_t format, uint16_t width, uint16_t height, uint8_t transpose,
                                 int8_t ridx, int8_t gidx, int8_t bidx, int8_t aidx,
-                                uint8_t cnv_type, const uint8_t *cnv_param, 
                                 uint8_t ncolor_lut, uint32_t *lut) {
   cmd.use_tex    = 1;
   cmd.fmt_tex    = format;
@@ -55,12 +54,6 @@ void DMPIPUConfig::ConfigUseTEX(uint8_t format, uint16_t width, uint16_t height,
   cmd.gidx = gidx;
   cmd.bidx = bidx;
   cmd.aidx = aidx;
-  cmd.cnv_type = cnv_type;
-  if(cnv_param) {
-    for(unsigned i = 0; i < sizeof(cmd.cnv_param) / sizeof(cmd.cnv_param[0]); i++) {
-      cmd.cnv_param[i] = cnv_param[i];
-    }
-  }
   cmd.ncolor_lut = ncolor_lut;
   for(unsigned i = 0; i < ncolor_lut; i++) {
     cmd.lut[i] = lut[i];
@@ -83,7 +76,8 @@ int DMPIPUConfig::ConfigUseRD(uint8_t format, uint16_t width, uint16_t height, i
   return 0;
 }
 
-int DMPIPUConfig::ConfigWR(uint8_t format, uint16_t width, uint16_t height, int32_t stride) {
+int DMPIPUConfig::ConfigWR(uint8_t format, uint16_t width, uint16_t height, int32_t stride,
+                           uint8_t cnv_type, const uint8_t *cnv_param) {
   if(cmd.rect_width != 0 && cmd.rect_width != width) {
     return -1;
   }
@@ -94,6 +88,12 @@ int DMPIPUConfig::ConfigWR(uint8_t format, uint16_t width, uint16_t height, int3
   cmd.rect_width  = width;
   cmd.rect_height = height;
   cmd.stride_wr   = stride ? stride : width * GetPixelSize(format);
+  cmd.cnv_type    = cnv_type;
+  if(cnv_param) {
+    for(unsigned i = 0; i < sizeof(cmd.cnv_param) / sizeof(cmd.cnv_param[0]); i++) {
+      cmd.cnv_param[i] = cnv_param[i];
+    }
+  }
 
   return 0;
 }

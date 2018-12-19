@@ -28,7 +28,6 @@ class DMPIPUConfig {
     /// @brief configure to use texture buffer
     /// @param width Width. This can be 0 if a texture buffer is given from CDMP_Network object.
     /// @param heigh Height. This can be 0 if a texture buffer is given from CDMP_Network object.
-    /// @param cnv_param see struct dmp_dv_cmdraw_ipu_v0.cnv_param . If given, this length must be 3.
     /// @param ncolor_lut number of colors for LUT and length of argument `lut`.
     //                    This must be smaller than 33.
     /// @detail each parametes corresponds to members of struct dmp_dv_cmdraw_ipu_v0
@@ -37,11 +36,10 @@ class DMPIPUConfig {
     ///         format <-> fmt_tex
     ///
     ///         The default values of ridx, gidx, bidx and aidx are the same value of the case 
-    ///                                                           where pixel format is RGB888.
+    ///         	where pixel format is RGB888.
     ///
     void ConfigUseTEX(uint8_t format, uint16_t width = 0, uint16_t height = 0, uint8_t transpose = 0,
                       int8_t ridx = 2, int8_t gidx = 1, int8_t bidx = 0, int8_t aidx = -1,
-                      uint8_t cnv_type = DMP_DV_CNV_FP16_DIV_255, const uint8_t *cnv_param = nullptr,
                       uint8_t ncolor_lut = 0, uint32_t *lut = nullptr);
  
     /// @brief configure to use read buffer
@@ -57,8 +55,10 @@ class DMPIPUConfig {
     /// @param heigh Height. This can be 0 if a write buffer is given from CDMP_Network object.
     ///                               If not 0, this must be the same as height of read buffer.
     /// @param stride Stride. If 0 is given, set the same value as width.
+    /// @param cnv_param see struct dmp_dv_cmdraw_ipu_v0.cnv_param . If given, this length must be 3.
     /// @return 0 on success, -1 otherwise
-    int ConfigWR(uint8_t format, uint16_t width = 0, uint16_t height = 0, int32_t stride = 0);
+    int ConfigWR(uint8_t format, uint16_t width = 0, uint16_t height = 0, int32_t stride = 0,
+				 uint8_t cnv_type = DMP_DV_CNV_FP16_DIV_255, const uint8_t *cnv_param = nullptr);
 
     /// @brief configure to use constant alpha value
     void ConfigUseConstAlpha(uint8_t alpha);
