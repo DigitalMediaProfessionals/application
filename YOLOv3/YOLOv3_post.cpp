@@ -16,8 +16,10 @@
 
 #include <string>
 #include <vector>
+#include <iostream>
 #include "util_draw.h"
 #include "YOLOv3_param.h"
+#include "YOLOv3_gen.h"
 
 using namespace std;
 using namespace dmp;
@@ -50,13 +52,13 @@ static void decode_yolo_box(
   box[1] = (y + box[1]) / dim[1] - box[3] / 2.0f;
 }
 
-void get_bboxes(const vector<float> &tensor, vector<float> &boxes) {
+void get_bboxes(const vector<float> &tensor, vector<float> &boxes, CYOLOv3 &net) {
   int box_num = 0;
   const float *t = &tensor[0];
   float *box;
 
   static float INV_OBJ_THRESHOLD = 0;
-  static unsigned DIM[4] = {0, 0, 0, 0};
+  unsigned DIM[] = {0, 0, 0, 0};
   static unsigned ANCHOR[] = {81, 82, 135, 169, 344, 319, 23, 27, 37, 58, 81, 82};
   // static cosnt float DIM[] = { 10, 10, 20, 20, 40, 40 };
   // static cosnt float ANCHOR[] = { 116, 90, 156, 198, 373, 326,
@@ -65,17 +67,12 @@ void get_bboxes(const vector<float> &tensor, vector<float> &boxes) {
   if (!INV_OBJ_THRESHOLD) {
     INV_OBJ_THRESHOLD = sigmoid_inverse(OBJ_THRESHOLD);
   }
-  if (!DIM[0]) {
-    DIM[0] = PROC_W;
-    DIM[1] = PROC_H;
-    for(unsigned i = 0; i < 2; i++) {
-      for(int j = 0; j < 5; j++) {
-        DIM[i] = (DIM[i] >> 1) + (DIM[i] & 0x1);
-      }
-    }
-    DIM[2] = DIM[0] << 1;
-    DIM[3] = DIM[1] << 1;
-  }
+  fpga_layer &fout1 = net.get_layer(14);
+  fpga_layer &fout2 = net.get_layer(20);
+  DIM[0] = fout1.input_dim[0];
+  DIM[1] = fout1.input_dim[1];
+  DIM[2] = fout2.input_dim[0];
+  DIM[3] = fout2.input_dim[1];
 
   boxes.clear();
   for (int i = 0; i < 2; i++) {
