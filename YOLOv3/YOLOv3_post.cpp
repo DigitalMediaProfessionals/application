@@ -66,15 +66,10 @@ void get_bboxes(const vector<float> &tensor, vector<float> &boxes) {
     INV_OBJ_THRESHOLD = sigmoid_inverse(OBJ_THRESHOLD);
   }
   if (!DIM[0]) {
-    DIM[0] = PROC_W;
-    DIM[1] = PROC_H;
-    for(unsigned i = 0; i < 2; i++) {
-      for(int j = 0; j < 5; j++) {
-        DIM[i] = (DIM[i] >> 1) + (DIM[i] & 0x1);
-      }
-    }
-    DIM[2] = DIM[0] << 1;
-    DIM[3] = DIM[1] << 1;
+    DIM[0] = PROC_W / 32;
+    DIM[1] = PROC_H / 32;
+    DIM[2] = PROC_W / 16;
+    DIM[3] = PROC_H / 16;
   }
 
   boxes.clear();
