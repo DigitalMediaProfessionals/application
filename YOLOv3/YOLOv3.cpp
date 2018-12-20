@@ -54,7 +54,7 @@ uint32_t imgView[IMAGE_W * IMAGE_H];
 __fp16 imgProc[PROC_W * PROC_H * 3];
 
 // Post-processing functions, defined in YOLOv3_post.cpp
-void get_bboxes(const vector<float> &tensor, vector<float> &boxes, CYOLOv3 &net);
+void get_bboxes(const vector<float> &tensor, vector<float> &boxes);
 void draw_bboxes(const vector<float> &boxes, COverlayRGB &overlay);
 
 int main(int argc, char **argv) {
@@ -131,7 +131,7 @@ int main(int argc, char **argv) {
 
     // Handle output from HW
     network.get_final_output(tensor);
-    get_bboxes(tensor, boxes, network);
+    get_bboxes(tensor, boxes);
     draw_bboxes(boxes, cam_overlay);
 
     // Draw detection result to screen
