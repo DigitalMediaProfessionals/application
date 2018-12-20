@@ -75,7 +75,7 @@ int exit_code = -1;
 
 
 // Post-processing functions, defined in YOLOv3_post.cpp
-void get_bboxes(const vector<float> &tensor, vector<float> &boxes);
+void get_bboxes(const vector<float> &tensor, vector<float> &boxes, CYOLOv3 &network);
 void draw_bboxes(const vector<float> &boxes, COverlayRGB &overlay);
 
 void *loadimg(void*) {
@@ -233,7 +233,7 @@ void *postproc(void*) {
 
     // Draw bboxes
     vector<float> boxes;
-    get_bboxes(net_output[rbuf_idx], boxes);
+    get_bboxes(net_output[rbuf_idx], boxes, network);
     draw_bboxes(boxes, *cam_overlay[rbuf_idx]);
 
     // Draw detection result to screen
