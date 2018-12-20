@@ -92,8 +92,8 @@ void *loadimg(void*) {
     return NULL;
   }
 
-  while(exit_code == -1) {
-    while((rbuf_idx + 1) % RING_BUF_SIZE == postproc_rbuf_idx) {
+  while (exit_code == -1) {
+    while ((rbuf_idx + 1) % RING_BUF_SIZE == postproc_rbuf_idx) {
       usleep(USLEEP_TIME);
     }
 
@@ -112,7 +112,7 @@ void *loadimg(void*) {
 
     // to next
     rbuf_idx += 1;
-    if(rbuf_idx == RING_BUF_SIZE) {
+    if (rbuf_idx == RING_BUF_SIZE) {
       rbuf_idx = 0;
     }
   }
@@ -123,8 +123,8 @@ void *loadimg(void*) {
 void *preproc(void*) {
   unsigned &rbuf_idx = preproc_rbuf_idx;  // alias
 
-  while(exit_code == -1) {
-    while(rbuf_idx == loadimg_rbuf_idx) {
+  while (exit_code == -1) {
+    while (rbuf_idx == loadimg_rbuf_idx) {
       usleep(USLEEP_TIME);
     }
 
@@ -142,7 +142,7 @@ void *preproc(void*) {
 
     // to next
     rbuf_idx += 1;
-    if(rbuf_idx == RING_BUF_SIZE) {
+    if (rbuf_idx == RING_BUF_SIZE) {
       rbuf_idx = 0;
     }
   }
@@ -168,8 +168,8 @@ void *inference(void*) {
     return NULL;
   }
 
-  while(exit_code == -1) {
-    while(rbuf_idx == preproc_rbuf_idx) {
+  while (exit_code == -1) {
+    while (rbuf_idx == preproc_rbuf_idx) {
       usleep(USLEEP_TIME);
     }
 
@@ -187,7 +187,7 @@ void *inference(void*) {
 
     // to next
     rbuf_idx += 1;
-    if(rbuf_idx == RING_BUF_SIZE) {
+    if (rbuf_idx == RING_BUF_SIZE) {
       rbuf_idx = 0;
     }
   }
@@ -223,8 +223,8 @@ void *postproc(void*) {
   DECLARE_TVAL(swap_buffer);
   TVAL_START(swap_buffer).tv_sec = 0;
 #endif
-  while(exit_code == -1) {
-    while(rbuf_idx == inference_rbuf_idx) {
+  while (exit_code == -1) {
+    while (rbuf_idx == inference_rbuf_idx) {
       usleep(USLEEP_TIME);
     }
 
@@ -259,7 +259,7 @@ void *postproc(void*) {
 
     // to next
     rbuf_idx += 1;
-    if(rbuf_idx == RING_BUF_SIZE) {
+    if (rbuf_idx == RING_BUF_SIZE) {
       rbuf_idx = 0;
     }
     cout << endl;

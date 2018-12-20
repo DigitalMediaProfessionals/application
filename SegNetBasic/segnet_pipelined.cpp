@@ -76,7 +76,7 @@ void visualize(vector<float> &netoutCPU, COverlayRGB &overlay);
 
 void increment_circular_variable(unsigned &v, unsigned max) {
   v++;
-  if(v > max) {
+  if (v > max) {
     v = 0;
   }
 }
@@ -92,7 +92,7 @@ static void *preproc(void*) {
   }
 
   int image_nr = 0;
-  while(exit_code == -1) {
+  while (exit_code == -1) {
     while ((rbuf_idx + 1) % RING_BUF_SIZE == postproc_rbuf_idx) {
       usleep(USLEEP_TIME);
     }
@@ -172,7 +172,7 @@ static void *postproc(void*) {
   }
 
   while (exit_code == -1) {
-    while(rbuf_idx == inference_rbuf_idx) {
+    while (rbuf_idx == inference_rbuf_idx) {
       usleep(USLEEP_TIME);
     }
 
