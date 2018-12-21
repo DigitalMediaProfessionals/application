@@ -16,6 +16,9 @@
 
 #pragma once
 
+// define NON_TINY if the YOLOv3 is not tiny version.
+// #define NON_TINY
+
 #define IMAGE_W 720
 #define IMAGE_H 360
 #define PROC_W 576

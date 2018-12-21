@@ -56,20 +56,31 @@ void get_bboxes(const vector<float> &tensor, vector<float> &boxes) {
   float *box;
 
   static float INV_OBJ_THRESHOLD = 0;
-  static unsigned DIM[4] = {0, 0, 0, 0};
-  static unsigned ANCHOR[] = {81, 82, 135, 169, 344, 319, 23, 27, 37, 58, 81, 82};
-  // static cosnt float DIM[] = { 10, 10, 20, 20, 40, 40 };
-  // static cosnt float ANCHOR[] = { 116, 90, 156, 198, 373, 326,
-  //                         30, 61, 62, 45, 59, 119,
-  //                         10, 13, 16, 30, 33, 23 };
-  if (!INV_OBJ_THRESHOLD) {
-    INV_OBJ_THRESHOLD = sigmoid_inverse(OBJ_THRESHOLD);
-  }
+#ifdef NON_TINY
+  static unsigned DIM[] = {0, 0, 0, 0, 0, 0};
+  static unsigned ANCHOR[] = { 116, 90, 156, 198, 373, 326,
+                               30, 61, 62, 45, 59, 119,
+                               10, 13, 16, 30, 33, 23 };
   if (!DIM[0]) {
     DIM[0] = PROC_W / 32;
     DIM[1] = PROC_H / 32;
     DIM[2] = PROC_W / 16;
     DIM[3] = PROC_H / 16;
+    DIM[4] = PROC_W / 8;
+    DIM[5] = PROC_H / 8;
+  }
+#else
+  static unsigned DIM[4] = {0, 0, 0, 0};
+  static unsigned ANCHOR[] = {81, 82, 135, 169, 344, 319, 23, 27, 37, 58, 81, 82};
+  if (!DIM[0]) {
+    DIM[0] = PROC_W / 32;
+    DIM[1] = PROC_H / 32;
+    DIM[2] = PROC_W / 16;
+    DIM[3] = PROC_H / 16;
+  }
+#endif
+  if (!INV_OBJ_THRESHOLD) {
+    INV_OBJ_THRESHOLD = sigmoid_inverse(OBJ_THRESHOLD);
   }
 
   boxes.clear();
@@ -214,7 +225,7 @@ void draw_bboxes(const vector<float> &boxes, COverlayRGB &overlay) {
     bool no_text = (x + 8 * (int)s.length() >= image_w) || (y + 8 >= image_w) || (y - 9 < 0);
 
     overlay.set_box(x0, y0, x1, y1, color);
-	  if (!no_text) overlay.set_box_with_text(x0, y0, x1, y1, color, s);
+    if (!no_text) overlay.set_box_with_text(x0, y0, x1, y1, color, s);
   }
 }
 
