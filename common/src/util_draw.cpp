@@ -517,7 +517,7 @@ bool COverlayRGB::copy_overlay(COverlayRGB &src_overlay, uint32_t xpos, uint32_t
 void COverlayRGB::set_box_with_text(int32_t x0pos, int32_t y0pos, int32_t x1pos, 
                                         int32_t y1pos, uint32_t color, string text)
 {
-  static const uint32_t text_size = 8;
+  static const int32_t text_size = 8;
 
   if(buff_rgb_ != NULL)
   {
@@ -547,6 +547,11 @@ void COverlayRGB::set_box_with_text(int32_t x0pos, int32_t y0pos, int32_t x1pos,
     text_style.text(text.c_str());
     agg::conv_stroke<agg::gsv_text> stroke_text(text_style);
     stroke_text.width(0.8);
+
+    if (y0pos-text_size-2 < 0 || x0pos + text_style.text_width() >= overlay_rgb_width_) {
+      return;
+    }
+
     //draw background text
     agg::rounded_rect rec_text(x0pos, y0pos, x0pos + text_style.text_width(), y0pos-text_size-2, 0);
     ras.add_path(rec_text);
