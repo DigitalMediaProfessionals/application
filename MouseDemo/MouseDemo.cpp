@@ -302,8 +302,11 @@ void apps_init() {
 
 // Reading app information from appList.ini
 int get_apps_infor() {  // success -> return True, otherwise return False
-
-  ifstream get_apps("appList.ini");
+#ifdef __aarch64__
+  ifstream get_apps("appListC3.ini");
+#else
+  ifstream get_apps("appListC2.ini");
+#endif
   if (!get_apps) return -1;
 
   apps_init();

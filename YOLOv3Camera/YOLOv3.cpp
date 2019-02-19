@@ -44,11 +44,19 @@ using namespace util;
 #define SCREEN_W (get_screen_width())
 #define SCREEN_H (get_screen_height())
 
+#ifdef __aarch64__
 #define IMAGE_W 640
 #define IMAGE_H 512
 
 #define CIMAGE_W 640
 #define CIMAGE_H 480
+#else
+#define IMAGE_W 320
+#define IMAGE_H 256
+
+#define CIMAGE_W 320
+#define CIMAGE_H 240
+#endif
 
 #define PIMAGE_W 320
 #define PIMAGE_H 256
