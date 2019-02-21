@@ -635,7 +635,13 @@ bool CDMP_Network::GenerateCommandLists() {
         layers_[j].cmdlist_size = last_pos;
       }
       if (i == n_layers - 1) {
-        layer.cmdlist_size = last_pos;
+        if (layer.cmdlist == last_cmdlist) {
+          layer.cmdlist_size = last_pos;
+        }
+        else {
+          layer.cmdlist_size = 1;
+          layer.cmdlist_pos = 0;
+        }
       }
       else {
         last_pos = 0;
