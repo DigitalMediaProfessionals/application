@@ -174,13 +174,17 @@ bool CDMP_Network::Commit() {
 
 /// @brief Reorders channels from WHC8 to HWC.
 static void remap(uint16_t* __restrict src, uint16_t* __restrict dst, int x_size, int y_size, int channel_size) {
-  for (int y = 0; y < y_size; ++y) {
-    for (int x = 0; x < x_size; ++x) {
-      for (int i = 0; i < channel_size; i += 8) {
-        const int copy_size = std::min(channel_size - i, 8);
-        memcpy(dst + (y * x_size + x) * channel_size + i,
-               src + i * (x_size * y_size) + (x * y_size + y) * copy_size,
-               copy_size * sizeof(uint16_t));
+  if (channel_size <= 8) {
+    memcpy(dst, src, sizeof(uint16_t) * x_size * y_size * channel_size);
+  } else {
+    for (int y = 0; y < y_size; ++y) {
+      for (int x = 0; x < x_size; ++x) {
+        for (int i = 0; i < channel_size; i += 8) {
+          const int copy_size = std::min(channel_size - i, 8);
+          memcpy(dst + (y * x_size + x) * channel_size + i,
+                 src + i * (x_size * y_size) + (x * y_size + y) * copy_size,
+                 copy_size * sizeof(uint16_t));
+        }
       }
     }
   }
@@ -189,13 +193,17 @@ static void remap(uint16_t* __restrict src, uint16_t* __restrict dst, int x_size
 
 /// @brief Reorders channels from HWC to WHC8.
 static void remap_hw(uint16_t* __restrict src, uint16_t* __restrict dst, int x_size, int y_size, int channel_size) {
-  for (int y = 0; y < y_size; ++y) {
-    for (int x = 0; x < x_size; ++x) {
-      for (int i = 0; i < channel_size; i += 8) {
-        const int copy_size = std::min(channel_size - i, 8);
-        memcpy(dst + i * (x_size * y_size) + (x * y_size + y) * copy_size,
-               src + (y * x_size + x) * channel_size + i,
-               copy_size * sizeof(uint16_t));
+  if (channel_size <= 8) {
+    memcpy(dst, src, sizeof(uint16_t) * x_size * y_size * channel_size);
+  } else {
+    for (int y = 0; y < y_size; ++y) {
+      for (int x = 0; x < x_size; ++x) {
+        for (int i = 0; i < channel_size; i += 8) {
+          const int copy_size = std::min(channel_size - i, 8);
+          memcpy(dst + i * (x_size * y_size) + (x * y_size + y) * copy_size,
+                 src + (y * x_size + x) * channel_size + i,
+                 copy_size * sizeof(uint16_t));
+        }
       }
     }
   }
