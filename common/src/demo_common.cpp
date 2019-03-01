@@ -115,7 +115,7 @@ void print_total_time(dmp::util::COverlayRGB &bg_overlay, int y, int total_time)
   overlay_time.print_to_display(x, y);
 }
 
-void handle_keyboard_input(int &exit_code, bool &pause) {
+int handle_keyboard_input(int &exit_code, bool &pause) {
   int key = getchar();
   switch (key) {
     case 27:  // ESC
@@ -137,4 +137,6 @@ void handle_keyboard_input(int &exit_code, bool &pause) {
       pause = !pause;
       break;
   }
+
+  return key;
 }
