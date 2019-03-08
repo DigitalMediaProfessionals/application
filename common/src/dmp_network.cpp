@@ -8,7 +8,16 @@
 *------------------------------------------------------------
 */
 
+#include <sys/stat.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <fcntl.h>
+#include <unistd.h>
 #include <stdarg.h>
+#include <errno.h>
+#include <string.h>
+
+#include <iostream>
 
 #include "dmp_network.h"
 
@@ -225,12 +234,107 @@ static void float_to_fp16(__fp16* __restrict dst, const float* __restrict src, i
   }
 }
 
+#define _IDX(x, y, c) ((((x) * (H)) + (y)) * (C) + (c))
+static void run_softmax_0(__fp16* dst, __fp16* src, int* dim, int dim_size) {
+  int W = dim[0];
+  int H = (dim_size >= 2 ? dim[1] : 1);
+  int C = (dim_size >= 3 ? dim[2] : 1);
+  for (int y = 0; y < H; y++) {
+    for (int c = 0; c < C; c++) {
+      __fp16 maxVal = src[_IDX(0, y, c)];
+      for (int x = 1; x < W; x++) {
+        __fp16 v = src[_IDX(x, y, c)];
+        if (v > maxVal) {
+          maxVal = v;
+        }
+      }
+      for (int x = 0; x < W; x++) {
+        src[_IDX(x, y, c)] -= maxVal;
+      }
+      __fp16 e_sum = 0;
+      for (int x = 0; x < W; x++) {
+        float v = (float)(src[_IDX(x, y, c)]);
+        __fp16 exp = (__fp16)std::exp(v);
+        dst[_IDX(x, y, c)] = exp;
+        e_sum += exp;
+      }
+      for (int x = 0; x < W; x++) {
+        dst[_IDX(x, y, c)] /= e_sum;
+      }
+    }
+  }
+}
+
+static void run_softmax_1(__fp16* dst, __fp16* src, int* dim, int dim_size) {
+  int W = dim[0];
+  int H = dim[1];
+  int C = (dim_size >= 3 ? dim[2] : 1);
+  for (int x = 0; x < W; x++) {
+    for (int c = 0; c < C; c++) {
+      __fp16 maxVal = src[_IDX(x, 0, c)];
+      for (int y = 1; y < H; y++) {
+        __fp16 v = src[_IDX(x, y, c)];
+        if (v > maxVal) {
+          maxVal = v;
+        }
+      }
+      for (int y = 0; y < H; y++) {
+        src[_IDX(x, y, c)] -= maxVal;
+      }
+      __fp16 e_sum = 0;
+      for (int y = 0; y < H; y++) {
+        float v = (float)(src[_IDX(x, y, c)]);
+        __fp16 exp = (__fp16)std::exp(v);
+        dst[_IDX(x, y, c)] = exp;
+        e_sum += exp;
+      }
+      for (int y = 0; y < H; y++) {
+        dst[_IDX(x, y, c)] /= e_sum;
+      }
+    }
+  }
+}
+
+static void run_softmax_2(__fp16* dst, __fp16* src, int* dim, int dim_size) {
+  int W = dim[0];
+  int H = dim[1];
+  int C = dim[2];
+  for (int x = 0; x < W; x++) {
+    for (int y = 0; y < H; y++) {
+      __fp16 maxVal = src[_IDX(x, y, 0)];
+      for (int c = 1; c < C; c++) {
+        __fp16 v = src[_IDX(x, y, c)];
+        if (v > maxVal) {
+          maxVal = v;
+        }
+      }
+      for (int c = 0; c < C; c++) {
+        src[_IDX(x, y, c)] -= maxVal;
+      }
+      __fp16 e_sum = 0;
+      for (int c = 0; c < C; c++) {
+        float v = (float)(src[_IDX(x, y, c)]);
+        __fp16 exp = (__fp16)std::exp(v);
+        dst[_IDX(x, y, c)] = exp;
+        e_sum += exp;
+      }
+      __fp16 e_div = 1.0 / e_sum;
+      for (int c = 0; c < C; c++) {
+        dst[_IDX(x, y, c)] *= e_div;
+      }
+    }
+  }
+}
+#undef _IDX
 
 /// @brief Runs softmax operation on CPU.
 static void run_softmax(fpga_layer& layer, int softmax_axis, uint8_t *io_ptr) {
-  void *src_buffer = io_ptr + layer.input_offs;
+  void *orig_src_buffer = io_ptr + layer.input_offs;
+  void *src_buffer = orig_src_buffer;
   void *dst_buffer = io_ptr + layer.output_offs;
-
+  size_t tensor_size = layer.input_dim[0] * 
+                        (layer.input_dim_size >= 2 ? layer.input_dim[1] : 1 ) *
+                        (layer.input_dim_size >= 3 ? layer.input_dim[2] : 1 );
   if (layer.is_input_hw_layout) {
     uint16_t *src = (uint16_t*)src_buffer;
     uint16_t *dst = (uint16_t*)dst_buffer;
@@ -242,45 +346,30 @@ static void run_softmax(fpga_layer& layer, int softmax_axis, uint8_t *io_ptr) {
     src_buffer = dst;
   }
 
-  int tensor_size = 1, group_size, axis_size, remain_size;
-  int axis_stride = 1, group_stride;
-  for (int i = 0; i < layer.input_dim_size; i++) {
-    tensor_size *= layer.input_dim[i];
-    if (i > softmax_axis) {
-      axis_stride *= layer.input_dim[i];
-    }
-    axis_size = layer.input_dim[softmax_axis];
-    remain_size = axis_stride;
-    group_size = tensor_size / axis_size / remain_size;
-    group_stride = axis_size * axis_stride;
-    fp16_to_float((float*)dst_buffer, (__fp16*)src_buffer, tensor_size);
+  switch (softmax_axis) {
+    case 0:
+      run_softmax_0(reinterpret_cast<__fp16*>(dst_buffer), 
+                    reinterpret_cast<__fp16*>(src_buffer),
+                    layer.input_dim, layer.input_dim_size);
+      break;
+    case 1:
+      run_softmax_1(reinterpret_cast<__fp16*>(dst_buffer), 
+                    reinterpret_cast<__fp16*>(src_buffer),
+                    layer.input_dim, layer.input_dim_size);
+      break;
+    case 2:
+      run_softmax_2(reinterpret_cast<__fp16*>(dst_buffer), 
+                    reinterpret_cast<__fp16*>(src_buffer),
+                    layer.input_dim, layer.input_dim_size);
+      break;
+    default:
+      ERR("Unexpected softmax_axis is given: %d\n", softmax_axis);
+      return;
+  }
 
-    for (int j = 0; j < group_size; ++j) {
-      for (int k = 0; k < remain_size; ++k) {
-        float *f = (float*)dst_buffer + (j * group_stride + k);
-        float fmax = f[0];
-        for (int i = 1; i < axis_size; ++i) {
-          fmax = std::max(fmax, f[i * axis_stride]);
-        }
-        for (int i = 0; i < axis_size; ++i) {
-          f[i * axis_stride] -= fmax;
-        }
-        float e_sum = 0;
-        for (int i = 0; i < axis_size; ++i) {
-          float d = std::exp(f[i * axis_stride]);
-          f[i * axis_stride] = d;
-          e_sum += d;
-        }
-        if(std::fabs(e_sum) < 1e-6f) {
-          ERR("SoftMax implementaion error, the sum of exp is too low: %.6e\n", e_sum);
-        }
-
-        float inv_e_sum = 1.0f / e_sum;
-        for (int i = 0; i < axis_size; i++) {
-          f[i * axis_stride] *= inv_e_sum;
-        }
-      }
-    }
+  if (layer.is_f32_output) {
+    memcpy(orig_src_buffer, dst_buffer, tensor_size * sizeof(__fp16));
+    fp16_to_float(reinterpret_cast<float*>(dst_buffer), reinterpret_cast<__fp16*>(orig_src_buffer), tensor_size);
   }
 }
 
