@@ -48,6 +48,14 @@ using namespace util;
 #define IMAGE_W 224
 #define IMAGE_H 224
 
+#ifdef __aarch64__
+#define CIMAGE_W 640
+#define CIMAGE_H 480
+#else
+#define CIMAGE_W 320
+#define CIMAGE_H 240
+#endif
+
 #define FILENAME_WEIGHTS "KerasSqueezeNet_weights.bin"
 
 // Define CNN network model object
@@ -62,19 +70,33 @@ uint32_t imgView[IMAGE_W * IMAGE_H];
 __fp16 imgProc[IMAGE_W * IMAGE_H * 3];
 
 int main(int argc, char** argv) {
+  bool use_camera = false;
+  vector<string> image_names;
+  int num_images = 0;
+
+  // Determine if use camera input
+  if (argc > 1 && strcmp(argv[1], "-c") == 0)
+    use_camera = true;
+
   // Initialize FB
   if (!init_fb()) {
     cout << "init_fb() failed." << endl;
     return 1;
   }
 
-  // Get input images filenames
-  vector<string> image_names;
-  get_jpeg_image_names("./images/", image_names);
-  int num_images = image_names.size();
-  if (num_images == 0) {
-    cout << "No input images." << endl;
-    return 1;
+  if (use_camera) {
+    // Initialize WebCam
+    if (open_cam(CIMAGE_W, CIMAGE_H, 20)) {
+      return -1;
+    }
+  } else {
+    // Get input images filenames
+    get_jpeg_image_names("./images/", image_names);
+    num_images = image_names.size();
+    if (num_images == 0) {
+      cout << "No input images." << endl;
+      return 1;
+    }
   }
 
   // Initialize network object
@@ -125,14 +147,22 @@ int main(int argc, char** argv) {
   std::vector<float> network_output;
   // Enter main loop
   while (exit_code == -1) {
-    // If not pause, decode next JPEG image and do pre-processing
     if (!pause) {
-      decode_jpg_file(image_names[image_nr], imgView, IMAGE_W, IMAGE_H);
+      if (use_camera) {
+        // If not pause, get next image from WebCam and do pre-processing
+        if (capture_cam(imgView, CIMAGE_W, CIMAGE_H, (CIMAGE_W - IMAGE_W) >> 1,
+                        (CIMAGE_H - IMAGE_H) >> 1, IMAGE_W, IMAGE_H)) {
+          break;
+        }
+      } else {
+        // If not pause, decode next JPEG image and do pre-processing
+        decode_jpg_file(image_names[image_nr], imgView, IMAGE_W, IMAGE_H);
+        ++image_nr;
+        image_nr %= num_images;
+      }
       overlay_input.convert_to_overlay_pixel_format(imgView, IMAGE_W * IMAGE_H);
       preproc_image(imgView, imgProc, IMAGE_W, IMAGE_H, -128.0, -128.0, -128.0,
                     1.0, true);
-      ++image_nr;
-      image_nr %= num_images;
     }
 
     // Run network in HW
