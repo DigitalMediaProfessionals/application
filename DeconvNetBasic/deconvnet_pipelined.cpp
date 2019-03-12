@@ -34,7 +34,7 @@
 #include <vector>
 #include <pthread.h>
 
-#include "DeconvNetBasic.h"
+#include "DeconvNetBasic_gen.h"
 #include "util_draw.h"
 #include "util_input.h"
 #include "demo_common.h"
