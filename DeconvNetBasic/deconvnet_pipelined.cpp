@@ -50,11 +50,10 @@ using namespace util;
 #define SCREEN_W (get_screen_width())
 #define SCREEN_H (get_screen_height())
 
-#define IMAGE_W 480
-#define IMAGE_H 320
+#define IMAGE_W 320
+#define IMAGE_H 240
 
-#define FILENAME_WEIGHTS "DeconvNetBasic.bin"
-
+#define FILENAME_WEIGHTS "DeconvNetBasic_weights.bin"
 
 CDeconvNetBasic network;
 
