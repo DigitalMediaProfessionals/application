@@ -182,8 +182,8 @@ bool CDMP_Network::Commit() {
 
 
 /// @brief Reorders channels from WHC8 to HWC.
-static void remap(uint16_t* __restrict src, uint16_t* __restrict dst, int x_size, int y_size, int channel_size) {
-  if (channel_size <= 8) {
+static void remap(uint16_t* __restrict src, uint16_t* __restrict dst, int x_size, int y_size, int channel_size, bool need_transpose) {
+  if (channel_size <= 8 && !need_transpose) {
     memcpy(dst, src, sizeof(uint16_t) * x_size * y_size * channel_size);
   } else {
     for (int y = 0; y < y_size; ++y) {
@@ -191,7 +191,8 @@ static void remap(uint16_t* __restrict src, uint16_t* __restrict dst, int x_size
         for (int i = 0; i < channel_size; i += 8) {
           const int copy_size = std::min(channel_size - i, 8);
           memcpy(dst + (y * x_size + x) * channel_size + i,
-                 src + i * (x_size * y_size) + (x * y_size + y) * copy_size,
+                 src + i * (x_size * y_size) + (need_transpose ?
+                 (x * y_size + y) : (y * x_size + x)) * copy_size,
                  copy_size * sizeof(uint16_t));
         }
       }
@@ -201,15 +202,16 @@ static void remap(uint16_t* __restrict src, uint16_t* __restrict dst, int x_size
 
 
 /// @brief Reorders channels from HWC to WHC8.
-static void remap_hw(uint16_t* __restrict src, uint16_t* __restrict dst, int x_size, int y_size, int channel_size) {
-  if (channel_size <= 8) {
+static void remap_hw(uint16_t* __restrict src, uint16_t* __restrict dst, int x_size, int y_size, int channel_size, bool need_transpose) {
+  if (channel_size <= 8 && !need_transpose) {
     memcpy(dst, src, sizeof(uint16_t) * x_size * y_size * channel_size);
   } else {
     for (int y = 0; y < y_size; ++y) {
       for (int x = 0; x < x_size; ++x) {
         for (int i = 0; i < channel_size; i += 8) {
           const int copy_size = std::min(channel_size - i, 8);
-          memcpy(dst + i * (x_size * y_size) + (x * y_size + y) * copy_size,
+          memcpy(dst + i * (x_size * y_size) + (need_transpose ? 
+                 (x * y_size + y) : (y * x_size + x)) * copy_size,
                  src + (y * x_size + x) * channel_size + i,
                  copy_size * sizeof(uint16_t));
         }
@@ -328,7 +330,7 @@ static void run_softmax_2(__fp16* dst, __fp16* src, int* dim, int dim_size) {
 #undef _IDX
 
 /// @brief Runs softmax operation on CPU.
-static void run_softmax(fpga_layer& layer, int softmax_axis, uint8_t *io_ptr) {
+static void run_softmax(fpga_layer& layer, int softmax_axis, uint8_t *io_ptr, bool need_transpose) {
   void *orig_src_buffer = io_ptr + layer.input_offs;
   void *src_buffer = orig_src_buffer;
   void *dst_buffer = io_ptr + layer.output_offs;
@@ -342,7 +344,7 @@ static void run_softmax(fpga_layer& layer, int softmax_axis, uint8_t *io_ptr) {
     int y_size = layer.input_dim[1];
     int channel_size = layer.input_dim[2];
     dst += x_size * y_size * channel_size;
-    remap(src, dst, x_size, y_size, channel_size);
+    remap(src, dst, x_size, y_size, channel_size, need_transpose);
     src_buffer = dst;
   }
 
@@ -375,7 +377,7 @@ static void run_softmax(fpga_layer& layer, int softmax_axis, uint8_t *io_ptr) {
 
 
 /// @brief Executes flatten operation.
-static void run_flatten(fpga_layer &layer, uint8_t *io_ptr) {
+static void run_flatten(fpga_layer &layer, uint8_t *io_ptr, bool need_transpose) {
   if (!layer.is_input_hw_layout) {
     return;
   }
@@ -384,7 +386,7 @@ static void run_flatten(fpga_layer &layer, uint8_t *io_ptr) {
   int x_size = layer.input_dim[0];
   int y_size = layer.input_dim[1];
   int channel_size = layer.input_dim[2];
-  remap(src, dst, x_size, y_size, channel_size);
+  remap(src, dst, x_size, y_size, channel_size, need_transpose);
 }
 
 
@@ -539,7 +541,7 @@ bool CDMP_Network::RunNetwork() {
           return false;
         }
         dt.reset();
-        run_softmax(layer, layer.softmax_axis, io_ptr_);
+        run_softmax(layer, layer.softmax_axis, io_ptr_, !is_weight_transposed);
         cpu_usec += dt.get_us();
         break;
       case LT_FLATTEN:
@@ -548,7 +550,7 @@ bool CDMP_Network::RunNetwork() {
           return false;
         }
         dt.reset();
-        run_flatten(layer, io_ptr_);
+        run_flatten(layer, io_ptr_, !is_weight_transposed);
         cpu_usec += dt.get_us();
         break;
       case LT_COPY_CONCAT:
@@ -625,7 +627,7 @@ void CDMP_Network::get_final_output(std::vector<float>& out, int i_output) {
 }
 
 
-void get_layer_input(fpga_layer &layer, std::vector<float> &layer_input, uint8_t *io_ptr) {
+void get_layer_input(fpga_layer &layer, std::vector<float> &layer_input, uint8_t *io_ptr, bool need_transpose) {
     int input_size = 1;
     for (int i = 0; i < layer.input_dim_size; ++i) {
       input_size *= layer.input_dim[i];
@@ -642,7 +644,7 @@ void get_layer_input(fpga_layer &layer, std::vector<float> &layer_input, uint8_t
       int y_size = layer.input_dim[1];
       int channel_size = layer.input_dim[2];
       dst += input_size;
-      remap(src, dst, x_size, y_size, channel_size);
+      remap(src, dst, x_size, y_size, channel_size, need_transpose);
       fp16_to_float((float*)layer_input.data(), (__fp16*)dst, input_size);
     }
     else {
@@ -651,7 +653,7 @@ void get_layer_input(fpga_layer &layer, std::vector<float> &layer_input, uint8_t
 }
 
 
-void put_layer_output(fpga_layer& layer, std::vector<float>& layer_output, uint8_t *io_ptr, bool is_output_hw_layout) {
+void put_layer_output(fpga_layer& layer, std::vector<float>& layer_output, uint8_t *io_ptr, bool is_output_hw_layout, bool need_transpose) {
   int output_size = 1;
   for (int i = 0; i < layer.output_dim_size; ++i) {
     output_size *= layer.output_dim[i];
@@ -668,7 +670,7 @@ void put_layer_output(fpga_layer& layer, std::vector<float>& layer_output, uint8
     int channel_size = layer.output_dim[2];
     dst += output_size;
     float_to_fp16(dst + output_size, src, output_size);
-    remap_hw((uint16_t*)dst + output_size, (uint16_t*)dst, x_size, y_size, channel_size);
+    remap_hw((uint16_t*)dst + output_size, (uint16_t*)dst, x_size, y_size, channel_size, need_transpose);
   }
 }
 
