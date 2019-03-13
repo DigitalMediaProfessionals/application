@@ -113,6 +113,7 @@ class CDMP_Network {
     num_output_layers_ = 0;
     weights_size_ = 0;
     io_size_ = 0;
+    is_weight_transposed = false;   
 
     ctx_ = NULL;
     memset(&dv_info_, 0, sizeof(dv_info_));
@@ -224,6 +225,11 @@ class CDMP_Network {
   /// @brief Sets number of output layers.
   /// @details Must be called once in Initialize() in the derived class.
   void set_num_output_layers(int n);
+  
+  /// @brief flag indicate that the weight is in transposed format instead
+  /// @details If this flag is set to true, then the input don't need to be transposed.
+  ///          And the output is not transposed too.
+  bool is_weight_transposed;
 
   /// @brief Number of layers.
   int num_layers_;
@@ -314,11 +320,11 @@ class CDMP_Network {
 
 
 /// @brief Fills provided vector with the input data for the specified layer.
-void get_layer_input(fpga_layer& layer, std::vector<float>& layer_input, uint8_t *io_ptr);
+void get_layer_input(fpga_layer& layer, std::vector<float>& layer_input, uint8_t *io_ptr, bool need_transpose=true);
 
 
 /// @brief Fills provided vector with the output data for the specified layer.
 /// @param layer Layer to retrieve output from.
 /// @param layer_output Vector to put requested data into.
 /// @param is_output_hw_layout Whether data should be put in HW-specific layout (WHC8) or in Caffe-style CHW.
-void put_layer_output(fpga_layer& layer, std::vector<float>& layer_output, uint8_t *io_ptr, bool is_output_hw_layout = false);
+void put_layer_output(fpga_layer& layer, std::vector<float>& layer_output, uint8_t *io_ptr, bool is_output_hw_layout = false, bool need_transpose=true);
