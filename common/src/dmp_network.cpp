@@ -390,38 +390,48 @@ static void run_flatten(fpga_layer &layer, uint8_t *io_ptr) {
 
 /// @brief Executes concatenation via memory copy.
 static void run_copy_concat(fpga_layer& layer, int input_layer_num, fpga_layer **input_layers, uint8_t *io_ptr) {
-  const int chunk_size = 8;
   uint16_t *dst = (uint16_t*)(io_ptr + layer.output_offs);
-  const int x_size = layer.output_dim[0];
-  const int y_size = layer.output_dim[1];
-  const int dst_channel_size = layer.output_dim[2];
-  const int chunk_stride = x_size * y_size * chunk_size;
-  int dst_copied_size = 0;
-  for (int i = 0; i < input_layer_num; ++i) {
-    uint16_t *src = (uint16_t*)(io_ptr + input_layers[i]->output_offs);
-    const int src_channel_size = input_layers[i]->output_dim[2];
-    int src_copied_size = 0;
-    while (src_copied_size < src_channel_size) {
-      int dst_copy_size = chunk_size - (dst_copied_size % chunk_size);
-      if (dst_copy_size > dst_channel_size - dst_copied_size) {
-        dst_copy_size = dst_channel_size - dst_copied_size;
+  if (layer.output_dim_size == 3) {
+    const int chunk_size = 8;
+    const int x_size = layer.output_dim[0];
+    const int y_size = layer.output_dim[1];
+    const int dst_channel_size = layer.output_dim[2];
+    const int chunk_stride = x_size * y_size * chunk_size;
+    int dst_copied_size = 0;
+    for (int i = 0; i < input_layer_num; ++i) {
+      uint16_t *src = (uint16_t*)(io_ptr + input_layers[i]->output_offs);
+      const int src_channel_size = input_layers[i]->output_dim[2];
+      int src_copied_size = 0;
+      while (src_copied_size < src_channel_size) {
+        int dst_copy_size = chunk_size - (dst_copied_size % chunk_size);
+        if (dst_copy_size > dst_channel_size - dst_copied_size) {
+          dst_copy_size = dst_channel_size - dst_copied_size;
+        }
+        int src_copy_size = chunk_size - (src_copied_size % chunk_size);
+        if (src_copy_size > src_channel_size - src_copied_size) {
+          src_copy_size = src_channel_size - src_copied_size;
+        }
+        int copy_size = (dst_copy_size < src_copy_size ? dst_copy_size : src_copy_size);
+        uint16_t *dst_copy = dst + (dst_copied_size / chunk_size) * chunk_stride + (dst_copied_size % chunk_size);
+        uint16_t *src_copy = src + (src_copied_size / chunk_size) * chunk_stride + (src_copied_size % chunk_size);
+        const int dst_stride = (dst_channel_size / chunk_size > dst_copied_size / chunk_size ? chunk_size : dst_channel_size % chunk_size);
+        const int src_stride = (src_channel_size / chunk_size > src_copied_size / chunk_size ? chunk_size : src_channel_size % chunk_size);
+        for (int j = 0; j < x_size * y_size; ++j) {
+          memcpy(dst_copy, src_copy, sizeof(uint16_t) * copy_size);
+          dst_copy += dst_stride;
+          src_copy += src_stride;
+        }
+        dst_copied_size += copy_size;
+        src_copied_size += copy_size;
       }
-      int src_copy_size = chunk_size - (src_copied_size % chunk_size);
-      if (src_copy_size > src_channel_size - src_copied_size) {
-        src_copy_size = src_channel_size - src_copied_size;
-      }
-      int copy_size = (dst_copy_size < src_copy_size ? dst_copy_size : src_copy_size);
-      uint16_t *dst_copy = dst + (dst_copied_size / chunk_size) * chunk_stride + (dst_copied_size % chunk_size);
-      uint16_t *src_copy = src + (src_copied_size / chunk_size) * chunk_stride + (src_copied_size % chunk_size);
-      const int dst_stride = (dst_channel_size / chunk_size > dst_copied_size / chunk_size ? chunk_size : dst_channel_size % chunk_size);
-      const int src_stride = (src_channel_size / chunk_size > src_copied_size / chunk_size ? chunk_size : src_channel_size % chunk_size);
-      for (int j = 0; j < x_size * y_size; ++j) {
-        memcpy(dst_copy, src_copy, sizeof(uint16_t) * copy_size);
-        dst_copy += dst_stride;
-        src_copy += src_stride;
-      }
-      dst_copied_size += copy_size;
-      src_copied_size += copy_size;
+    }
+  } else if (layer.output_dim_size == 1) {
+    uint8_t *p = (uint8_t*)(dst);
+    for (int i = 0; i < input_layer_num; ++i) {
+      uint8_t *src = io_ptr + input_layers[i]->output_offs;
+      size_t sz = input_layers[i]->output_size;
+      memcpy(p, src, sz);
+      p += sz;
     }
   }
 }
