@@ -433,6 +433,8 @@ static void run_copy_concat(fpga_layer& layer, int input_layer_num, fpga_layer *
       memcpy(p, src, sz);
       p += sz;
     }
+  } else if (layer.output_dim_size == 2) {
+	ERR("CopyConcatenation for 2D tensor is not implemented yet\n");
   }
 }
 
