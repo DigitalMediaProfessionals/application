@@ -92,7 +92,6 @@ struct app_infor {
   string name;
   string bin_address;
   string is_cam;
-  string parameter;
 };
 
 struct apps {
@@ -297,7 +296,6 @@ void apps_init() {
       app_type[i].app_num[j].name = "";
       app_type[i].app_num[j].bin_address = "";
       app_type[i].app_num[j].is_cam = "";
-      app_type[i].app_num[j].parameter = "";
     }
     app_type[i].amount = 0;
   }
@@ -321,12 +319,11 @@ int get_apps_infor() {  // success -> return True, otherwise return False
 
     // Separate app data
     int str_no = 0;
-    string str_temp[5];
+    string str_temp[4];
     str_temp[0] = "";
     str_temp[1] = "";
     str_temp[2] = "";
     str_temp[3] = "";
-    str_temp[4] = "";
     bool stop_fl = false;
     bool cmtLine = false;
     for (unsigned temp = 0; temp < app_line.size(); temp++) {
@@ -338,9 +335,9 @@ int get_apps_infor() {  // success -> return True, otherwise return False
       } else {
         if (s == "{")
           continue;
-        else if ((s != "{") && (s != ",") && (s != "}") && (s != " ") && (stop_fl == false)) {
+        else if ((s != "{") && (s != ",") && (s != "}") && (stop_fl == false)) {
           str_temp[str_no].append(s);
-        } else if (((s == ",") || (s == " ")) && (stop_fl == false)) {
+        } else if ((s == ",") && (stop_fl == false)) {
           str_no++;
         } else if (s == "}") {
           stop_fl = true;
@@ -358,7 +355,6 @@ int get_apps_infor() {  // success -> return True, otherwise return False
           app_type[ii].app_num[app_type[ii].amount].name = str_temp[1];
           app_type[ii].app_num[app_type[ii].amount].is_cam = str_temp[2];
           app_type[ii].app_num[app_type[ii].amount].bin_address = str_temp[3];
-          app_type[ii].app_num[app_type[ii].amount].parameter = str_temp[4];
           app_type[ii].amount++;
           break;
         } else if (app_type[ii].type_name.size() > 0) {
@@ -368,7 +364,6 @@ int get_apps_infor() {  // success -> return True, otherwise return False
           app_type[ii].app_num[app_type[ii].amount].name = str_temp[1];
           app_type[ii].app_num[app_type[ii].amount].is_cam = str_temp[2];
           app_type[ii].app_num[app_type[ii].amount].bin_address = str_temp[3];
-          app_type[ii].app_num[app_type[ii].amount].parameter = str_temp[4];
           app_type[ii].amount++;
           break;
         }
