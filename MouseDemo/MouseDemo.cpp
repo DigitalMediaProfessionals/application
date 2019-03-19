@@ -733,7 +733,7 @@ int main(int argc, char **argv) {
           string path = app_type[screen_mode].app_num[app_run].bin_address;
           string path_dir;
           string path_file;
-          string::size_type pos = path.find('/');
+          string::size_type pos = path.rfind('/');
           if (pos == string::npos) {
             path_dir = string("./");
             path_file = "./" + path;
