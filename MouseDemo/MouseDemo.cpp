@@ -720,8 +720,9 @@ int main(int argc, char **argv) {
         screen_update();
         usleep(50);
 #endif
-        if (pipe2(pipe_fd, O_NONBLOCK))
+        if (pipe2(pipe_fd, O_NONBLOCK)) {
           exit(-1);
+        }
         pid = fork();
         if (pid == 0) {
           dup2(pipe_fd[0], STDIN_FILENO);
@@ -729,51 +730,51 @@ int main(int argc, char **argv) {
           close(pipe_fd[1]);
 
           int app_run = pressed_zone - 3 + 6 * next_page;
-		  string path = app_type[screen_mode].app_num[app_run].bin_address;
+          string path = app_type[screen_mode].app_num[app_run].bin_address;
           string path_dir;
           string path_file;
-		  string::size_type pos = path.find('/');
+          string::size_type pos = path.find('/');
           if (pos == string::npos) {
-		    path_dir = string("./");
-			path_file = "./" + path;
+            path_dir = string("./");
+            path_file = "./" + path;
           } else {
-			path_dir = path.substr(0, pos);
-			path_file = "./" + path.substr(pos + 1);
+            path_dir = path.substr(0, pos);
+            path_file = "./" + path.substr(pos + 1);
           }
-		  if (path_file.size() > MAX_ARGV_LEN) {
-			printf("command and argument is too long: %s\n",
-					path_file.c_str());
-		  } else if (chdir(path_dir.c_str())) {
+          if (path_file.size() > MAX_ARGV_LEN) {
+            printf("command and argument is too long: %s\n",
+                    path_file.c_str());
+          } else if (chdir(path_dir.c_str())) {
             printf("chdir() failed\n");
-		  } else {
-			char argv[MAX_ARGV_LEN + 1] = {};
-			memset(argv, 0, sizeof(argv));
-			vector<char*> argptr;
-			argptr.clear();
-			argptr.push_back(argv + 2);
+          } else {
+            char argv[MAX_ARGV_LEN + 1] = {};
+            memset(argv, 0, sizeof(argv));
+            vector<char*> argptr;
+            argptr.clear();
+            argptr.push_back(argv + 2);
 
-			strncpy(argv, path_file.c_str(), path_file.size());
-			for (char *p = argv + 2; *p;) {
-		      if (*p == ' ') {
-			    while (*p == ' ') {
-			      *p = 0x00;
-			      p++;
-			    }
-				argptr.push_back(p);
-			  } else {
-				p++;
-			  }
-			}
-			argptr.push_back(nullptr);
+            strncpy(argv, path_file.c_str(), path_file.size());
+            for (char *p = argv + 2; *p;) {
+              if (*p == ' ') {
+                while (*p == ' ') {
+                  *p = 0x00;
+                  p++;
+                }
+                argptr.push_back(p);
+              } else {
+                  p++;
+              }
+            }
+            argptr.push_back(nullptr);
 
-			cout << argv;
-			for (char * p: argptr) {
-				cout << " " << p;
-			}
-			cout << endl;
+            cout << argv;
+            for (char * p: argptr) {
+              cout << " " << p;
+            }
+            cout << endl;
 
-		    execvp(argv, reinterpret_cast<char* const*>(argptr.data()));
-		  }
+            execvp(argv, reinterpret_cast<char* const*>(argptr.data()));
+          }
           printf("execvp() failed");
         } else if (pid > 0) {
           int m_pressed = false;
