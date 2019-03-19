@@ -730,45 +730,54 @@ int main(int argc, char **argv) {
           close(pipe_fd[1]);
 
           int app_run = pressed_zone - 3 + 6 * next_page;
-          string path = app_type[screen_mode].app_num[app_run].bin_address;
-          string path_dir;
-          string path_file;
-          string::size_type pos = path.rfind('/');
-          if (pos == string::npos) {
-            path_dir = string("./");
-            path_file = "./" + path;
-          } else {
-            path_dir = path.substr(0, pos);
-            path_file = "./" + path.substr(pos + 1);
-          }
-          if (path_file.size() > MAX_ARGV_LEN) {
+          string cmd = app_type[screen_mode].app_num[app_run].bin_address;
+		  if (cmd.size() > MAX_ARGV_LEN) {
             printf("command and argument is too long: %s\n",
-                    path_file.c_str());
-          } else if (chdir(path_dir.c_str())) {
-            printf("chdir() failed\n");
+                    cmd.c_str());
           } else {
-            char argv[MAX_ARGV_LEN + 1] = {};
-            memset(argv, 0, sizeof(argv));
-            vector<char*> argptr;
-            argptr.clear();
-            argptr.push_back(argv + 2);
+			char argv[MAX_ARGV_LEN + 1 + 2] = {};
+			strncpy(argv + 2, cmd.c_str(), cmd.size() + 1);
 
-            strncpy(argv, path_file.c_str(), path_file.size());
-            for (char *p = argv + 2; *p;) {
-              if (*p == ' ') {
-                while (*p == ' ') {
-                  *p = 0x00;
-                  p++;
-                }
-                argptr.push_back(p);
-              } else {
-                  p++;
-              }
-            }
-            argptr.push_back(nullptr);
+			vector<char*> argptr;
+			argptr.clear();
+			argptr.push_back(argv + 2);
 
-            execvp(argv, reinterpret_cast<char* const*>(argptr.data()));
-          }
+			for (char *p = argv + 2; *p;) {
+			  if (*p == ' ') {
+			    while (*p == ' ') {
+			      *p = 0x00;
+			      p++;
+			    }
+			    argptr.push_back(p);
+			  } else {
+			    p++;
+			  }
+			}
+			argptr.push_back(nullptr);
+
+			string path(argv + 2);
+			string path_dir;
+			string::size_type pos = path.rfind('/');
+			char *cmdptr;
+			if (pos == string::npos) {
+			  path_dir = string("./");
+			  argv[0] = '.';
+			  argv[1] = '/';
+			  argptr[0] = argv + 2;
+			  cmdptr = argv;
+			} else {
+			  path_dir = path.substr(0, pos);
+			  argv[pos - 1 + 2] = '.';
+			  argptr[0] = argv + 2 + (pos + 1);
+			  cmdptr = argv + 2 + (pos - 1);
+			}
+
+			if (chdir(path_dir.c_str())) {
+			  printf("chdir() failed\n");
+			} else {
+			  execvp(cmdptr, reinterpret_cast<char* const*>(argptr.data()));
+			}
+		  }
           printf("execvp() failed");
         } else if (pid > 0) {
           int m_pressed = false;
