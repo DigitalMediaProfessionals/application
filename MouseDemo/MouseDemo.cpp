@@ -57,6 +57,7 @@ using namespace util;
 #define DETECT_MODE 1
 #define OTHER_MODE 2
 #define DMP_COLOR 0xFF2D89EE
+#define MAX_ARGV_LEN 512
 
 #ifndef OPEN_MAX
 #define OPEN_MAX 256
@@ -91,7 +92,6 @@ struct app_infor {
   string name;
   string bin_address;
   string is_cam;
-  string parameter;
 };
 
 struct apps {
@@ -296,7 +296,6 @@ void apps_init() {
       app_type[i].app_num[j].name = "";
       app_type[i].app_num[j].bin_address = "";
       app_type[i].app_num[j].is_cam = "";
-      app_type[i].app_num[j].parameter = "";
     }
     app_type[i].amount = 0;
   }
@@ -320,12 +319,11 @@ int get_apps_infor() {  // success -> return True, otherwise return False
 
     // Separate app data
     int str_no = 0;
-    string str_temp[5];
+    string str_temp[4];
     str_temp[0] = "";
     str_temp[1] = "";
     str_temp[2] = "";
     str_temp[3] = "";
-    str_temp[4] = "";
     bool stop_fl = false;
     bool cmtLine = false;
     for (unsigned temp = 0; temp < app_line.size(); temp++) {
@@ -337,9 +335,9 @@ int get_apps_infor() {  // success -> return True, otherwise return False
       } else {
         if (s == "{")
           continue;
-        else if ((s != "{") && (s != ",") && (s != "}") && (s != " ") && (stop_fl == false)) {
+        else if ((s != "{") && (s != ",") && (s != "}") && (stop_fl == false)) {
           str_temp[str_no].append(s);
-        } else if (((s == ",") || (s == " ")) && (stop_fl == false)) {
+        } else if ((s == ",") && (stop_fl == false)) {
           str_no++;
         } else if (s == "}") {
           stop_fl = true;
@@ -357,7 +355,6 @@ int get_apps_infor() {  // success -> return True, otherwise return False
           app_type[ii].app_num[app_type[ii].amount].name = str_temp[1];
           app_type[ii].app_num[app_type[ii].amount].is_cam = str_temp[2];
           app_type[ii].app_num[app_type[ii].amount].bin_address = str_temp[3];
-          app_type[ii].app_num[app_type[ii].amount].parameter = str_temp[4];
           app_type[ii].amount++;
           break;
         } else if (app_type[ii].type_name.size() > 0) {
@@ -367,7 +364,6 @@ int get_apps_infor() {  // success -> return True, otherwise return False
           app_type[ii].app_num[app_type[ii].amount].name = str_temp[1];
           app_type[ii].app_num[app_type[ii].amount].is_cam = str_temp[2];
           app_type[ii].app_num[app_type[ii].amount].bin_address = str_temp[3];
-          app_type[ii].app_num[app_type[ii].amount].parameter = str_temp[4];
           app_type[ii].amount++;
           break;
         }
@@ -724,40 +720,62 @@ int main(int argc, char **argv) {
         screen_update();
         usleep(50);
 #endif
-        if (pipe2(pipe_fd, O_NONBLOCK))
+        if (pipe2(pipe_fd, O_NONBLOCK)) {
           exit(-1);
+        }
         pid = fork();
         if (pid == 0) {
-          int app_run = pressed_zone - 3 + 6 * next_page;
-          const char *path =
-              app_type[screen_mode].app_num[app_run].bin_address.c_str();
-          const char *param = app_type[screen_mode].app_num[app_run].parameter.c_str();
-          char path_dir[128];
-          char path_file[128];
-          int pos = -1;
           dup2(pipe_fd[0], STDIN_FILENO);
           close(pipe_fd[0]);
           close(pipe_fd[1]);
-          for (pos = strlen(path) - 1; pos >= 0; --pos) {
-            if ('/' == path[pos]) break;
-          }
-          if (pos < 0) {
-            strcpy(path_dir, "./");
-            strncpy(path_file, "./", 2);
-            strcpy(path_file + 2, path);
+
+          int app_run = pressed_zone - 3 + 6 * next_page;
+          string path = app_type[screen_mode].app_num[app_run].bin_address;
+          string path_dir;
+          string path_file;
+          string::size_type pos = path.find('/');
+          if (pos == string::npos) {
+            path_dir = string("./");
+            path_file = "./" + path;
           } else {
-            ++pos;
-            strncpy(path_dir, path, pos);
-            path_dir[pos] = 0;
-            strncpy(path_file, "./", 2);
-            strcpy(path_file + 2, path + pos);
+            path_dir = path.substr(0, pos);
+            path_file = "./" + path.substr(pos + 1);
           }
-          string name = "./" + app_type[screen_mode].app_num[app_run].name;
-          if (chdir(path_dir))
+          if (path_file.size() > MAX_ARGV_LEN) {
+            printf("command and argument is too long: %s\n",
+                    path_file.c_str());
+          } else if (chdir(path_dir.c_str())) {
             printf("chdir() failed\n");
-          else
-            execl(path_file, name.c_str(), param);
-          printf("execl() failed");
+          } else {
+            char argv[MAX_ARGV_LEN + 1] = {};
+            memset(argv, 0, sizeof(argv));
+            vector<char*> argptr;
+            argptr.clear();
+            argptr.push_back(argv + 2);
+
+            strncpy(argv, path_file.c_str(), path_file.size());
+            for (char *p = argv + 2; *p;) {
+              if (*p == ' ') {
+                while (*p == ' ') {
+                  *p = 0x00;
+                  p++;
+                }
+                argptr.push_back(p);
+              } else {
+                  p++;
+              }
+            }
+            argptr.push_back(nullptr);
+
+            cout << argv;
+            for (char * p: argptr) {
+              cout << " " << p;
+            }
+            cout << endl;
+
+            execvp(argv, reinterpret_cast<char* const*>(argptr.data()));
+          }
+          printf("execvp() failed");
         } else if (pid > 0) {
           int m_pressed = false;
           int r_pressed = false;
