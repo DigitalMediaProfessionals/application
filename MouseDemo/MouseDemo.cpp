@@ -767,12 +767,6 @@ int main(int argc, char **argv) {
             }
             argptr.push_back(nullptr);
 
-            cout << argv;
-            for (char * p: argptr) {
-              cout << " " << p;
-            }
-            cout << endl;
-
             execvp(argv, reinterpret_cast<char* const*>(argptr.data()));
           }
           printf("execvp() failed");
