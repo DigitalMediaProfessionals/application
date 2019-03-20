@@ -731,53 +731,53 @@ int main(int argc, char **argv) {
 
           int app_run = pressed_zone - 3 + 6 * next_page;
           string cmd = app_type[screen_mode].app_num[app_run].bin_address;
-		  if (cmd.size() > MAX_ARGV_LEN) {
+          if (cmd.size() > MAX_ARGV_LEN) {
             printf("command and argument is too long: %s\n",
-                    cmd.c_str());
+                cmd.c_str());
           } else {
-			char argv[MAX_ARGV_LEN + 1 + 2] = {};
-			strncpy(argv + 2, cmd.c_str(), cmd.size() + 1);
+            char argv[MAX_ARGV_LEN + 1 + 2] = {};
+            strncpy(argv + 2, cmd.c_str(), cmd.size() + 1);
 
-			vector<char*> argptr;
-			argptr.clear();
-			argptr.push_back(argv + 2);
+            vector<char*> argptr;
+            argptr.clear();
+            argptr.push_back(argv + 2);
 
-			for (char *p = argv + 2; *p;) {
-			  if (*p == ' ') {
-			    while (*p == ' ') {
-			      *p = 0x00;
-			      p++;
-			    }
-			    argptr.push_back(p);
-			  } else {
-			    p++;
-			  }
-			}
-			argptr.push_back(nullptr);
+            for (char *p = argv + 2; *p;) {
+              if (*p == ' ') {
+                while (*p == ' ') {
+                  *p = 0x00;
+                  p++;
+                }
+                argptr.push_back(p);
+              } else {
+                p++;
+              }
+            }
+            argptr.push_back(nullptr);
 
-			string path(argv + 2);
-			string path_dir;
-			string::size_type pos = path.rfind('/');
-			char *cmdptr;
-			if (pos == string::npos) {
-			  path_dir = string("./");
-			  argv[0] = '.';
-			  argv[1] = '/';
-			  argptr[0] = argv + 2;
-			  cmdptr = argv;
-			} else {
-			  path_dir = path.substr(0, pos);
-			  argv[pos - 1 + 2] = '.';
-			  argptr[0] = argv + 2 + (pos + 1);
-			  cmdptr = argv + 2 + (pos - 1);
-			}
+            string path(argv + 2);
+            string path_dir;
+            string::size_type pos = path.rfind('/');
+            char *cmdptr;
+            if (pos == string::npos) {
+              path_dir = string("./");
+              argv[0] = '.';
+              argv[1] = '/';
+              argptr[0] = argv + 2;
+              cmdptr = argv;
+            } else {
+              path_dir = path.substr(0, pos);
+              argv[pos - 1 + 2] = '.';
+              argptr[0] = argv + 2 + (pos + 1);
+              cmdptr = argv + 2 + (pos - 1);
+            }
 
-			if (chdir(path_dir.c_str())) {
-			  printf("chdir() failed\n");
-			} else {
-			  execvp(cmdptr, reinterpret_cast<char* const*>(argptr.data()));
-			}
-		  }
+            if (chdir(path_dir.c_str())) {
+              printf("chdir() failed\n");
+            } else {
+              execvp(cmdptr, reinterpret_cast<char* const*>(argptr.data()));
+            }
+          }
           printf("execvp() failed");
         } else if (pid > 0) {
           int m_pressed = false;
@@ -811,21 +811,21 @@ int main(int argc, char **argv) {
           printf("fork() failed");
         }
       } else if ((pressed_zone == 9) &&
-                 (previous_bt_ready == true)) {  // Previous button is pressed
+          (previous_bt_ready == true)) {  // Previous button is pressed
         st_changed = true;
         next_page = (next_page > 0) ? (next_page - 1) : 0;
       } else if ((pressed_zone == 10) &&
-                 (next_bt_ready == true)) {  // Next button is pressed
+          (next_bt_ready == true)) {  // Next button is pressed
         st_changed = true;
         next_page++;
       } else if ((pressed_zone == 11) &&
-                 (up_bt_ready == true)) {  // Previous button is pressed
+          (up_bt_ready == true)) {  // Previous button is pressed
         st_changed = true;
         l_next_page = (l_next_page > 0) ? (l_next_page - 1) : 0;
         // pick the uper box as defaut mode
         screen_mode = 3 * l_next_page;
       } else if ((pressed_zone == 12) &&
-                 (down_bt_ready == true)) {  // Next button is pressed
+          (down_bt_ready == true)) {  // Next button is pressed
         st_changed = true;
         l_next_page++;
         // pick the uper box as defaut mode
