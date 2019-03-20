@@ -239,7 +239,7 @@ class CCaffeSqueezeNet : public CDMP_Network {
   | ID | Layers | Type | Dim In | Dim Out | Param | Mem |
   | :- | :- | :-: | :-: | :-: | :-: | :-: |
   | 18 | FPGA-Layer | Convolution | (15, 15, 1000) | (3, 3, 1000) | - | - |
-  | 18-0 | pool10_5 | Pooling | (15, 15, 1000) | (3, 3, 1000) | - | - |
+  | 18-0 | pool10_5_5 | Pooling | (15, 15, 1000) | (3, 3, 1000) | - | - |
 
   */
   void Layer_18();
@@ -250,7 +250,7 @@ class CCaffeSqueezeNet : public CDMP_Network {
   | ID | Layers | Type | Dim In | Dim Out | Param | Mem |
   | :- | :- | :-: | :-: | :-: | :-: | :-: |
   | 19 | FPGA-Layer | Convolution | (3, 3, 1000) | (1, 1, 1000) | - | - |
-  | 19-0 | pool10_3 | Pooling | (3, 3, 1000) | (1, 1, 1000) | - | - |
+  | 19-0 | pool10_3_3 | Pooling | (3, 3, 1000) | (1, 1, 1000) | - | - |
 
   */
   void Layer_19();

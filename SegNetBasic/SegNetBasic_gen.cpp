@@ -28,7 +28,7 @@ CSegNetBasic::~CSegNetBasic() {
 }
 
 bool CSegNetBasic::Initialize() {
-  if (!ReserveMemory(1210528, 31641600)) {
+  if (!ReserveMemory(1210528, 25804800)) {
     return false;
   }
 
@@ -61,7 +61,6 @@ bool CSegNetBasic::Initialize() {
 //  ->: batch_normalization_1
 //  ->: activation_1
 void CSegNetBasic::Layer_0() {
-  get_layer(0).name = "conv2d_1, batch_normalization_1, batch_normalization_1, activation_1";
   dmp_dv_cmdraw_conv_v0& conf = get_layer(0).conv_conf;
   conf.header.size = sizeof(conf);
   conf.header.device_type = DMP_DV_DEV_CONV;
@@ -75,11 +74,11 @@ void CSegNetBasic::Layer_0() {
   conf.z = 1;  // Input Depth
   conf.c = 3;  // Input Channels
   conf.input_buf.mem = io_mem_;
-  conf.input_buf.offs = 460800;
+  conf.input_buf.offs = 0;
 
   // Output Configuration:
   conf.output_buf.mem = io_mem_;
-  conf.output_buf.offs = 921600;
+  conf.output_buf.offs = 7449600;
 
   conf.eltwise_buf.mem = NULL;
   conf.eltwise_buf.offs = 0;  // Input byte address for elementwise add (0 = UBUF Input Buffer)
@@ -115,9 +114,10 @@ void CSegNetBasic::Layer_0() {
   conf.run[0].lrn = 0x0;  // [0] : 1 = LRN enable, 0 = LRN disable, [1] : 1 = incl. power func, 0 = excl., [8:11] = x^2 scale factor log2
 
   fpga_layer& layer = get_layer(0);
+  layer.name = "conv2d_1";
   layer.type = LT_CONV;
-  layer.input_offs = 460800;
-  layer.output_offs = 921600;
+  layer.input_offs = 0;
+  layer.output_offs = 7449600;
   layer.output_size = 9830400;
   layer.input_dim[0] = 320;
   layer.input_dim[1] = 240;
@@ -135,7 +135,6 @@ void CSegNetBasic::Layer_0() {
 //Layer_1: Convolution Layer
 //  ->: max_pooling2d_1
 void CSegNetBasic::Layer_1() {
-  get_layer(1).name = "max_pooling2d_1";
   dmp_dv_cmdraw_conv_v0& conf = get_layer(1).conv_conf;
   conf.header.size = sizeof(conf);
   conf.header.device_type = DMP_DV_DEV_CONV;
@@ -149,11 +148,11 @@ void CSegNetBasic::Layer_1() {
   conf.z = 1;  // Input Depth
   conf.c = 64;  // Input Channels
   conf.input_buf.mem = io_mem_;
-  conf.input_buf.offs = 921600;
+  conf.input_buf.offs = 7449600;
 
   // Output Configuration:
   conf.output_buf.mem = io_mem_;
-  conf.output_buf.offs = 10752000;
+  conf.output_buf.offs = 4992000;
 
   conf.eltwise_buf.mem = NULL;
   conf.eltwise_buf.offs = 0;  // Input byte address for elementwise add (0 = UBUF Input Buffer)
@@ -186,9 +185,10 @@ void CSegNetBasic::Layer_1() {
   conf.run[0].lrn = 0x0;  // [0] : 1 = LRN enable, 0 = LRN disable, [1] : 1 = incl. power func, 0 = excl., [8:11] = x^2 scale factor log2
 
   fpga_layer& layer = get_layer(1);
+  layer.name = "max_pooling2d_1";
   layer.type = LT_CONV;
-  layer.input_offs = 921600;
-  layer.output_offs = 10752000;
+  layer.input_offs = 7449600;
+  layer.output_offs = 4992000;
   layer.output_size = 2457600;
   layer.input_dim[0] = 320;
   layer.input_dim[1] = 240;
@@ -209,7 +209,6 @@ void CSegNetBasic::Layer_1() {
 //  ->: batch_normalization_2
 //  ->: activation_2
 void CSegNetBasic::Layer_2() {
-  get_layer(2).name = "conv2d_2, batch_normalization_2, batch_normalization_2, activation_2";
   dmp_dv_cmdraw_conv_v0& conf = get_layer(2).conv_conf;
   conf.header.size = sizeof(conf);
   conf.header.device_type = DMP_DV_DEV_CONV;
@@ -223,11 +222,11 @@ void CSegNetBasic::Layer_2() {
   conf.z = 1;  // Input Depth
   conf.c = 64;  // Input Channels
   conf.input_buf.mem = io_mem_;
-  conf.input_buf.offs = 10752000;
+  conf.input_buf.offs = 4992000;
 
   // Output Configuration:
   conf.output_buf.mem = io_mem_;
-  conf.output_buf.offs = 0;
+  conf.output_buf.offs = 1920000;
 
   conf.eltwise_buf.mem = NULL;
   conf.eltwise_buf.offs = 0;  // Input byte address for elementwise add (0 = UBUF Input Buffer)
@@ -263,9 +262,10 @@ void CSegNetBasic::Layer_2() {
   conf.run[0].lrn = 0x0;  // [0] : 1 = LRN enable, 0 = LRN disable, [1] : 1 = incl. power func, 0 = excl., [8:11] = x^2 scale factor log2
 
   fpga_layer& layer = get_layer(2);
+  layer.name = "conv2d_2";
   layer.type = LT_CONV;
-  layer.input_offs = 10752000;
-  layer.output_offs = 0;
+  layer.input_offs = 4992000;
+  layer.output_offs = 1920000;
   layer.output_size = 3072000;
   layer.input_dim[0] = 160;
   layer.input_dim[1] = 120;
@@ -283,7 +283,6 @@ void CSegNetBasic::Layer_2() {
 //Layer_3: Convolution Layer
 //  ->: max_pooling2d_2
 void CSegNetBasic::Layer_3() {
-  get_layer(3).name = "max_pooling2d_2";
   dmp_dv_cmdraw_conv_v0& conf = get_layer(3).conv_conf;
   conf.header.size = sizeof(conf);
   conf.header.device_type = DMP_DV_DEV_CONV;
@@ -297,11 +296,11 @@ void CSegNetBasic::Layer_3() {
   conf.z = 1;  // Input Depth
   conf.c = 80;  // Input Channels
   conf.input_buf.mem = io_mem_;
-  conf.input_buf.offs = 0;
+  conf.input_buf.offs = 1920000;
 
   // Output Configuration:
   conf.output_buf.mem = io_mem_;
-  conf.output_buf.offs = 3072000;
+  conf.output_buf.offs = 1152000;
 
   conf.eltwise_buf.mem = NULL;
   conf.eltwise_buf.offs = 0;  // Input byte address for elementwise add (0 = UBUF Input Buffer)
@@ -334,9 +333,10 @@ void CSegNetBasic::Layer_3() {
   conf.run[0].lrn = 0x0;  // [0] : 1 = LRN enable, 0 = LRN disable, [1] : 1 = incl. power func, 0 = excl., [8:11] = x^2 scale factor log2
 
   fpga_layer& layer = get_layer(3);
+  layer.name = "max_pooling2d_2";
   layer.type = LT_CONV;
-  layer.input_offs = 0;
-  layer.output_offs = 3072000;
+  layer.input_offs = 1920000;
+  layer.output_offs = 1152000;
   layer.output_size = 768000;
   layer.input_dim[0] = 160;
   layer.input_dim[1] = 120;
@@ -357,7 +357,6 @@ void CSegNetBasic::Layer_3() {
 //  ->: batch_normalization_3
 //  ->: activation_3
 void CSegNetBasic::Layer_4() {
-  get_layer(4).name = "conv2d_3, batch_normalization_3, batch_normalization_3, activation_3";
   dmp_dv_cmdraw_conv_v0& conf = get_layer(4).conv_conf;
   conf.header.size = sizeof(conf);
   conf.header.device_type = DMP_DV_DEV_CONV;
@@ -371,11 +370,11 @@ void CSegNetBasic::Layer_4() {
   conf.z = 1;  // Input Depth
   conf.c = 80;  // Input Channels
   conf.input_buf.mem = io_mem_;
-  conf.input_buf.offs = 3072000;
+  conf.input_buf.offs = 1152000;
 
   // Output Configuration:
   conf.output_buf.mem = io_mem_;
-  conf.output_buf.offs = 0;
+  conf.output_buf.offs = 230400;
 
   conf.eltwise_buf.mem = NULL;
   conf.eltwise_buf.offs = 0;  // Input byte address for elementwise add (0 = UBUF Input Buffer)
@@ -411,9 +410,10 @@ void CSegNetBasic::Layer_4() {
   conf.run[0].lrn = 0x0;  // [0] : 1 = LRN enable, 0 = LRN disable, [1] : 1 = incl. power func, 0 = excl., [8:11] = x^2 scale factor log2
 
   fpga_layer& layer = get_layer(4);
+  layer.name = "conv2d_3";
   layer.type = LT_CONV;
-  layer.input_offs = 3072000;
-  layer.output_offs = 0;
+  layer.input_offs = 1152000;
+  layer.output_offs = 230400;
   layer.output_size = 921600;
   layer.input_dim[0] = 80;
   layer.input_dim[1] = 60;
@@ -431,7 +431,6 @@ void CSegNetBasic::Layer_4() {
 //Layer_5: Convolution Layer
 //  ->: max_pooling2d_3
 void CSegNetBasic::Layer_5() {
-  get_layer(5).name = "max_pooling2d_3";
   dmp_dv_cmdraw_conv_v0& conf = get_layer(5).conv_conf;
   conf.header.size = sizeof(conf);
   conf.header.device_type = DMP_DV_DEV_CONV;
@@ -445,11 +444,11 @@ void CSegNetBasic::Layer_5() {
   conf.z = 1;  // Input Depth
   conf.c = 96;  // Input Channels
   conf.input_buf.mem = io_mem_;
-  conf.input_buf.offs = 0;
+  conf.input_buf.offs = 230400;
 
   // Output Configuration:
   conf.output_buf.mem = io_mem_;
-  conf.output_buf.offs = 921600;
+  conf.output_buf.offs = 0;
 
   conf.eltwise_buf.mem = NULL;
   conf.eltwise_buf.offs = 0;  // Input byte address for elementwise add (0 = UBUF Input Buffer)
@@ -482,9 +481,10 @@ void CSegNetBasic::Layer_5() {
   conf.run[0].lrn = 0x0;  // [0] : 1 = LRN enable, 0 = LRN disable, [1] : 1 = incl. power func, 0 = excl., [8:11] = x^2 scale factor log2
 
   fpga_layer& layer = get_layer(5);
+  layer.name = "max_pooling2d_3";
   layer.type = LT_CONV;
-  layer.input_offs = 0;
-  layer.output_offs = 921600;
+  layer.input_offs = 230400;
+  layer.output_offs = 0;
   layer.output_size = 230400;
   layer.input_dim[0] = 80;
   layer.input_dim[1] = 60;
@@ -505,7 +505,6 @@ void CSegNetBasic::Layer_5() {
 //  ->: batch_normalization_4
 //  ->: activation_4
 void CSegNetBasic::Layer_6() {
-  get_layer(6).name = "conv2d_4, batch_normalization_4, batch_normalization_4, activation_4";
   dmp_dv_cmdraw_conv_v0& conf = get_layer(6).conv_conf;
   conf.header.size = sizeof(conf);
   conf.header.device_type = DMP_DV_DEV_CONV;
@@ -519,11 +518,11 @@ void CSegNetBasic::Layer_6() {
   conf.z = 1;  // Input Depth
   conf.c = 96;  // Input Channels
   conf.input_buf.mem = io_mem_;
-  conf.input_buf.offs = 921600;
+  conf.input_buf.offs = 0;
 
   // Output Configuration:
   conf.output_buf.mem = io_mem_;
-  conf.output_buf.offs = 0;
+  conf.output_buf.offs = 307200;
 
   conf.eltwise_buf.mem = NULL;
   conf.eltwise_buf.offs = 0;  // Input byte address for elementwise add (0 = UBUF Input Buffer)
@@ -559,9 +558,10 @@ void CSegNetBasic::Layer_6() {
   conf.run[0].lrn = 0x0;  // [0] : 1 = LRN enable, 0 = LRN disable, [1] : 1 = incl. power func, 0 = excl., [8:11] = x^2 scale factor log2
 
   fpga_layer& layer = get_layer(6);
+  layer.name = "conv2d_4";
   layer.type = LT_CONV;
-  layer.input_offs = 921600;
-  layer.output_offs = 0;
+  layer.input_offs = 0;
+  layer.output_offs = 307200;
   layer.output_size = 307200;
   layer.input_dim[0] = 40;
   layer.input_dim[1] = 30;
@@ -581,7 +581,6 @@ void CSegNetBasic::Layer_6() {
 //  ->: batch_normalization_5
 //  ->: batch_normalization_5
 void CSegNetBasic::Layer_7() {
-  get_layer(7).name = "conv2d_5, batch_normalization_5, batch_normalization_5";
   dmp_dv_cmdraw_conv_v0& conf = get_layer(7).conv_conf;
   conf.header.size = sizeof(conf);
   conf.header.device_type = DMP_DV_DEV_CONV;
@@ -595,11 +594,11 @@ void CSegNetBasic::Layer_7() {
   conf.z = 1;  // Input Depth
   conf.c = 128;  // Input Channels
   conf.input_buf.mem = io_mem_;
-  conf.input_buf.offs = 0;
+  conf.input_buf.offs = 307200;
 
   // Output Configuration:
   conf.output_buf.mem = io_mem_;
-  conf.output_buf.offs = 307200;
+  conf.output_buf.offs = 0;
 
   conf.eltwise_buf.mem = NULL;
   conf.eltwise_buf.offs = 0;  // Input byte address for elementwise add (0 = UBUF Input Buffer)
@@ -634,9 +633,10 @@ void CSegNetBasic::Layer_7() {
   conf.run[0].lrn = 0x0;  // [0] : 1 = LRN enable, 0 = LRN disable, [1] : 1 = incl. power func, 0 = excl., [8:11] = x^2 scale factor log2
 
   fpga_layer& layer = get_layer(7);
+  layer.name = "conv2d_5";
   layer.type = LT_CONV;
-  layer.input_offs = 0;
-  layer.output_offs = 307200;
+  layer.input_offs = 307200;
+  layer.output_offs = 0;
   layer.output_size = 307200;
   layer.input_dim[0] = 40;
   layer.input_dim[1] = 30;
@@ -654,7 +654,6 @@ void CSegNetBasic::Layer_7() {
 //Layer_8: Convolution Layer
 //  ->: up_sampling2d_1
 void CSegNetBasic::Layer_8() {
-  get_layer(8).name = "up_sampling2d_1";
   dmp_dv_cmdraw_conv_v0& conf = get_layer(8).conv_conf;
   conf.header.size = sizeof(conf);
   conf.header.device_type = DMP_DV_DEV_CONV;
@@ -668,11 +667,11 @@ void CSegNetBasic::Layer_8() {
   conf.z = 1;  // Input Depth
   conf.c = 128;  // Input Channels
   conf.input_buf.mem = io_mem_;
-  conf.input_buf.offs = 307200;
+  conf.input_buf.offs = 0;
 
   // Output Configuration:
   conf.output_buf.mem = io_mem_;
-  conf.output_buf.offs = 614400;
+  conf.output_buf.offs = 921600;
 
   conf.eltwise_buf.mem = NULL;
   conf.eltwise_buf.offs = 0;  // Input byte address for elementwise add (0 = UBUF Input Buffer)
@@ -705,9 +704,10 @@ void CSegNetBasic::Layer_8() {
   conf.run[0].lrn = 0x0;  // [0] : 1 = LRN enable, 0 = LRN disable, [1] : 1 = incl. power func, 0 = excl., [8:11] = x^2 scale factor log2
 
   fpga_layer& layer = get_layer(8);
+  layer.name = "up_sampling2d_1";
   layer.type = LT_CONV;
-  layer.input_offs = 307200;
-  layer.output_offs = 614400;
+  layer.input_offs = 0;
+  layer.output_offs = 921600;
   layer.output_size = 1228800;
   layer.input_dim[0] = 40;
   layer.input_dim[1] = 30;
@@ -727,7 +727,6 @@ void CSegNetBasic::Layer_8() {
 //  ->: batch_normalization_6
 //  ->: batch_normalization_6
 void CSegNetBasic::Layer_9() {
-  get_layer(9).name = "conv2d_6, batch_normalization_6, batch_normalization_6";
   dmp_dv_cmdraw_conv_v0& conf = get_layer(9).conv_conf;
   conf.header.size = sizeof(conf);
   conf.header.device_type = DMP_DV_DEV_CONV;
@@ -741,11 +740,11 @@ void CSegNetBasic::Layer_9() {
   conf.z = 1;  // Input Depth
   conf.c = 128;  // Input Channels
   conf.input_buf.mem = io_mem_;
-  conf.input_buf.offs = 614400;
+  conf.input_buf.offs = 921600;
 
   // Output Configuration:
   conf.output_buf.mem = io_mem_;
-  conf.output_buf.offs = 1843200;
+  conf.output_buf.offs = 0;
 
   conf.eltwise_buf.mem = NULL;
   conf.eltwise_buf.offs = 0;  // Input byte address for elementwise add (0 = UBUF Input Buffer)
@@ -780,9 +779,10 @@ void CSegNetBasic::Layer_9() {
   conf.run[0].lrn = 0x0;  // [0] : 1 = LRN enable, 0 = LRN disable, [1] : 1 = incl. power func, 0 = excl., [8:11] = x^2 scale factor log2
 
   fpga_layer& layer = get_layer(9);
+  layer.name = "conv2d_6";
   layer.type = LT_CONV;
-  layer.input_offs = 614400;
-  layer.output_offs = 1843200;
+  layer.input_offs = 921600;
+  layer.output_offs = 0;
   layer.output_size = 921600;
   layer.input_dim[0] = 80;
   layer.input_dim[1] = 60;
@@ -800,7 +800,6 @@ void CSegNetBasic::Layer_9() {
 //Layer_10: Convolution Layer
 //  ->: up_sampling2d_2
 void CSegNetBasic::Layer_10() {
-  get_layer(10).name = "up_sampling2d_2";
   dmp_dv_cmdraw_conv_v0& conf = get_layer(10).conv_conf;
   conf.header.size = sizeof(conf);
   conf.header.device_type = DMP_DV_DEV_CONV;
@@ -814,11 +813,11 @@ void CSegNetBasic::Layer_10() {
   conf.z = 1;  // Input Depth
   conf.c = 96;  // Input Channels
   conf.input_buf.mem = io_mem_;
-  conf.input_buf.offs = 1843200;
+  conf.input_buf.offs = 0;
 
   // Output Configuration:
   conf.output_buf.mem = io_mem_;
-  conf.output_buf.offs = 2764800;
+  conf.output_buf.offs = 3072000;
 
   conf.eltwise_buf.mem = NULL;
   conf.eltwise_buf.offs = 0;  // Input byte address for elementwise add (0 = UBUF Input Buffer)
@@ -851,9 +850,10 @@ void CSegNetBasic::Layer_10() {
   conf.run[0].lrn = 0x0;  // [0] : 1 = LRN enable, 0 = LRN disable, [1] : 1 = incl. power func, 0 = excl., [8:11] = x^2 scale factor log2
 
   fpga_layer& layer = get_layer(10);
+  layer.name = "up_sampling2d_2";
   layer.type = LT_CONV;
-  layer.input_offs = 1843200;
-  layer.output_offs = 2764800;
+  layer.input_offs = 0;
+  layer.output_offs = 3072000;
   layer.output_size = 3686400;
   layer.input_dim[0] = 80;
   layer.input_dim[1] = 60;
@@ -873,7 +873,6 @@ void CSegNetBasic::Layer_10() {
 //  ->: batch_normalization_7
 //  ->: batch_normalization_7
 void CSegNetBasic::Layer_11() {
-  get_layer(11).name = "conv2d_7, batch_normalization_7, batch_normalization_7";
   dmp_dv_cmdraw_conv_v0& conf = get_layer(11).conv_conf;
   conf.header.size = sizeof(conf);
   conf.header.device_type = DMP_DV_DEV_CONV;
@@ -887,11 +886,11 @@ void CSegNetBasic::Layer_11() {
   conf.z = 1;  // Input Depth
   conf.c = 96;  // Input Channels
   conf.input_buf.mem = io_mem_;
-  conf.input_buf.offs = 2764800;
+  conf.input_buf.offs = 3072000;
 
   // Output Configuration:
   conf.output_buf.mem = io_mem_;
-  conf.output_buf.offs = 6451200;
+  conf.output_buf.offs = 0;
 
   conf.eltwise_buf.mem = NULL;
   conf.eltwise_buf.offs = 0;  // Input byte address for elementwise add (0 = UBUF Input Buffer)
@@ -926,9 +925,10 @@ void CSegNetBasic::Layer_11() {
   conf.run[0].lrn = 0x0;  // [0] : 1 = LRN enable, 0 = LRN disable, [1] : 1 = incl. power func, 0 = excl., [8:11] = x^2 scale factor log2
 
   fpga_layer& layer = get_layer(11);
+  layer.name = "conv2d_7";
   layer.type = LT_CONV;
-  layer.input_offs = 2764800;
-  layer.output_offs = 6451200;
+  layer.input_offs = 3072000;
+  layer.output_offs = 0;
   layer.output_size = 3072000;
   layer.input_dim[0] = 160;
   layer.input_dim[1] = 120;
@@ -946,7 +946,6 @@ void CSegNetBasic::Layer_11() {
 //Layer_12: Convolution Layer
 //  ->: up_sampling2d_3
 void CSegNetBasic::Layer_12() {
-  get_layer(12).name = "up_sampling2d_3";
   dmp_dv_cmdraw_conv_v0& conf = get_layer(12).conv_conf;
   conf.header.size = sizeof(conf);
   conf.header.device_type = DMP_DV_DEV_CONV;
@@ -960,11 +959,11 @@ void CSegNetBasic::Layer_12() {
   conf.z = 1;  // Input Depth
   conf.c = 80;  // Input Channels
   conf.input_buf.mem = io_mem_;
-  conf.input_buf.offs = 6451200;
+  conf.input_buf.offs = 0;
 
   // Output Configuration:
   conf.output_buf.mem = io_mem_;
-  conf.output_buf.offs = 9523200;
+  conf.output_buf.offs = 13516800;
 
   conf.eltwise_buf.mem = NULL;
   conf.eltwise_buf.offs = 0;  // Input byte address for elementwise add (0 = UBUF Input Buffer)
@@ -997,9 +996,10 @@ void CSegNetBasic::Layer_12() {
   conf.run[0].lrn = 0x0;  // [0] : 1 = LRN enable, 0 = LRN disable, [1] : 1 = incl. power func, 0 = excl., [8:11] = x^2 scale factor log2
 
   fpga_layer& layer = get_layer(12);
+  layer.name = "up_sampling2d_3";
   layer.type = LT_CONV;
-  layer.input_offs = 6451200;
-  layer.output_offs = 9523200;
+  layer.input_offs = 0;
+  layer.output_offs = 13516800;
   layer.output_size = 12288000;
   layer.input_dim[0] = 160;
   layer.input_dim[1] = 120;
@@ -1019,7 +1019,6 @@ void CSegNetBasic::Layer_12() {
 //  ->: batch_normalization_8
 //  ->: batch_normalization_8
 void CSegNetBasic::Layer_13() {
-  get_layer(13).name = "conv2d_8, batch_normalization_8, batch_normalization_8";
   dmp_dv_cmdraw_conv_v0& conf = get_layer(13).conv_conf;
   conf.header.size = sizeof(conf);
   conf.header.device_type = DMP_DV_DEV_CONV;
@@ -1033,11 +1032,11 @@ void CSegNetBasic::Layer_13() {
   conf.z = 1;  // Input Depth
   conf.c = 80;  // Input Channels
   conf.input_buf.mem = io_mem_;
-  conf.input_buf.offs = 9523200;
+  conf.input_buf.offs = 13516800;
 
   // Output Configuration:
   conf.output_buf.mem = io_mem_;
-  conf.output_buf.offs = 21811200;
+  conf.output_buf.offs = 3686400;
 
   conf.eltwise_buf.mem = NULL;
   conf.eltwise_buf.offs = 0;  // Input byte address for elementwise add (0 = UBUF Input Buffer)
@@ -1072,9 +1071,10 @@ void CSegNetBasic::Layer_13() {
   conf.run[0].lrn = 0x0;  // [0] : 1 = LRN enable, 0 = LRN disable, [1] : 1 = incl. power func, 0 = excl., [8:11] = x^2 scale factor log2
 
   fpga_layer& layer = get_layer(13);
+  layer.name = "conv2d_8";
   layer.type = LT_CONV;
-  layer.input_offs = 9523200;
-  layer.output_offs = 21811200;
+  layer.input_offs = 13516800;
+  layer.output_offs = 3686400;
   layer.output_size = 9830400;
   layer.input_dim[0] = 320;
   layer.input_dim[1] = 240;
@@ -1092,7 +1092,6 @@ void CSegNetBasic::Layer_13() {
 //Layer_14: Convolution Layer
 //  ->: conv2d_9
 void CSegNetBasic::Layer_14() {
-  get_layer(14).name = "conv2d_9";
   dmp_dv_cmdraw_conv_v0& conf = get_layer(14).conv_conf;
   conf.header.size = sizeof(conf);
   conf.header.device_type = DMP_DV_DEV_CONV;
@@ -1106,11 +1105,11 @@ void CSegNetBasic::Layer_14() {
   conf.z = 1;  // Input Depth
   conf.c = 64;  // Input Channels
   conf.input_buf.mem = io_mem_;
-  conf.input_buf.offs = 21811200;
+  conf.input_buf.offs = 3686400;
 
   // Output Configuration:
   conf.output_buf.mem = io_mem_;
-  conf.output_buf.offs = 0;
+  conf.output_buf.offs = 1843200;
 
   conf.eltwise_buf.mem = NULL;
   conf.eltwise_buf.offs = 0;  // Input byte address for elementwise add (0 = UBUF Input Buffer)
@@ -1143,9 +1142,10 @@ void CSegNetBasic::Layer_14() {
   conf.run[0].lrn = 0x0;  // [0] : 1 = LRN enable, 0 = LRN disable, [1] : 1 = incl. power func, 0 = excl., [8:11] = x^2 scale factor log2
 
   fpga_layer& layer = get_layer(14);
+  layer.name = "conv2d_9";
   layer.type = LT_CONV;
-  layer.input_offs = 21811200;
-  layer.output_offs = 0;
+  layer.input_offs = 3686400;
+  layer.output_offs = 1843200;
   layer.output_size = 1843200;
   layer.input_dim[0] = 320;
   layer.input_dim[1] = 240;
@@ -1164,9 +1164,10 @@ void CSegNetBasic::Layer_14() {
 //	->: reshape_1_flatten
 void CSegNetBasic::Layer_15() {
   fpga_layer& layer = get_layer(15);
+  layer.name = "reshape_1";
   layer.type = LT_FLATTEN;
-  layer.input_offs = 0;
-  layer.output_offs = 1843200;
+  layer.input_offs = 1843200;
+  layer.output_offs = 0;
   layer.output_size = 1843200;
   layer.input_dim[0] = 320;
   layer.input_dim[1] = 240;

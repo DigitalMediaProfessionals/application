@@ -28,7 +28,7 @@ CKerasMobileNet::~CKerasMobileNet() {
 }
 
 bool CKerasMobileNet::Initialize() {
-  if (!ReserveMemory(5083984, 3512320)) {
+  if (!ReserveMemory(5083984, 2809856)) {
     return false;
   }
 
@@ -75,7 +75,6 @@ bool CKerasMobileNet::Initialize() {
 //  ->: conv1_bn
 //  ->: conv1_relu
 void CKerasMobileNet::Layer_0() {
-  get_layer(0).name = "conv1, conv1_bn, conv1_bn, conv1_relu";
   dmp_dv_cmdraw_conv_v0& conf = get_layer(0).conv_conf;
   conf.header.size = sizeof(conf);
   conf.header.device_type = DMP_DV_DEV_CONV;
@@ -93,7 +92,7 @@ void CKerasMobileNet::Layer_0() {
 
   // Output Configuration:
   conf.output_buf.mem = io_mem_;
-  conf.output_buf.offs = 301056;
+  conf.output_buf.offs = 802816;
 
   conf.eltwise_buf.mem = NULL;
   conf.eltwise_buf.offs = 0;  // Input byte address for elementwise add (0 = UBUF Input Buffer)
@@ -123,15 +122,16 @@ void CKerasMobileNet::Layer_0() {
   conf.run[0].pool_stride = 0x101;  // bits [7:0] = X stride, bits [15:8] = Y stride
   conf.run[0].pool_pad = 0x0;  // bits [7:0] = left padding, bits [15:8] = right padding, bits [23:16] = top padding, bits [31:24] = bottom padding
   conf.run[0].pool_avg_param = 0x0;  // Usually set to 1/pool_size^2 in FP16 format when using average pooling (average pooling assumes square size)
-  conf.run[0].actfunc = 2;  // Activation Function: 0 = None, 1 = Tanh, 2 = Leaky ReLU, 3 = Sigmoid, 4 = PReLU, 5 = ELU, 6 = ReLU6
+  conf.run[0].actfunc = 6;  // Activation Function: 0 = None, 1 = Tanh, 2 = Leaky ReLU, 3 = Sigmoid, 4 = PReLU, 5 = ELU, 6 = ReLU6
   conf.run[0].actfunc_param = 0x0;  // Leaky ReLU parameter (NOTE: 0x2E66 is 0.1 in FP16)
   conf.run[0].rectifi_en = 0;  // Rectification, i.e. max(0, x) (NOTE: Can be applied after non-ReLU activation function)
   conf.run[0].lrn = 0x0;  // [0] : 1 = LRN enable, 0 = LRN disable, [1] : 1 = incl. power func, 0 = excl., [8:11] = x^2 scale factor log2
 
   fpga_layer& layer = get_layer(0);
+  layer.name = "conv1";
   layer.type = LT_CONV;
   layer.input_offs = 0;
-  layer.output_offs = 301056;
+  layer.output_offs = 802816;
   layer.output_size = 802816;
   layer.input_dim[0] = 224;
   layer.input_dim[1] = 224;
@@ -152,7 +152,6 @@ void CKerasMobileNet::Layer_0() {
 //  ->: conv_dw_1_bn
 //  ->: conv_dw_1_relu
 void CKerasMobileNet::Layer_1() {
-  get_layer(1).name = "conv_dw_1, conv_dw_1_bn, conv_dw_1_bn, conv_dw_1_relu";
   dmp_dv_cmdraw_conv_v0& conf = get_layer(1).conv_conf;
   conf.header.size = sizeof(conf);
   conf.header.device_type = DMP_DV_DEV_CONV;
@@ -166,11 +165,11 @@ void CKerasMobileNet::Layer_1() {
   conf.z = 1;  // Input Depth
   conf.c = 32;  // Input Channels
   conf.input_buf.mem = io_mem_;
-  conf.input_buf.offs = 301056;
+  conf.input_buf.offs = 802816;
 
   // Output Configuration:
   conf.output_buf.mem = io_mem_;
-  conf.output_buf.offs = 1103872;
+  conf.output_buf.offs = 0;
 
   conf.eltwise_buf.mem = NULL;
   conf.eltwise_buf.offs = 0;  // Input byte address for elementwise add (0 = UBUF Input Buffer)
@@ -200,15 +199,16 @@ void CKerasMobileNet::Layer_1() {
   conf.run[0].pool_stride = 0x101;  // bits [7:0] = X stride, bits [15:8] = Y stride
   conf.run[0].pool_pad = 0x0;  // bits [7:0] = left padding, bits [15:8] = right padding, bits [23:16] = top padding, bits [31:24] = bottom padding
   conf.run[0].pool_avg_param = 0x0;  // Usually set to 1/pool_size^2 in FP16 format when using average pooling (average pooling assumes square size)
-  conf.run[0].actfunc = 2;  // Activation Function: 0 = None, 1 = Tanh, 2 = Leaky ReLU, 3 = Sigmoid, 4 = PReLU, 5 = ELU, 6 = ReLU6
+  conf.run[0].actfunc = 6;  // Activation Function: 0 = None, 1 = Tanh, 2 = Leaky ReLU, 3 = Sigmoid, 4 = PReLU, 5 = ELU, 6 = ReLU6
   conf.run[0].actfunc_param = 0x0;  // Leaky ReLU parameter (NOTE: 0x2E66 is 0.1 in FP16)
   conf.run[0].rectifi_en = 0;  // Rectification, i.e. max(0, x) (NOTE: Can be applied after non-ReLU activation function)
   conf.run[0].lrn = 0x0;  // [0] : 1 = LRN enable, 0 = LRN disable, [1] : 1 = incl. power func, 0 = excl., [8:11] = x^2 scale factor log2
 
   fpga_layer& layer = get_layer(1);
+  layer.name = "conv_dw_1";
   layer.type = LT_CONV;
-  layer.input_offs = 301056;
-  layer.output_offs = 1103872;
+  layer.input_offs = 802816;
+  layer.output_offs = 0;
   layer.output_size = 802816;
   layer.input_dim[0] = 112;
   layer.input_dim[1] = 112;
@@ -229,7 +229,6 @@ void CKerasMobileNet::Layer_1() {
 //  ->: conv_pw_1_bn
 //  ->: conv_pw_1_relu
 void CKerasMobileNet::Layer_2() {
-  get_layer(2).name = "conv_pw_1, conv_pw_1_bn, conv_pw_1_bn, conv_pw_1_relu";
   dmp_dv_cmdraw_conv_v0& conf = get_layer(2).conv_conf;
   conf.header.size = sizeof(conf);
   conf.header.device_type = DMP_DV_DEV_CONV;
@@ -243,11 +242,11 @@ void CKerasMobileNet::Layer_2() {
   conf.z = 1;  // Input Depth
   conf.c = 32;  // Input Channels
   conf.input_buf.mem = io_mem_;
-  conf.input_buf.offs = 1103872;
+  conf.input_buf.offs = 0;
 
   // Output Configuration:
   conf.output_buf.mem = io_mem_;
-  conf.output_buf.offs = 1906688;
+  conf.output_buf.offs = 1204224;
 
   conf.eltwise_buf.mem = NULL;
   conf.eltwise_buf.offs = 0;  // Input byte address for elementwise add (0 = UBUF Input Buffer)
@@ -277,15 +276,16 @@ void CKerasMobileNet::Layer_2() {
   conf.run[0].pool_stride = 0x101;  // bits [7:0] = X stride, bits [15:8] = Y stride
   conf.run[0].pool_pad = 0x0;  // bits [7:0] = left padding, bits [15:8] = right padding, bits [23:16] = top padding, bits [31:24] = bottom padding
   conf.run[0].pool_avg_param = 0x0;  // Usually set to 1/pool_size^2 in FP16 format when using average pooling (average pooling assumes square size)
-  conf.run[0].actfunc = 2;  // Activation Function: 0 = None, 1 = Tanh, 2 = Leaky ReLU, 3 = Sigmoid, 4 = PReLU, 5 = ELU, 6 = ReLU6
+  conf.run[0].actfunc = 6;  // Activation Function: 0 = None, 1 = Tanh, 2 = Leaky ReLU, 3 = Sigmoid, 4 = PReLU, 5 = ELU, 6 = ReLU6
   conf.run[0].actfunc_param = 0x0;  // Leaky ReLU parameter (NOTE: 0x2E66 is 0.1 in FP16)
   conf.run[0].rectifi_en = 0;  // Rectification, i.e. max(0, x) (NOTE: Can be applied after non-ReLU activation function)
   conf.run[0].lrn = 0x0;  // [0] : 1 = LRN enable, 0 = LRN disable, [1] : 1 = incl. power func, 0 = excl., [8:11] = x^2 scale factor log2
 
   fpga_layer& layer = get_layer(2);
+  layer.name = "conv_pw_1";
   layer.type = LT_CONV;
-  layer.input_offs = 1103872;
-  layer.output_offs = 1906688;
+  layer.input_offs = 0;
+  layer.output_offs = 1204224;
   layer.output_size = 1605632;
   layer.input_dim[0] = 112;
   layer.input_dim[1] = 112;
@@ -306,7 +306,6 @@ void CKerasMobileNet::Layer_2() {
 //  ->: conv_dw_2_bn
 //  ->: conv_dw_2_relu
 void CKerasMobileNet::Layer_3() {
-  get_layer(3).name = "conv_dw_2, conv_dw_2_bn, conv_dw_2_bn, conv_dw_2_relu";
   dmp_dv_cmdraw_conv_v0& conf = get_layer(3).conv_conf;
   conf.header.size = sizeof(conf);
   conf.header.device_type = DMP_DV_DEV_CONV;
@@ -320,11 +319,11 @@ void CKerasMobileNet::Layer_3() {
   conf.z = 1;  // Input Depth
   conf.c = 64;  // Input Channels
   conf.input_buf.mem = io_mem_;
-  conf.input_buf.offs = 1906688;
+  conf.input_buf.offs = 1204224;
 
   // Output Configuration:
   conf.output_buf.mem = io_mem_;
-  conf.output_buf.offs = 0;
+  conf.output_buf.offs = 802816;
 
   conf.eltwise_buf.mem = NULL;
   conf.eltwise_buf.offs = 0;  // Input byte address for elementwise add (0 = UBUF Input Buffer)
@@ -354,15 +353,16 @@ void CKerasMobileNet::Layer_3() {
   conf.run[0].pool_stride = 0x101;  // bits [7:0] = X stride, bits [15:8] = Y stride
   conf.run[0].pool_pad = 0x0;  // bits [7:0] = left padding, bits [15:8] = right padding, bits [23:16] = top padding, bits [31:24] = bottom padding
   conf.run[0].pool_avg_param = 0x0;  // Usually set to 1/pool_size^2 in FP16 format when using average pooling (average pooling assumes square size)
-  conf.run[0].actfunc = 2;  // Activation Function: 0 = None, 1 = Tanh, 2 = Leaky ReLU, 3 = Sigmoid, 4 = PReLU, 5 = ELU, 6 = ReLU6
+  conf.run[0].actfunc = 6;  // Activation Function: 0 = None, 1 = Tanh, 2 = Leaky ReLU, 3 = Sigmoid, 4 = PReLU, 5 = ELU, 6 = ReLU6
   conf.run[0].actfunc_param = 0x0;  // Leaky ReLU parameter (NOTE: 0x2E66 is 0.1 in FP16)
   conf.run[0].rectifi_en = 0;  // Rectification, i.e. max(0, x) (NOTE: Can be applied after non-ReLU activation function)
   conf.run[0].lrn = 0x0;  // [0] : 1 = LRN enable, 0 = LRN disable, [1] : 1 = incl. power func, 0 = excl., [8:11] = x^2 scale factor log2
 
   fpga_layer& layer = get_layer(3);
+  layer.name = "conv_dw_2";
   layer.type = LT_CONV;
-  layer.input_offs = 1906688;
-  layer.output_offs = 0;
+  layer.input_offs = 1204224;
+  layer.output_offs = 802816;
   layer.output_size = 401408;
   layer.input_dim[0] = 112;
   layer.input_dim[1] = 112;
@@ -383,7 +383,6 @@ void CKerasMobileNet::Layer_3() {
 //  ->: conv_pw_2_bn
 //  ->: conv_pw_2_relu
 void CKerasMobileNet::Layer_4() {
-  get_layer(4).name = "conv_pw_2, conv_pw_2_bn, conv_pw_2_bn, conv_pw_2_relu";
   dmp_dv_cmdraw_conv_v0& conf = get_layer(4).conv_conf;
   conf.header.size = sizeof(conf);
   conf.header.device_type = DMP_DV_DEV_CONV;
@@ -397,11 +396,11 @@ void CKerasMobileNet::Layer_4() {
   conf.z = 1;  // Input Depth
   conf.c = 64;  // Input Channels
   conf.input_buf.mem = io_mem_;
-  conf.input_buf.offs = 0;
+  conf.input_buf.offs = 802816;
 
   // Output Configuration:
   conf.output_buf.mem = io_mem_;
-  conf.output_buf.offs = 401408;
+  conf.output_buf.offs = 0;
 
   conf.eltwise_buf.mem = NULL;
   conf.eltwise_buf.offs = 0;  // Input byte address for elementwise add (0 = UBUF Input Buffer)
@@ -431,15 +430,16 @@ void CKerasMobileNet::Layer_4() {
   conf.run[0].pool_stride = 0x101;  // bits [7:0] = X stride, bits [15:8] = Y stride
   conf.run[0].pool_pad = 0x0;  // bits [7:0] = left padding, bits [15:8] = right padding, bits [23:16] = top padding, bits [31:24] = bottom padding
   conf.run[0].pool_avg_param = 0x0;  // Usually set to 1/pool_size^2 in FP16 format when using average pooling (average pooling assumes square size)
-  conf.run[0].actfunc = 2;  // Activation Function: 0 = None, 1 = Tanh, 2 = Leaky ReLU, 3 = Sigmoid, 4 = PReLU, 5 = ELU, 6 = ReLU6
+  conf.run[0].actfunc = 6;  // Activation Function: 0 = None, 1 = Tanh, 2 = Leaky ReLU, 3 = Sigmoid, 4 = PReLU, 5 = ELU, 6 = ReLU6
   conf.run[0].actfunc_param = 0x0;  // Leaky ReLU parameter (NOTE: 0x2E66 is 0.1 in FP16)
   conf.run[0].rectifi_en = 0;  // Rectification, i.e. max(0, x) (NOTE: Can be applied after non-ReLU activation function)
   conf.run[0].lrn = 0x0;  // [0] : 1 = LRN enable, 0 = LRN disable, [1] : 1 = incl. power func, 0 = excl., [8:11] = x^2 scale factor log2
 
   fpga_layer& layer = get_layer(4);
+  layer.name = "conv_pw_2";
   layer.type = LT_CONV;
-  layer.input_offs = 0;
-  layer.output_offs = 401408;
+  layer.input_offs = 802816;
+  layer.output_offs = 0;
   layer.output_size = 802816;
   layer.input_dim[0] = 56;
   layer.input_dim[1] = 56;
@@ -460,7 +460,6 @@ void CKerasMobileNet::Layer_4() {
 //  ->: conv_dw_3_bn
 //  ->: conv_dw_3_relu
 void CKerasMobileNet::Layer_5() {
-  get_layer(5).name = "conv_dw_3, conv_dw_3_bn, conv_dw_3_bn, conv_dw_3_relu";
   dmp_dv_cmdraw_conv_v0& conf = get_layer(5).conv_conf;
   conf.header.size = sizeof(conf);
   conf.header.device_type = DMP_DV_DEV_CONV;
@@ -474,11 +473,11 @@ void CKerasMobileNet::Layer_5() {
   conf.z = 1;  // Input Depth
   conf.c = 128;  // Input Channels
   conf.input_buf.mem = io_mem_;
-  conf.input_buf.offs = 401408;
+  conf.input_buf.offs = 0;
 
   // Output Configuration:
   conf.output_buf.mem = io_mem_;
-  conf.output_buf.offs = 1204224;
+  conf.output_buf.offs = 1404928;
 
   conf.eltwise_buf.mem = NULL;
   conf.eltwise_buf.offs = 0;  // Input byte address for elementwise add (0 = UBUF Input Buffer)
@@ -508,15 +507,16 @@ void CKerasMobileNet::Layer_5() {
   conf.run[0].pool_stride = 0x101;  // bits [7:0] = X stride, bits [15:8] = Y stride
   conf.run[0].pool_pad = 0x0;  // bits [7:0] = left padding, bits [15:8] = right padding, bits [23:16] = top padding, bits [31:24] = bottom padding
   conf.run[0].pool_avg_param = 0x0;  // Usually set to 1/pool_size^2 in FP16 format when using average pooling (average pooling assumes square size)
-  conf.run[0].actfunc = 2;  // Activation Function: 0 = None, 1 = Tanh, 2 = Leaky ReLU, 3 = Sigmoid, 4 = PReLU, 5 = ELU, 6 = ReLU6
+  conf.run[0].actfunc = 6;  // Activation Function: 0 = None, 1 = Tanh, 2 = Leaky ReLU, 3 = Sigmoid, 4 = PReLU, 5 = ELU, 6 = ReLU6
   conf.run[0].actfunc_param = 0x0;  // Leaky ReLU parameter (NOTE: 0x2E66 is 0.1 in FP16)
   conf.run[0].rectifi_en = 0;  // Rectification, i.e. max(0, x) (NOTE: Can be applied after non-ReLU activation function)
   conf.run[0].lrn = 0x0;  // [0] : 1 = LRN enable, 0 = LRN disable, [1] : 1 = incl. power func, 0 = excl., [8:11] = x^2 scale factor log2
 
   fpga_layer& layer = get_layer(5);
+  layer.name = "conv_dw_3";
   layer.type = LT_CONV;
-  layer.input_offs = 401408;
-  layer.output_offs = 1204224;
+  layer.input_offs = 0;
+  layer.output_offs = 1404928;
   layer.output_size = 802816;
   layer.input_dim[0] = 56;
   layer.input_dim[1] = 56;
@@ -537,7 +537,6 @@ void CKerasMobileNet::Layer_5() {
 //  ->: conv_pw_3_bn
 //  ->: conv_pw_3_relu
 void CKerasMobileNet::Layer_6() {
-  get_layer(6).name = "conv_pw_3, conv_pw_3_bn, conv_pw_3_bn, conv_pw_3_relu";
   dmp_dv_cmdraw_conv_v0& conf = get_layer(6).conv_conf;
   conf.header.size = sizeof(conf);
   conf.header.device_type = DMP_DV_DEV_CONV;
@@ -551,11 +550,11 @@ void CKerasMobileNet::Layer_6() {
   conf.z = 1;  // Input Depth
   conf.c = 128;  // Input Channels
   conf.input_buf.mem = io_mem_;
-  conf.input_buf.offs = 1204224;
+  conf.input_buf.offs = 1404928;
 
   // Output Configuration:
   conf.output_buf.mem = io_mem_;
-  conf.output_buf.offs = 0;
+  conf.output_buf.offs = 602112;
 
   conf.eltwise_buf.mem = NULL;
   conf.eltwise_buf.offs = 0;  // Input byte address for elementwise add (0 = UBUF Input Buffer)
@@ -585,15 +584,16 @@ void CKerasMobileNet::Layer_6() {
   conf.run[0].pool_stride = 0x101;  // bits [7:0] = X stride, bits [15:8] = Y stride
   conf.run[0].pool_pad = 0x0;  // bits [7:0] = left padding, bits [15:8] = right padding, bits [23:16] = top padding, bits [31:24] = bottom padding
   conf.run[0].pool_avg_param = 0x0;  // Usually set to 1/pool_size^2 in FP16 format when using average pooling (average pooling assumes square size)
-  conf.run[0].actfunc = 2;  // Activation Function: 0 = None, 1 = Tanh, 2 = Leaky ReLU, 3 = Sigmoid, 4 = PReLU, 5 = ELU, 6 = ReLU6
+  conf.run[0].actfunc = 6;  // Activation Function: 0 = None, 1 = Tanh, 2 = Leaky ReLU, 3 = Sigmoid, 4 = PReLU, 5 = ELU, 6 = ReLU6
   conf.run[0].actfunc_param = 0x0;  // Leaky ReLU parameter (NOTE: 0x2E66 is 0.1 in FP16)
   conf.run[0].rectifi_en = 0;  // Rectification, i.e. max(0, x) (NOTE: Can be applied after non-ReLU activation function)
   conf.run[0].lrn = 0x0;  // [0] : 1 = LRN enable, 0 = LRN disable, [1] : 1 = incl. power func, 0 = excl., [8:11] = x^2 scale factor log2
 
   fpga_layer& layer = get_layer(6);
+  layer.name = "conv_pw_3";
   layer.type = LT_CONV;
-  layer.input_offs = 1204224;
-  layer.output_offs = 0;
+  layer.input_offs = 1404928;
+  layer.output_offs = 602112;
   layer.output_size = 802816;
   layer.input_dim[0] = 56;
   layer.input_dim[1] = 56;
@@ -614,7 +614,6 @@ void CKerasMobileNet::Layer_6() {
 //  ->: conv_dw_4_bn
 //  ->: conv_dw_4_relu
 void CKerasMobileNet::Layer_7() {
-  get_layer(7).name = "conv_dw_4, conv_dw_4_bn, conv_dw_4_bn, conv_dw_4_relu";
   dmp_dv_cmdraw_conv_v0& conf = get_layer(7).conv_conf;
   conf.header.size = sizeof(conf);
   conf.header.device_type = DMP_DV_DEV_CONV;
@@ -628,11 +627,11 @@ void CKerasMobileNet::Layer_7() {
   conf.z = 1;  // Input Depth
   conf.c = 128;  // Input Channels
   conf.input_buf.mem = io_mem_;
-  conf.input_buf.offs = 0;
+  conf.input_buf.offs = 602112;
 
   // Output Configuration:
   conf.output_buf.mem = io_mem_;
-  conf.output_buf.offs = 802816;
+  conf.output_buf.offs = 401408;
 
   conf.eltwise_buf.mem = NULL;
   conf.eltwise_buf.offs = 0;  // Input byte address for elementwise add (0 = UBUF Input Buffer)
@@ -662,15 +661,16 @@ void CKerasMobileNet::Layer_7() {
   conf.run[0].pool_stride = 0x101;  // bits [7:0] = X stride, bits [15:8] = Y stride
   conf.run[0].pool_pad = 0x0;  // bits [7:0] = left padding, bits [15:8] = right padding, bits [23:16] = top padding, bits [31:24] = bottom padding
   conf.run[0].pool_avg_param = 0x0;  // Usually set to 1/pool_size^2 in FP16 format when using average pooling (average pooling assumes square size)
-  conf.run[0].actfunc = 2;  // Activation Function: 0 = None, 1 = Tanh, 2 = Leaky ReLU, 3 = Sigmoid, 4 = PReLU, 5 = ELU, 6 = ReLU6
+  conf.run[0].actfunc = 6;  // Activation Function: 0 = None, 1 = Tanh, 2 = Leaky ReLU, 3 = Sigmoid, 4 = PReLU, 5 = ELU, 6 = ReLU6
   conf.run[0].actfunc_param = 0x0;  // Leaky ReLU parameter (NOTE: 0x2E66 is 0.1 in FP16)
   conf.run[0].rectifi_en = 0;  // Rectification, i.e. max(0, x) (NOTE: Can be applied after non-ReLU activation function)
   conf.run[0].lrn = 0x0;  // [0] : 1 = LRN enable, 0 = LRN disable, [1] : 1 = incl. power func, 0 = excl., [8:11] = x^2 scale factor log2
 
   fpga_layer& layer = get_layer(7);
+  layer.name = "conv_dw_4";
   layer.type = LT_CONV;
-  layer.input_offs = 0;
-  layer.output_offs = 802816;
+  layer.input_offs = 602112;
+  layer.output_offs = 401408;
   layer.output_size = 200704;
   layer.input_dim[0] = 56;
   layer.input_dim[1] = 56;
@@ -691,7 +691,6 @@ void CKerasMobileNet::Layer_7() {
 //  ->: conv_pw_4_bn
 //  ->: conv_pw_4_relu
 void CKerasMobileNet::Layer_8() {
-  get_layer(8).name = "conv_pw_4, conv_pw_4_bn, conv_pw_4_bn, conv_pw_4_relu";
   dmp_dv_cmdraw_conv_v0& conf = get_layer(8).conv_conf;
   conf.header.size = sizeof(conf);
   conf.header.device_type = DMP_DV_DEV_CONV;
@@ -705,7 +704,7 @@ void CKerasMobileNet::Layer_8() {
   conf.z = 1;  // Input Depth
   conf.c = 128;  // Input Channels
   conf.input_buf.mem = io_mem_;
-  conf.input_buf.offs = 802816;
+  conf.input_buf.offs = 401408;
 
   // Output Configuration:
   conf.output_buf.mem = io_mem_;
@@ -739,14 +738,15 @@ void CKerasMobileNet::Layer_8() {
   conf.run[0].pool_stride = 0x101;  // bits [7:0] = X stride, bits [15:8] = Y stride
   conf.run[0].pool_pad = 0x0;  // bits [7:0] = left padding, bits [15:8] = right padding, bits [23:16] = top padding, bits [31:24] = bottom padding
   conf.run[0].pool_avg_param = 0x0;  // Usually set to 1/pool_size^2 in FP16 format when using average pooling (average pooling assumes square size)
-  conf.run[0].actfunc = 2;  // Activation Function: 0 = None, 1 = Tanh, 2 = Leaky ReLU, 3 = Sigmoid, 4 = PReLU, 5 = ELU, 6 = ReLU6
+  conf.run[0].actfunc = 6;  // Activation Function: 0 = None, 1 = Tanh, 2 = Leaky ReLU, 3 = Sigmoid, 4 = PReLU, 5 = ELU, 6 = ReLU6
   conf.run[0].actfunc_param = 0x0;  // Leaky ReLU parameter (NOTE: 0x2E66 is 0.1 in FP16)
   conf.run[0].rectifi_en = 0;  // Rectification, i.e. max(0, x) (NOTE: Can be applied after non-ReLU activation function)
   conf.run[0].lrn = 0x0;  // [0] : 1 = LRN enable, 0 = LRN disable, [1] : 1 = incl. power func, 0 = excl., [8:11] = x^2 scale factor log2
 
   fpga_layer& layer = get_layer(8);
+  layer.name = "conv_pw_4";
   layer.type = LT_CONV;
-  layer.input_offs = 802816;
+  layer.input_offs = 401408;
   layer.output_offs = 0;
   layer.output_size = 401408;
   layer.input_dim[0] = 28;
@@ -768,7 +768,6 @@ void CKerasMobileNet::Layer_8() {
 //  ->: conv_dw_5_bn
 //  ->: conv_dw_5_relu
 void CKerasMobileNet::Layer_9() {
-  get_layer(9).name = "conv_dw_5, conv_dw_5_bn, conv_dw_5_bn, conv_dw_5_relu";
   dmp_dv_cmdraw_conv_v0& conf = get_layer(9).conv_conf;
   conf.header.size = sizeof(conf);
   conf.header.device_type = DMP_DV_DEV_CONV;
@@ -786,7 +785,7 @@ void CKerasMobileNet::Layer_9() {
 
   // Output Configuration:
   conf.output_buf.mem = io_mem_;
-  conf.output_buf.offs = 401408;
+  conf.output_buf.offs = 702464;
 
   conf.eltwise_buf.mem = NULL;
   conf.eltwise_buf.offs = 0;  // Input byte address for elementwise add (0 = UBUF Input Buffer)
@@ -816,15 +815,16 @@ void CKerasMobileNet::Layer_9() {
   conf.run[0].pool_stride = 0x101;  // bits [7:0] = X stride, bits [15:8] = Y stride
   conf.run[0].pool_pad = 0x0;  // bits [7:0] = left padding, bits [15:8] = right padding, bits [23:16] = top padding, bits [31:24] = bottom padding
   conf.run[0].pool_avg_param = 0x0;  // Usually set to 1/pool_size^2 in FP16 format when using average pooling (average pooling assumes square size)
-  conf.run[0].actfunc = 2;  // Activation Function: 0 = None, 1 = Tanh, 2 = Leaky ReLU, 3 = Sigmoid, 4 = PReLU, 5 = ELU, 6 = ReLU6
+  conf.run[0].actfunc = 6;  // Activation Function: 0 = None, 1 = Tanh, 2 = Leaky ReLU, 3 = Sigmoid, 4 = PReLU, 5 = ELU, 6 = ReLU6
   conf.run[0].actfunc_param = 0x0;  // Leaky ReLU parameter (NOTE: 0x2E66 is 0.1 in FP16)
   conf.run[0].rectifi_en = 0;  // Rectification, i.e. max(0, x) (NOTE: Can be applied after non-ReLU activation function)
   conf.run[0].lrn = 0x0;  // [0] : 1 = LRN enable, 0 = LRN disable, [1] : 1 = incl. power func, 0 = excl., [8:11] = x^2 scale factor log2
 
   fpga_layer& layer = get_layer(9);
+  layer.name = "conv_dw_5";
   layer.type = LT_CONV;
   layer.input_offs = 0;
-  layer.output_offs = 401408;
+  layer.output_offs = 702464;
   layer.output_size = 401408;
   layer.input_dim[0] = 28;
   layer.input_dim[1] = 28;
@@ -845,7 +845,6 @@ void CKerasMobileNet::Layer_9() {
 //  ->: conv_pw_5_bn
 //  ->: conv_pw_5_relu
 void CKerasMobileNet::Layer_10() {
-  get_layer(10).name = "conv_pw_5, conv_pw_5_bn, conv_pw_5_bn, conv_pw_5_relu";
   dmp_dv_cmdraw_conv_v0& conf = get_layer(10).conv_conf;
   conf.header.size = sizeof(conf);
   conf.header.device_type = DMP_DV_DEV_CONV;
@@ -859,11 +858,11 @@ void CKerasMobileNet::Layer_10() {
   conf.z = 1;  // Input Depth
   conf.c = 256;  // Input Channels
   conf.input_buf.mem = io_mem_;
-  conf.input_buf.offs = 401408;
+  conf.input_buf.offs = 702464;
 
   // Output Configuration:
   conf.output_buf.mem = io_mem_;
-  conf.output_buf.offs = 0;
+  conf.output_buf.offs = 301056;
 
   conf.eltwise_buf.mem = NULL;
   conf.eltwise_buf.offs = 0;  // Input byte address for elementwise add (0 = UBUF Input Buffer)
@@ -893,15 +892,16 @@ void CKerasMobileNet::Layer_10() {
   conf.run[0].pool_stride = 0x101;  // bits [7:0] = X stride, bits [15:8] = Y stride
   conf.run[0].pool_pad = 0x0;  // bits [7:0] = left padding, bits [15:8] = right padding, bits [23:16] = top padding, bits [31:24] = bottom padding
   conf.run[0].pool_avg_param = 0x0;  // Usually set to 1/pool_size^2 in FP16 format when using average pooling (average pooling assumes square size)
-  conf.run[0].actfunc = 2;  // Activation Function: 0 = None, 1 = Tanh, 2 = Leaky ReLU, 3 = Sigmoid, 4 = PReLU, 5 = ELU, 6 = ReLU6
+  conf.run[0].actfunc = 6;  // Activation Function: 0 = None, 1 = Tanh, 2 = Leaky ReLU, 3 = Sigmoid, 4 = PReLU, 5 = ELU, 6 = ReLU6
   conf.run[0].actfunc_param = 0x0;  // Leaky ReLU parameter (NOTE: 0x2E66 is 0.1 in FP16)
   conf.run[0].rectifi_en = 0;  // Rectification, i.e. max(0, x) (NOTE: Can be applied after non-ReLU activation function)
   conf.run[0].lrn = 0x0;  // [0] : 1 = LRN enable, 0 = LRN disable, [1] : 1 = incl. power func, 0 = excl., [8:11] = x^2 scale factor log2
 
   fpga_layer& layer = get_layer(10);
+  layer.name = "conv_pw_5";
   layer.type = LT_CONV;
-  layer.input_offs = 401408;
-  layer.output_offs = 0;
+  layer.input_offs = 702464;
+  layer.output_offs = 301056;
   layer.output_size = 401408;
   layer.input_dim[0] = 28;
   layer.input_dim[1] = 28;
@@ -922,7 +922,6 @@ void CKerasMobileNet::Layer_10() {
 //  ->: conv_dw_6_bn
 //  ->: conv_dw_6_relu
 void CKerasMobileNet::Layer_11() {
-  get_layer(11).name = "conv_dw_6, conv_dw_6_bn, conv_dw_6_bn, conv_dw_6_relu";
   dmp_dv_cmdraw_conv_v0& conf = get_layer(11).conv_conf;
   conf.header.size = sizeof(conf);
   conf.header.device_type = DMP_DV_DEV_CONV;
@@ -936,11 +935,11 @@ void CKerasMobileNet::Layer_11() {
   conf.z = 1;  // Input Depth
   conf.c = 256;  // Input Channels
   conf.input_buf.mem = io_mem_;
-  conf.input_buf.offs = 0;
+  conf.input_buf.offs = 301056;
 
   // Output Configuration:
   conf.output_buf.mem = io_mem_;
-  conf.output_buf.offs = 401408;
+  conf.output_buf.offs = 200704;
 
   conf.eltwise_buf.mem = NULL;
   conf.eltwise_buf.offs = 0;  // Input byte address for elementwise add (0 = UBUF Input Buffer)
@@ -970,15 +969,16 @@ void CKerasMobileNet::Layer_11() {
   conf.run[0].pool_stride = 0x101;  // bits [7:0] = X stride, bits [15:8] = Y stride
   conf.run[0].pool_pad = 0x0;  // bits [7:0] = left padding, bits [15:8] = right padding, bits [23:16] = top padding, bits [31:24] = bottom padding
   conf.run[0].pool_avg_param = 0x0;  // Usually set to 1/pool_size^2 in FP16 format when using average pooling (average pooling assumes square size)
-  conf.run[0].actfunc = 2;  // Activation Function: 0 = None, 1 = Tanh, 2 = Leaky ReLU, 3 = Sigmoid, 4 = PReLU, 5 = ELU, 6 = ReLU6
+  conf.run[0].actfunc = 6;  // Activation Function: 0 = None, 1 = Tanh, 2 = Leaky ReLU, 3 = Sigmoid, 4 = PReLU, 5 = ELU, 6 = ReLU6
   conf.run[0].actfunc_param = 0x0;  // Leaky ReLU parameter (NOTE: 0x2E66 is 0.1 in FP16)
   conf.run[0].rectifi_en = 0;  // Rectification, i.e. max(0, x) (NOTE: Can be applied after non-ReLU activation function)
   conf.run[0].lrn = 0x0;  // [0] : 1 = LRN enable, 0 = LRN disable, [1] : 1 = incl. power func, 0 = excl., [8:11] = x^2 scale factor log2
 
   fpga_layer& layer = get_layer(11);
+  layer.name = "conv_dw_6";
   layer.type = LT_CONV;
-  layer.input_offs = 0;
-  layer.output_offs = 401408;
+  layer.input_offs = 301056;
+  layer.output_offs = 200704;
   layer.output_size = 100352;
   layer.input_dim[0] = 28;
   layer.input_dim[1] = 28;
@@ -999,7 +999,6 @@ void CKerasMobileNet::Layer_11() {
 //  ->: conv_pw_6_bn
 //  ->: conv_pw_6_relu
 void CKerasMobileNet::Layer_12() {
-  get_layer(12).name = "conv_pw_6, conv_pw_6_bn, conv_pw_6_bn, conv_pw_6_relu";
   dmp_dv_cmdraw_conv_v0& conf = get_layer(12).conv_conf;
   conf.header.size = sizeof(conf);
   conf.header.device_type = DMP_DV_DEV_CONV;
@@ -1013,7 +1012,7 @@ void CKerasMobileNet::Layer_12() {
   conf.z = 1;  // Input Depth
   conf.c = 256;  // Input Channels
   conf.input_buf.mem = io_mem_;
-  conf.input_buf.offs = 401408;
+  conf.input_buf.offs = 200704;
 
   // Output Configuration:
   conf.output_buf.mem = io_mem_;
@@ -1047,14 +1046,15 @@ void CKerasMobileNet::Layer_12() {
   conf.run[0].pool_stride = 0x101;  // bits [7:0] = X stride, bits [15:8] = Y stride
   conf.run[0].pool_pad = 0x0;  // bits [7:0] = left padding, bits [15:8] = right padding, bits [23:16] = top padding, bits [31:24] = bottom padding
   conf.run[0].pool_avg_param = 0x0;  // Usually set to 1/pool_size^2 in FP16 format when using average pooling (average pooling assumes square size)
-  conf.run[0].actfunc = 2;  // Activation Function: 0 = None, 1 = Tanh, 2 = Leaky ReLU, 3 = Sigmoid, 4 = PReLU, 5 = ELU, 6 = ReLU6
+  conf.run[0].actfunc = 6;  // Activation Function: 0 = None, 1 = Tanh, 2 = Leaky ReLU, 3 = Sigmoid, 4 = PReLU, 5 = ELU, 6 = ReLU6
   conf.run[0].actfunc_param = 0x0;  // Leaky ReLU parameter (NOTE: 0x2E66 is 0.1 in FP16)
   conf.run[0].rectifi_en = 0;  // Rectification, i.e. max(0, x) (NOTE: Can be applied after non-ReLU activation function)
   conf.run[0].lrn = 0x0;  // [0] : 1 = LRN enable, 0 = LRN disable, [1] : 1 = incl. power func, 0 = excl., [8:11] = x^2 scale factor log2
 
   fpga_layer& layer = get_layer(12);
+  layer.name = "conv_pw_6";
   layer.type = LT_CONV;
-  layer.input_offs = 401408;
+  layer.input_offs = 200704;
   layer.output_offs = 0;
   layer.output_size = 200704;
   layer.input_dim[0] = 14;
@@ -1076,7 +1076,6 @@ void CKerasMobileNet::Layer_12() {
 //  ->: conv_dw_7_bn
 //  ->: conv_dw_7_relu
 void CKerasMobileNet::Layer_13() {
-  get_layer(13).name = "conv_dw_7, conv_dw_7_bn, conv_dw_7_bn, conv_dw_7_relu";
   dmp_dv_cmdraw_conv_v0& conf = get_layer(13).conv_conf;
   conf.header.size = sizeof(conf);
   conf.header.device_type = DMP_DV_DEV_CONV;
@@ -1124,12 +1123,13 @@ void CKerasMobileNet::Layer_13() {
   conf.run[0].pool_stride = 0x101;  // bits [7:0] = X stride, bits [15:8] = Y stride
   conf.run[0].pool_pad = 0x0;  // bits [7:0] = left padding, bits [15:8] = right padding, bits [23:16] = top padding, bits [31:24] = bottom padding
   conf.run[0].pool_avg_param = 0x0;  // Usually set to 1/pool_size^2 in FP16 format when using average pooling (average pooling assumes square size)
-  conf.run[0].actfunc = 2;  // Activation Function: 0 = None, 1 = Tanh, 2 = Leaky ReLU, 3 = Sigmoid, 4 = PReLU, 5 = ELU, 6 = ReLU6
+  conf.run[0].actfunc = 6;  // Activation Function: 0 = None, 1 = Tanh, 2 = Leaky ReLU, 3 = Sigmoid, 4 = PReLU, 5 = ELU, 6 = ReLU6
   conf.run[0].actfunc_param = 0x0;  // Leaky ReLU parameter (NOTE: 0x2E66 is 0.1 in FP16)
   conf.run[0].rectifi_en = 0;  // Rectification, i.e. max(0, x) (NOTE: Can be applied after non-ReLU activation function)
   conf.run[0].lrn = 0x0;  // [0] : 1 = LRN enable, 0 = LRN disable, [1] : 1 = incl. power func, 0 = excl., [8:11] = x^2 scale factor log2
 
   fpga_layer& layer = get_layer(13);
+  layer.name = "conv_dw_7";
   layer.type = LT_CONV;
   layer.input_offs = 0;
   layer.output_offs = 200704;
@@ -1153,7 +1153,6 @@ void CKerasMobileNet::Layer_13() {
 //  ->: conv_pw_7_bn
 //  ->: conv_pw_7_relu
 void CKerasMobileNet::Layer_14() {
-  get_layer(14).name = "conv_pw_7, conv_pw_7_bn, conv_pw_7_bn, conv_pw_7_relu";
   dmp_dv_cmdraw_conv_v0& conf = get_layer(14).conv_conf;
   conf.header.size = sizeof(conf);
   conf.header.device_type = DMP_DV_DEV_CONV;
@@ -1201,12 +1200,13 @@ void CKerasMobileNet::Layer_14() {
   conf.run[0].pool_stride = 0x101;  // bits [7:0] = X stride, bits [15:8] = Y stride
   conf.run[0].pool_pad = 0x0;  // bits [7:0] = left padding, bits [15:8] = right padding, bits [23:16] = top padding, bits [31:24] = bottom padding
   conf.run[0].pool_avg_param = 0x0;  // Usually set to 1/pool_size^2 in FP16 format when using average pooling (average pooling assumes square size)
-  conf.run[0].actfunc = 2;  // Activation Function: 0 = None, 1 = Tanh, 2 = Leaky ReLU, 3 = Sigmoid, 4 = PReLU, 5 = ELU, 6 = ReLU6
+  conf.run[0].actfunc = 6;  // Activation Function: 0 = None, 1 = Tanh, 2 = Leaky ReLU, 3 = Sigmoid, 4 = PReLU, 5 = ELU, 6 = ReLU6
   conf.run[0].actfunc_param = 0x0;  // Leaky ReLU parameter (NOTE: 0x2E66 is 0.1 in FP16)
   conf.run[0].rectifi_en = 0;  // Rectification, i.e. max(0, x) (NOTE: Can be applied after non-ReLU activation function)
   conf.run[0].lrn = 0x0;  // [0] : 1 = LRN enable, 0 = LRN disable, [1] : 1 = incl. power func, 0 = excl., [8:11] = x^2 scale factor log2
 
   fpga_layer& layer = get_layer(14);
+  layer.name = "conv_pw_7";
   layer.type = LT_CONV;
   layer.input_offs = 200704;
   layer.output_offs = 0;
@@ -1230,7 +1230,6 @@ void CKerasMobileNet::Layer_14() {
 //  ->: conv_dw_8_bn
 //  ->: conv_dw_8_relu
 void CKerasMobileNet::Layer_15() {
-  get_layer(15).name = "conv_dw_8, conv_dw_8_bn, conv_dw_8_bn, conv_dw_8_relu";
   dmp_dv_cmdraw_conv_v0& conf = get_layer(15).conv_conf;
   conf.header.size = sizeof(conf);
   conf.header.device_type = DMP_DV_DEV_CONV;
@@ -1278,12 +1277,13 @@ void CKerasMobileNet::Layer_15() {
   conf.run[0].pool_stride = 0x101;  // bits [7:0] = X stride, bits [15:8] = Y stride
   conf.run[0].pool_pad = 0x0;  // bits [7:0] = left padding, bits [15:8] = right padding, bits [23:16] = top padding, bits [31:24] = bottom padding
   conf.run[0].pool_avg_param = 0x0;  // Usually set to 1/pool_size^2 in FP16 format when using average pooling (average pooling assumes square size)
-  conf.run[0].actfunc = 2;  // Activation Function: 0 = None, 1 = Tanh, 2 = Leaky ReLU, 3 = Sigmoid, 4 = PReLU, 5 = ELU, 6 = ReLU6
+  conf.run[0].actfunc = 6;  // Activation Function: 0 = None, 1 = Tanh, 2 = Leaky ReLU, 3 = Sigmoid, 4 = PReLU, 5 = ELU, 6 = ReLU6
   conf.run[0].actfunc_param = 0x0;  // Leaky ReLU parameter (NOTE: 0x2E66 is 0.1 in FP16)
   conf.run[0].rectifi_en = 0;  // Rectification, i.e. max(0, x) (NOTE: Can be applied after non-ReLU activation function)
   conf.run[0].lrn = 0x0;  // [0] : 1 = LRN enable, 0 = LRN disable, [1] : 1 = incl. power func, 0 = excl., [8:11] = x^2 scale factor log2
 
   fpga_layer& layer = get_layer(15);
+  layer.name = "conv_dw_8";
   layer.type = LT_CONV;
   layer.input_offs = 0;
   layer.output_offs = 200704;
@@ -1307,7 +1307,6 @@ void CKerasMobileNet::Layer_15() {
 //  ->: conv_pw_8_bn
 //  ->: conv_pw_8_relu
 void CKerasMobileNet::Layer_16() {
-  get_layer(16).name = "conv_pw_8, conv_pw_8_bn, conv_pw_8_bn, conv_pw_8_relu";
   dmp_dv_cmdraw_conv_v0& conf = get_layer(16).conv_conf;
   conf.header.size = sizeof(conf);
   conf.header.device_type = DMP_DV_DEV_CONV;
@@ -1355,12 +1354,13 @@ void CKerasMobileNet::Layer_16() {
   conf.run[0].pool_stride = 0x101;  // bits [7:0] = X stride, bits [15:8] = Y stride
   conf.run[0].pool_pad = 0x0;  // bits [7:0] = left padding, bits [15:8] = right padding, bits [23:16] = top padding, bits [31:24] = bottom padding
   conf.run[0].pool_avg_param = 0x0;  // Usually set to 1/pool_size^2 in FP16 format when using average pooling (average pooling assumes square size)
-  conf.run[0].actfunc = 2;  // Activation Function: 0 = None, 1 = Tanh, 2 = Leaky ReLU, 3 = Sigmoid, 4 = PReLU, 5 = ELU, 6 = ReLU6
+  conf.run[0].actfunc = 6;  // Activation Function: 0 = None, 1 = Tanh, 2 = Leaky ReLU, 3 = Sigmoid, 4 = PReLU, 5 = ELU, 6 = ReLU6
   conf.run[0].actfunc_param = 0x0;  // Leaky ReLU parameter (NOTE: 0x2E66 is 0.1 in FP16)
   conf.run[0].rectifi_en = 0;  // Rectification, i.e. max(0, x) (NOTE: Can be applied after non-ReLU activation function)
   conf.run[0].lrn = 0x0;  // [0] : 1 = LRN enable, 0 = LRN disable, [1] : 1 = incl. power func, 0 = excl., [8:11] = x^2 scale factor log2
 
   fpga_layer& layer = get_layer(16);
+  layer.name = "conv_pw_8";
   layer.type = LT_CONV;
   layer.input_offs = 200704;
   layer.output_offs = 0;
@@ -1384,7 +1384,6 @@ void CKerasMobileNet::Layer_16() {
 //  ->: conv_dw_9_bn
 //  ->: conv_dw_9_relu
 void CKerasMobileNet::Layer_17() {
-  get_layer(17).name = "conv_dw_9, conv_dw_9_bn, conv_dw_9_bn, conv_dw_9_relu";
   dmp_dv_cmdraw_conv_v0& conf = get_layer(17).conv_conf;
   conf.header.size = sizeof(conf);
   conf.header.device_type = DMP_DV_DEV_CONV;
@@ -1432,12 +1431,13 @@ void CKerasMobileNet::Layer_17() {
   conf.run[0].pool_stride = 0x101;  // bits [7:0] = X stride, bits [15:8] = Y stride
   conf.run[0].pool_pad = 0x0;  // bits [7:0] = left padding, bits [15:8] = right padding, bits [23:16] = top padding, bits [31:24] = bottom padding
   conf.run[0].pool_avg_param = 0x0;  // Usually set to 1/pool_size^2 in FP16 format when using average pooling (average pooling assumes square size)
-  conf.run[0].actfunc = 2;  // Activation Function: 0 = None, 1 = Tanh, 2 = Leaky ReLU, 3 = Sigmoid, 4 = PReLU, 5 = ELU, 6 = ReLU6
+  conf.run[0].actfunc = 6;  // Activation Function: 0 = None, 1 = Tanh, 2 = Leaky ReLU, 3 = Sigmoid, 4 = PReLU, 5 = ELU, 6 = ReLU6
   conf.run[0].actfunc_param = 0x0;  // Leaky ReLU parameter (NOTE: 0x2E66 is 0.1 in FP16)
   conf.run[0].rectifi_en = 0;  // Rectification, i.e. max(0, x) (NOTE: Can be applied after non-ReLU activation function)
   conf.run[0].lrn = 0x0;  // [0] : 1 = LRN enable, 0 = LRN disable, [1] : 1 = incl. power func, 0 = excl., [8:11] = x^2 scale factor log2
 
   fpga_layer& layer = get_layer(17);
+  layer.name = "conv_dw_9";
   layer.type = LT_CONV;
   layer.input_offs = 0;
   layer.output_offs = 200704;
@@ -1461,7 +1461,6 @@ void CKerasMobileNet::Layer_17() {
 //  ->: conv_pw_9_bn
 //  ->: conv_pw_9_relu
 void CKerasMobileNet::Layer_18() {
-  get_layer(18).name = "conv_pw_9, conv_pw_9_bn, conv_pw_9_bn, conv_pw_9_relu";
   dmp_dv_cmdraw_conv_v0& conf = get_layer(18).conv_conf;
   conf.header.size = sizeof(conf);
   conf.header.device_type = DMP_DV_DEV_CONV;
@@ -1509,12 +1508,13 @@ void CKerasMobileNet::Layer_18() {
   conf.run[0].pool_stride = 0x101;  // bits [7:0] = X stride, bits [15:8] = Y stride
   conf.run[0].pool_pad = 0x0;  // bits [7:0] = left padding, bits [15:8] = right padding, bits [23:16] = top padding, bits [31:24] = bottom padding
   conf.run[0].pool_avg_param = 0x0;  // Usually set to 1/pool_size^2 in FP16 format when using average pooling (average pooling assumes square size)
-  conf.run[0].actfunc = 2;  // Activation Function: 0 = None, 1 = Tanh, 2 = Leaky ReLU, 3 = Sigmoid, 4 = PReLU, 5 = ELU, 6 = ReLU6
+  conf.run[0].actfunc = 6;  // Activation Function: 0 = None, 1 = Tanh, 2 = Leaky ReLU, 3 = Sigmoid, 4 = PReLU, 5 = ELU, 6 = ReLU6
   conf.run[0].actfunc_param = 0x0;  // Leaky ReLU parameter (NOTE: 0x2E66 is 0.1 in FP16)
   conf.run[0].rectifi_en = 0;  // Rectification, i.e. max(0, x) (NOTE: Can be applied after non-ReLU activation function)
   conf.run[0].lrn = 0x0;  // [0] : 1 = LRN enable, 0 = LRN disable, [1] : 1 = incl. power func, 0 = excl., [8:11] = x^2 scale factor log2
 
   fpga_layer& layer = get_layer(18);
+  layer.name = "conv_pw_9";
   layer.type = LT_CONV;
   layer.input_offs = 200704;
   layer.output_offs = 0;
@@ -1538,7 +1538,6 @@ void CKerasMobileNet::Layer_18() {
 //  ->: conv_dw_10_bn
 //  ->: conv_dw_10_relu
 void CKerasMobileNet::Layer_19() {
-  get_layer(19).name = "conv_dw_10, conv_dw_10_bn, conv_dw_10_bn, conv_dw_10_relu";
   dmp_dv_cmdraw_conv_v0& conf = get_layer(19).conv_conf;
   conf.header.size = sizeof(conf);
   conf.header.device_type = DMP_DV_DEV_CONV;
@@ -1586,12 +1585,13 @@ void CKerasMobileNet::Layer_19() {
   conf.run[0].pool_stride = 0x101;  // bits [7:0] = X stride, bits [15:8] = Y stride
   conf.run[0].pool_pad = 0x0;  // bits [7:0] = left padding, bits [15:8] = right padding, bits [23:16] = top padding, bits [31:24] = bottom padding
   conf.run[0].pool_avg_param = 0x0;  // Usually set to 1/pool_size^2 in FP16 format when using average pooling (average pooling assumes square size)
-  conf.run[0].actfunc = 2;  // Activation Function: 0 = None, 1 = Tanh, 2 = Leaky ReLU, 3 = Sigmoid, 4 = PReLU, 5 = ELU, 6 = ReLU6
+  conf.run[0].actfunc = 6;  // Activation Function: 0 = None, 1 = Tanh, 2 = Leaky ReLU, 3 = Sigmoid, 4 = PReLU, 5 = ELU, 6 = ReLU6
   conf.run[0].actfunc_param = 0x0;  // Leaky ReLU parameter (NOTE: 0x2E66 is 0.1 in FP16)
   conf.run[0].rectifi_en = 0;  // Rectification, i.e. max(0, x) (NOTE: Can be applied after non-ReLU activation function)
   conf.run[0].lrn = 0x0;  // [0] : 1 = LRN enable, 0 = LRN disable, [1] : 1 = incl. power func, 0 = excl., [8:11] = x^2 scale factor log2
 
   fpga_layer& layer = get_layer(19);
+  layer.name = "conv_dw_10";
   layer.type = LT_CONV;
   layer.input_offs = 0;
   layer.output_offs = 200704;
@@ -1615,7 +1615,6 @@ void CKerasMobileNet::Layer_19() {
 //  ->: conv_pw_10_bn
 //  ->: conv_pw_10_relu
 void CKerasMobileNet::Layer_20() {
-  get_layer(20).name = "conv_pw_10, conv_pw_10_bn, conv_pw_10_bn, conv_pw_10_relu";
   dmp_dv_cmdraw_conv_v0& conf = get_layer(20).conv_conf;
   conf.header.size = sizeof(conf);
   conf.header.device_type = DMP_DV_DEV_CONV;
@@ -1663,12 +1662,13 @@ void CKerasMobileNet::Layer_20() {
   conf.run[0].pool_stride = 0x101;  // bits [7:0] = X stride, bits [15:8] = Y stride
   conf.run[0].pool_pad = 0x0;  // bits [7:0] = left padding, bits [15:8] = right padding, bits [23:16] = top padding, bits [31:24] = bottom padding
   conf.run[0].pool_avg_param = 0x0;  // Usually set to 1/pool_size^2 in FP16 format when using average pooling (average pooling assumes square size)
-  conf.run[0].actfunc = 2;  // Activation Function: 0 = None, 1 = Tanh, 2 = Leaky ReLU, 3 = Sigmoid, 4 = PReLU, 5 = ELU, 6 = ReLU6
+  conf.run[0].actfunc = 6;  // Activation Function: 0 = None, 1 = Tanh, 2 = Leaky ReLU, 3 = Sigmoid, 4 = PReLU, 5 = ELU, 6 = ReLU6
   conf.run[0].actfunc_param = 0x0;  // Leaky ReLU parameter (NOTE: 0x2E66 is 0.1 in FP16)
   conf.run[0].rectifi_en = 0;  // Rectification, i.e. max(0, x) (NOTE: Can be applied after non-ReLU activation function)
   conf.run[0].lrn = 0x0;  // [0] : 1 = LRN enable, 0 = LRN disable, [1] : 1 = incl. power func, 0 = excl., [8:11] = x^2 scale factor log2
 
   fpga_layer& layer = get_layer(20);
+  layer.name = "conv_pw_10";
   layer.type = LT_CONV;
   layer.input_offs = 200704;
   layer.output_offs = 0;
@@ -1692,7 +1692,6 @@ void CKerasMobileNet::Layer_20() {
 //  ->: conv_dw_11_bn
 //  ->: conv_dw_11_relu
 void CKerasMobileNet::Layer_21() {
-  get_layer(21).name = "conv_dw_11, conv_dw_11_bn, conv_dw_11_bn, conv_dw_11_relu";
   dmp_dv_cmdraw_conv_v0& conf = get_layer(21).conv_conf;
   conf.header.size = sizeof(conf);
   conf.header.device_type = DMP_DV_DEV_CONV;
@@ -1710,7 +1709,7 @@ void CKerasMobileNet::Layer_21() {
 
   // Output Configuration:
   conf.output_buf.mem = io_mem_;
-  conf.output_buf.offs = 200704;
+  conf.output_buf.offs = 351232;
 
   conf.eltwise_buf.mem = NULL;
   conf.eltwise_buf.offs = 0;  // Input byte address for elementwise add (0 = UBUF Input Buffer)
@@ -1740,15 +1739,16 @@ void CKerasMobileNet::Layer_21() {
   conf.run[0].pool_stride = 0x101;  // bits [7:0] = X stride, bits [15:8] = Y stride
   conf.run[0].pool_pad = 0x0;  // bits [7:0] = left padding, bits [15:8] = right padding, bits [23:16] = top padding, bits [31:24] = bottom padding
   conf.run[0].pool_avg_param = 0x0;  // Usually set to 1/pool_size^2 in FP16 format when using average pooling (average pooling assumes square size)
-  conf.run[0].actfunc = 2;  // Activation Function: 0 = None, 1 = Tanh, 2 = Leaky ReLU, 3 = Sigmoid, 4 = PReLU, 5 = ELU, 6 = ReLU6
+  conf.run[0].actfunc = 6;  // Activation Function: 0 = None, 1 = Tanh, 2 = Leaky ReLU, 3 = Sigmoid, 4 = PReLU, 5 = ELU, 6 = ReLU6
   conf.run[0].actfunc_param = 0x0;  // Leaky ReLU parameter (NOTE: 0x2E66 is 0.1 in FP16)
   conf.run[0].rectifi_en = 0;  // Rectification, i.e. max(0, x) (NOTE: Can be applied after non-ReLU activation function)
   conf.run[0].lrn = 0x0;  // [0] : 1 = LRN enable, 0 = LRN disable, [1] : 1 = incl. power func, 0 = excl., [8:11] = x^2 scale factor log2
 
   fpga_layer& layer = get_layer(21);
+  layer.name = "conv_dw_11";
   layer.type = LT_CONV;
   layer.input_offs = 0;
-  layer.output_offs = 200704;
+  layer.output_offs = 351232;
   layer.output_size = 200704;
   layer.input_dim[0] = 14;
   layer.input_dim[1] = 14;
@@ -1769,7 +1769,6 @@ void CKerasMobileNet::Layer_21() {
 //  ->: conv_pw_11_bn
 //  ->: conv_pw_11_relu
 void CKerasMobileNet::Layer_22() {
-  get_layer(22).name = "conv_pw_11, conv_pw_11_bn, conv_pw_11_bn, conv_pw_11_relu";
   dmp_dv_cmdraw_conv_v0& conf = get_layer(22).conv_conf;
   conf.header.size = sizeof(conf);
   conf.header.device_type = DMP_DV_DEV_CONV;
@@ -1783,11 +1782,11 @@ void CKerasMobileNet::Layer_22() {
   conf.z = 1;  // Input Depth
   conf.c = 512;  // Input Channels
   conf.input_buf.mem = io_mem_;
-  conf.input_buf.offs = 200704;
+  conf.input_buf.offs = 351232;
 
   // Output Configuration:
   conf.output_buf.mem = io_mem_;
-  conf.output_buf.offs = 0;
+  conf.output_buf.offs = 150528;
 
   conf.eltwise_buf.mem = NULL;
   conf.eltwise_buf.offs = 0;  // Input byte address for elementwise add (0 = UBUF Input Buffer)
@@ -1817,15 +1816,16 @@ void CKerasMobileNet::Layer_22() {
   conf.run[0].pool_stride = 0x101;  // bits [7:0] = X stride, bits [15:8] = Y stride
   conf.run[0].pool_pad = 0x0;  // bits [7:0] = left padding, bits [15:8] = right padding, bits [23:16] = top padding, bits [31:24] = bottom padding
   conf.run[0].pool_avg_param = 0x0;  // Usually set to 1/pool_size^2 in FP16 format when using average pooling (average pooling assumes square size)
-  conf.run[0].actfunc = 2;  // Activation Function: 0 = None, 1 = Tanh, 2 = Leaky ReLU, 3 = Sigmoid, 4 = PReLU, 5 = ELU, 6 = ReLU6
+  conf.run[0].actfunc = 6;  // Activation Function: 0 = None, 1 = Tanh, 2 = Leaky ReLU, 3 = Sigmoid, 4 = PReLU, 5 = ELU, 6 = ReLU6
   conf.run[0].actfunc_param = 0x0;  // Leaky ReLU parameter (NOTE: 0x2E66 is 0.1 in FP16)
   conf.run[0].rectifi_en = 0;  // Rectification, i.e. max(0, x) (NOTE: Can be applied after non-ReLU activation function)
   conf.run[0].lrn = 0x0;  // [0] : 1 = LRN enable, 0 = LRN disable, [1] : 1 = incl. power func, 0 = excl., [8:11] = x^2 scale factor log2
 
   fpga_layer& layer = get_layer(22);
+  layer.name = "conv_pw_11";
   layer.type = LT_CONV;
-  layer.input_offs = 200704;
-  layer.output_offs = 0;
+  layer.input_offs = 351232;
+  layer.output_offs = 150528;
   layer.output_size = 200704;
   layer.input_dim[0] = 14;
   layer.input_dim[1] = 14;
@@ -1846,7 +1846,6 @@ void CKerasMobileNet::Layer_22() {
 //  ->: conv_dw_12_bn
 //  ->: conv_dw_12_relu
 void CKerasMobileNet::Layer_23() {
-  get_layer(23).name = "conv_dw_12, conv_dw_12_bn, conv_dw_12_bn, conv_dw_12_relu";
   dmp_dv_cmdraw_conv_v0& conf = get_layer(23).conv_conf;
   conf.header.size = sizeof(conf);
   conf.header.device_type = DMP_DV_DEV_CONV;
@@ -1860,11 +1859,11 @@ void CKerasMobileNet::Layer_23() {
   conf.z = 1;  // Input Depth
   conf.c = 512;  // Input Channels
   conf.input_buf.mem = io_mem_;
-  conf.input_buf.offs = 0;
+  conf.input_buf.offs = 150528;
 
   // Output Configuration:
   conf.output_buf.mem = io_mem_;
-  conf.output_buf.offs = 200704;
+  conf.output_buf.offs = 100352;
 
   conf.eltwise_buf.mem = NULL;
   conf.eltwise_buf.offs = 0;  // Input byte address for elementwise add (0 = UBUF Input Buffer)
@@ -1894,15 +1893,16 @@ void CKerasMobileNet::Layer_23() {
   conf.run[0].pool_stride = 0x101;  // bits [7:0] = X stride, bits [15:8] = Y stride
   conf.run[0].pool_pad = 0x0;  // bits [7:0] = left padding, bits [15:8] = right padding, bits [23:16] = top padding, bits [31:24] = bottom padding
   conf.run[0].pool_avg_param = 0x0;  // Usually set to 1/pool_size^2 in FP16 format when using average pooling (average pooling assumes square size)
-  conf.run[0].actfunc = 2;  // Activation Function: 0 = None, 1 = Tanh, 2 = Leaky ReLU, 3 = Sigmoid, 4 = PReLU, 5 = ELU, 6 = ReLU6
+  conf.run[0].actfunc = 6;  // Activation Function: 0 = None, 1 = Tanh, 2 = Leaky ReLU, 3 = Sigmoid, 4 = PReLU, 5 = ELU, 6 = ReLU6
   conf.run[0].actfunc_param = 0x0;  // Leaky ReLU parameter (NOTE: 0x2E66 is 0.1 in FP16)
   conf.run[0].rectifi_en = 0;  // Rectification, i.e. max(0, x) (NOTE: Can be applied after non-ReLU activation function)
   conf.run[0].lrn = 0x0;  // [0] : 1 = LRN enable, 0 = LRN disable, [1] : 1 = incl. power func, 0 = excl., [8:11] = x^2 scale factor log2
 
   fpga_layer& layer = get_layer(23);
+  layer.name = "conv_dw_12";
   layer.type = LT_CONV;
-  layer.input_offs = 0;
-  layer.output_offs = 200704;
+  layer.input_offs = 150528;
+  layer.output_offs = 100352;
   layer.output_size = 50176;
   layer.input_dim[0] = 14;
   layer.input_dim[1] = 14;
@@ -1923,7 +1923,6 @@ void CKerasMobileNet::Layer_23() {
 //  ->: conv_pw_12_bn
 //  ->: conv_pw_12_relu
 void CKerasMobileNet::Layer_24() {
-  get_layer(24).name = "conv_pw_12, conv_pw_12_bn, conv_pw_12_bn, conv_pw_12_relu";
   dmp_dv_cmdraw_conv_v0& conf = get_layer(24).conv_conf;
   conf.header.size = sizeof(conf);
   conf.header.device_type = DMP_DV_DEV_CONV;
@@ -1937,7 +1936,7 @@ void CKerasMobileNet::Layer_24() {
   conf.z = 1;  // Input Depth
   conf.c = 512;  // Input Channels
   conf.input_buf.mem = io_mem_;
-  conf.input_buf.offs = 200704;
+  conf.input_buf.offs = 100352;
 
   // Output Configuration:
   conf.output_buf.mem = io_mem_;
@@ -1971,14 +1970,15 @@ void CKerasMobileNet::Layer_24() {
   conf.run[0].pool_stride = 0x101;  // bits [7:0] = X stride, bits [15:8] = Y stride
   conf.run[0].pool_pad = 0x0;  // bits [7:0] = left padding, bits [15:8] = right padding, bits [23:16] = top padding, bits [31:24] = bottom padding
   conf.run[0].pool_avg_param = 0x0;  // Usually set to 1/pool_size^2 in FP16 format when using average pooling (average pooling assumes square size)
-  conf.run[0].actfunc = 2;  // Activation Function: 0 = None, 1 = Tanh, 2 = Leaky ReLU, 3 = Sigmoid, 4 = PReLU, 5 = ELU, 6 = ReLU6
+  conf.run[0].actfunc = 6;  // Activation Function: 0 = None, 1 = Tanh, 2 = Leaky ReLU, 3 = Sigmoid, 4 = PReLU, 5 = ELU, 6 = ReLU6
   conf.run[0].actfunc_param = 0x0;  // Leaky ReLU parameter (NOTE: 0x2E66 is 0.1 in FP16)
   conf.run[0].rectifi_en = 0;  // Rectification, i.e. max(0, x) (NOTE: Can be applied after non-ReLU activation function)
   conf.run[0].lrn = 0x0;  // [0] : 1 = LRN enable, 0 = LRN disable, [1] : 1 = incl. power func, 0 = excl., [8:11] = x^2 scale factor log2
 
   fpga_layer& layer = get_layer(24);
+  layer.name = "conv_pw_12";
   layer.type = LT_CONV;
-  layer.input_offs = 200704;
+  layer.input_offs = 100352;
   layer.output_offs = 0;
   layer.output_size = 100352;
   layer.input_dim[0] = 7;
@@ -2000,7 +2000,6 @@ void CKerasMobileNet::Layer_24() {
 //  ->: conv_dw_13_bn
 //  ->: conv_dw_13_relu
 void CKerasMobileNet::Layer_25() {
-  get_layer(25).name = "conv_dw_13, conv_dw_13_bn, conv_dw_13_bn, conv_dw_13_relu";
   dmp_dv_cmdraw_conv_v0& conf = get_layer(25).conv_conf;
   conf.header.size = sizeof(conf);
   conf.header.device_type = DMP_DV_DEV_CONV;
@@ -2018,7 +2017,7 @@ void CKerasMobileNet::Layer_25() {
 
   // Output Configuration:
   conf.output_buf.mem = io_mem_;
-  conf.output_buf.offs = 100352;
+  conf.output_buf.offs = 106400;
 
   conf.eltwise_buf.mem = NULL;
   conf.eltwise_buf.offs = 0;  // Input byte address for elementwise add (0 = UBUF Input Buffer)
@@ -2048,15 +2047,16 @@ void CKerasMobileNet::Layer_25() {
   conf.run[0].pool_stride = 0x101;  // bits [7:0] = X stride, bits [15:8] = Y stride
   conf.run[0].pool_pad = 0x0;  // bits [7:0] = left padding, bits [15:8] = right padding, bits [23:16] = top padding, bits [31:24] = bottom padding
   conf.run[0].pool_avg_param = 0x0;  // Usually set to 1/pool_size^2 in FP16 format when using average pooling (average pooling assumes square size)
-  conf.run[0].actfunc = 2;  // Activation Function: 0 = None, 1 = Tanh, 2 = Leaky ReLU, 3 = Sigmoid, 4 = PReLU, 5 = ELU, 6 = ReLU6
+  conf.run[0].actfunc = 6;  // Activation Function: 0 = None, 1 = Tanh, 2 = Leaky ReLU, 3 = Sigmoid, 4 = PReLU, 5 = ELU, 6 = ReLU6
   conf.run[0].actfunc_param = 0x0;  // Leaky ReLU parameter (NOTE: 0x2E66 is 0.1 in FP16)
   conf.run[0].rectifi_en = 0;  // Rectification, i.e. max(0, x) (NOTE: Can be applied after non-ReLU activation function)
   conf.run[0].lrn = 0x0;  // [0] : 1 = LRN enable, 0 = LRN disable, [1] : 1 = incl. power func, 0 = excl., [8:11] = x^2 scale factor log2
 
   fpga_layer& layer = get_layer(25);
+  layer.name = "conv_dw_13";
   layer.type = LT_CONV;
   layer.input_offs = 0;
-  layer.output_offs = 100352;
+  layer.output_offs = 106400;
   layer.output_size = 100352;
   layer.input_dim[0] = 7;
   layer.input_dim[1] = 7;
@@ -2077,7 +2077,6 @@ void CKerasMobileNet::Layer_25() {
 //  ->: conv_pw_13_bn
 //  ->: conv_pw_13_relu
 void CKerasMobileNet::Layer_26() {
-  get_layer(26).name = "conv_pw_13, conv_pw_13_bn, conv_pw_13_bn, conv_pw_13_relu";
   dmp_dv_cmdraw_conv_v0& conf = get_layer(26).conv_conf;
   conf.header.size = sizeof(conf);
   conf.header.device_type = DMP_DV_DEV_CONV;
@@ -2091,11 +2090,11 @@ void CKerasMobileNet::Layer_26() {
   conf.z = 1;  // Input Depth
   conf.c = 1024;  // Input Channels
   conf.input_buf.mem = io_mem_;
-  conf.input_buf.offs = 100352;
+  conf.input_buf.offs = 106400;
 
   // Output Configuration:
   conf.output_buf.mem = io_mem_;
-  conf.output_buf.offs = 0;
+  conf.output_buf.offs = 6048;
 
   conf.eltwise_buf.mem = NULL;
   conf.eltwise_buf.offs = 0;  // Input byte address for elementwise add (0 = UBUF Input Buffer)
@@ -2125,15 +2124,16 @@ void CKerasMobileNet::Layer_26() {
   conf.run[0].pool_stride = 0x101;  // bits [7:0] = X stride, bits [15:8] = Y stride
   conf.run[0].pool_pad = 0x0;  // bits [7:0] = left padding, bits [15:8] = right padding, bits [23:16] = top padding, bits [31:24] = bottom padding
   conf.run[0].pool_avg_param = 0x0;  // Usually set to 1/pool_size^2 in FP16 format when using average pooling (average pooling assumes square size)
-  conf.run[0].actfunc = 2;  // Activation Function: 0 = None, 1 = Tanh, 2 = Leaky ReLU, 3 = Sigmoid, 4 = PReLU, 5 = ELU, 6 = ReLU6
+  conf.run[0].actfunc = 6;  // Activation Function: 0 = None, 1 = Tanh, 2 = Leaky ReLU, 3 = Sigmoid, 4 = PReLU, 5 = ELU, 6 = ReLU6
   conf.run[0].actfunc_param = 0x0;  // Leaky ReLU parameter (NOTE: 0x2E66 is 0.1 in FP16)
   conf.run[0].rectifi_en = 0;  // Rectification, i.e. max(0, x) (NOTE: Can be applied after non-ReLU activation function)
   conf.run[0].lrn = 0x0;  // [0] : 1 = LRN enable, 0 = LRN disable, [1] : 1 = incl. power func, 0 = excl., [8:11] = x^2 scale factor log2
 
   fpga_layer& layer = get_layer(26);
+  layer.name = "conv_pw_13";
   layer.type = LT_CONV;
-  layer.input_offs = 100352;
-  layer.output_offs = 0;
+  layer.input_offs = 106400;
+  layer.output_offs = 6048;
   layer.output_size = 100352;
   layer.input_dim[0] = 7;
   layer.input_dim[1] = 7;
@@ -2151,7 +2151,6 @@ void CKerasMobileNet::Layer_26() {
 //Layer_27: Convolution Layer
 //  ->: global_average_pooling2d_1
 void CKerasMobileNet::Layer_27() {
-  get_layer(27).name = "global_average_pooling2d_1";
   dmp_dv_cmdraw_conv_v0& conf = get_layer(27).conv_conf;
   conf.header.size = sizeof(conf);
   conf.header.device_type = DMP_DV_DEV_CONV;
@@ -2165,11 +2164,11 @@ void CKerasMobileNet::Layer_27() {
   conf.z = 1;  // Input Depth
   conf.c = 1024;  // Input Channels
   conf.input_buf.mem = io_mem_;
-  conf.input_buf.offs = 0;
+  conf.input_buf.offs = 6048;
 
   // Output Configuration:
   conf.output_buf.mem = io_mem_;
-  conf.output_buf.offs = 100352;
+  conf.output_buf.offs = 4000;
 
   conf.eltwise_buf.mem = NULL;
   conf.eltwise_buf.offs = 0;  // Input byte address for elementwise add (0 = UBUF Input Buffer)
@@ -2202,9 +2201,10 @@ void CKerasMobileNet::Layer_27() {
   conf.run[0].lrn = 0x0;  // [0] : 1 = LRN enable, 0 = LRN disable, [1] : 1 = incl. power func, 0 = excl., [8:11] = x^2 scale factor log2
 
   fpga_layer& layer = get_layer(27);
+  layer.name = "reshape_1";
   layer.type = LT_CONV;
-  layer.input_offs = 0;
-  layer.output_offs = 100352;
+  layer.input_offs = 6048;
+  layer.output_offs = 4000;
   layer.output_size = 2048;
   layer.input_dim[0] = 7;
   layer.input_dim[1] = 7;
@@ -2222,7 +2222,6 @@ void CKerasMobileNet::Layer_27() {
 //Layer_28: Convolution Layer
 //  ->: conv_preds
 void CKerasMobileNet::Layer_28() {
-  get_layer(28).name = "conv_preds";
   dmp_dv_cmdraw_conv_v0& conf = get_layer(28).conv_conf;
   conf.header.size = sizeof(conf);
   conf.header.device_type = DMP_DV_DEV_CONV;
@@ -2236,11 +2235,11 @@ void CKerasMobileNet::Layer_28() {
   conf.z = 1;  // Input Depth
   conf.c = 1024;  // Input Channels
   conf.input_buf.mem = io_mem_;
-  conf.input_buf.offs = 100352;
+  conf.input_buf.offs = 4000;
 
   // Output Configuration:
   conf.output_buf.mem = io_mem_;
-  conf.output_buf.offs = 0;
+  conf.output_buf.offs = 2000;
 
   conf.eltwise_buf.mem = NULL;
   conf.eltwise_buf.offs = 0;  // Input byte address for elementwise add (0 = UBUF Input Buffer)
@@ -2273,9 +2272,10 @@ void CKerasMobileNet::Layer_28() {
   conf.run[0].lrn = 0x0;  // [0] : 1 = LRN enable, 0 = LRN disable, [1] : 1 = incl. power func, 0 = excl., [8:11] = x^2 scale factor log2
 
   fpga_layer& layer = get_layer(28);
+  layer.name = "conv_preds";
   layer.type = LT_CONV;
-  layer.input_offs = 100352;
-  layer.output_offs = 0;
+  layer.input_offs = 4000;
+  layer.output_offs = 2000;
   layer.output_size = 2000;
   layer.input_dim[0] = 1;
   layer.input_dim[1] = 1;
@@ -2294,10 +2294,11 @@ void CKerasMobileNet::Layer_28() {
 //	->: act_softmax
 void CKerasMobileNet::Layer_29() {
   fpga_layer& layer = get_layer(29);
+  layer.name = "reshape_2";
   layer.type = LT_SOFTMAX;
-  layer.input_offs = 0;
-  layer.output_offs = 2000;
-  layer.output_size = 4000;
+  layer.input_offs = 2000;
+  layer.output_offs = 0;
+  layer.output_size = 2000;
   layer.input_dim[0] = 1;
   layer.input_dim[1] = 1;
   layer.input_dim[2] = 1000;
@@ -2305,7 +2306,7 @@ void CKerasMobileNet::Layer_29() {
   layer.output_dim[0] = 1000;
   layer.output_dim_size = 1;
   layer.is_output = true;
-  layer.is_f32_output = true;
+  layer.is_f32_output = false;
   layer.is_input_hw_layout = true;
   layer.softmax_axis = 2;
   output_layers_[0] = &layer;

@@ -239,7 +239,7 @@ class CKerasSqueezeNet : public CDMP_Network {
   | ID | Layers | Type | Dim In | Dim Out | Param | Mem |
   | :- | :- | :-: | :-: | :-: | :-: | :-: |
   | 18 | FPGA-Layer | Convolution | (13, 13, 1000) | (2, 2, 1000) | - | - |
-  | 18-0 | global_average_pooling2d_1_7 | Pooling | (13, 13, 1000) | (2, 2, 1000) | - | - |
+  | 18-0 | global_average_pooling2d_1_7_7 | Pooling | (13, 13, 1000) | (2, 2, 1000) | - | - |
 
   */
   void Layer_18();
@@ -250,7 +250,7 @@ class CKerasSqueezeNet : public CDMP_Network {
   | ID | Layers | Type | Dim In | Dim Out | Param | Mem |
   | :- | :- | :-: | :-: | :-: | :-: | :-: |
   | 19 | FPGA-Layer | Convolution | (2, 2, 1000) | (1, 1, 1000) | - | - |
-  | 19-0 | global_average_pooling2d_1_2 | Pooling | (2, 2, 1000) | (1, 1, 1000) | - | - |
+  | 19-0 | global_average_pooling2d_1_2_2 | Pooling | (2, 2, 1000) | (1, 1, 1000) | - | - |
 
   */
   void Layer_19();

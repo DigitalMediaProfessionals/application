@@ -257,7 +257,7 @@ class CYOLOv3 : public CDMP_Network {
 
   | ID | Layers | Type | Dim In | Dim Out | Param | Mem |
   | :- | :- | :-: | :-: | :-: | :-: | :-: |
-  | 21 | FPGA-Layer | Concatenate | (206550,) | (206550,) | - | - |
+  | 21 | FPGA-Layer | CopyConcatenate | (206550,) | (206550,) | - | - |
 
   */
   void Layer_21();

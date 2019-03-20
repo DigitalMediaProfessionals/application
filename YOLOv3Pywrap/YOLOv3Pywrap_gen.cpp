@@ -28,7 +28,7 @@ CYOLOv3Pywrap::~CYOLOv3Pywrap() {
 }
 
 bool CYOLOv3Pywrap::Initialize() {
-  if (!ReserveMemory(17822496, 6782976)) {
+  if (!ReserveMemory(17822496, 5898240)) {
     return false;
   }
 
@@ -67,7 +67,6 @@ bool CYOLOv3Pywrap::Initialize() {
 //  ->: batch_normalization_1
 //  ->: leaky_re_lu_1
 void CYOLOv3Pywrap::Layer_0() {
-  get_layer(0).name = "conv2d_1, batch_normalization_1, batch_normalization_1, leaky_re_lu_1";
   dmp_dv_cmdraw_conv_v0& conf = get_layer(0).conv_conf;
   conf.header.size = sizeof(conf);
   conf.header.device_type = DMP_DV_DEV_CONV;
@@ -85,7 +84,7 @@ void CYOLOv3Pywrap::Layer_0() {
 
   // Output Configuration:
   conf.output_buf.mem = io_mem_;
-  conf.output_buf.offs = 884736;
+  conf.output_buf.offs = 1179648;
 
   conf.eltwise_buf.mem = NULL;
   conf.eltwise_buf.offs = 0;  // Input byte address for elementwise add (0 = UBUF Input Buffer)
@@ -121,9 +120,10 @@ void CYOLOv3Pywrap::Layer_0() {
   conf.run[0].lrn = 0x0;  // [0] : 1 = LRN enable, 0 = LRN disable, [1] : 1 = incl. power func, 0 = excl., [8:11] = x^2 scale factor log2
 
   fpga_layer& layer = get_layer(0);
+  layer.name = "conv2d_1";
   layer.type = LT_CONV;
   layer.input_offs = 0;
-  layer.output_offs = 884736;
+  layer.output_offs = 1179648;
   layer.output_size = 4718592;
   layer.input_dim[0] = 512;
   layer.input_dim[1] = 288;
@@ -141,7 +141,6 @@ void CYOLOv3Pywrap::Layer_0() {
 //Layer_1: Convolution Layer
 //  ->: max_pooling2d_1
 void CYOLOv3Pywrap::Layer_1() {
-  get_layer(1).name = "max_pooling2d_1";
   dmp_dv_cmdraw_conv_v0& conf = get_layer(1).conv_conf;
   conf.header.size = sizeof(conf);
   conf.header.device_type = DMP_DV_DEV_CONV;
@@ -155,11 +154,11 @@ void CYOLOv3Pywrap::Layer_1() {
   conf.z = 1;  // Input Depth
   conf.c = 16;  // Input Channels
   conf.input_buf.mem = io_mem_;
-  conf.input_buf.offs = 884736;
+  conf.input_buf.offs = 1179648;
 
   // Output Configuration:
   conf.output_buf.mem = io_mem_;
-  conf.output_buf.offs = 5603328;
+  conf.output_buf.offs = 0;
 
   conf.eltwise_buf.mem = NULL;
   conf.eltwise_buf.offs = 0;  // Input byte address for elementwise add (0 = UBUF Input Buffer)
@@ -192,9 +191,10 @@ void CYOLOv3Pywrap::Layer_1() {
   conf.run[0].lrn = 0x0;  // [0] : 1 = LRN enable, 0 = LRN disable, [1] : 1 = incl. power func, 0 = excl., [8:11] = x^2 scale factor log2
 
   fpga_layer& layer = get_layer(1);
+  layer.name = "max_pooling2d_1";
   layer.type = LT_CONV;
-  layer.input_offs = 884736;
-  layer.output_offs = 5603328;
+  layer.input_offs = 1179648;
+  layer.output_offs = 0;
   layer.output_size = 1179648;
   layer.input_dim[0] = 512;
   layer.input_dim[1] = 288;
@@ -215,7 +215,6 @@ void CYOLOv3Pywrap::Layer_1() {
 //  ->: batch_normalization_2
 //  ->: leaky_re_lu_2
 void CYOLOv3Pywrap::Layer_2() {
-  get_layer(2).name = "conv2d_2, batch_normalization_2, batch_normalization_2, leaky_re_lu_2";
   dmp_dv_cmdraw_conv_v0& conf = get_layer(2).conv_conf;
   conf.header.size = sizeof(conf);
   conf.header.device_type = DMP_DV_DEV_CONV;
@@ -229,11 +228,11 @@ void CYOLOv3Pywrap::Layer_2() {
   conf.z = 1;  // Input Depth
   conf.c = 16;  // Input Channels
   conf.input_buf.mem = io_mem_;
-  conf.input_buf.offs = 5603328;
+  conf.input_buf.offs = 0;
 
   // Output Configuration:
   conf.output_buf.mem = io_mem_;
-  conf.output_buf.offs = 0;
+  conf.output_buf.offs = 2211840;
 
   conf.eltwise_buf.mem = NULL;
   conf.eltwise_buf.offs = 0;  // Input byte address for elementwise add (0 = UBUF Input Buffer)
@@ -269,9 +268,10 @@ void CYOLOv3Pywrap::Layer_2() {
   conf.run[0].lrn = 0x0;  // [0] : 1 = LRN enable, 0 = LRN disable, [1] : 1 = incl. power func, 0 = excl., [8:11] = x^2 scale factor log2
 
   fpga_layer& layer = get_layer(2);
+  layer.name = "conv2d_2";
   layer.type = LT_CONV;
-  layer.input_offs = 5603328;
-  layer.output_offs = 0;
+  layer.input_offs = 0;
+  layer.output_offs = 2211840;
   layer.output_size = 2359296;
   layer.input_dim[0] = 256;
   layer.input_dim[1] = 144;
@@ -289,7 +289,6 @@ void CYOLOv3Pywrap::Layer_2() {
 //Layer_3: Convolution Layer
 //  ->: max_pooling2d_2
 void CYOLOv3Pywrap::Layer_3() {
-  get_layer(3).name = "max_pooling2d_2";
   dmp_dv_cmdraw_conv_v0& conf = get_layer(3).conv_conf;
   conf.header.size = sizeof(conf);
   conf.header.device_type = DMP_DV_DEV_CONV;
@@ -303,11 +302,11 @@ void CYOLOv3Pywrap::Layer_3() {
   conf.z = 1;  // Input Depth
   conf.c = 32;  // Input Channels
   conf.input_buf.mem = io_mem_;
-  conf.input_buf.offs = 0;
+  conf.input_buf.offs = 2211840;
 
   // Output Configuration:
   conf.output_buf.mem = io_mem_;
-  conf.output_buf.offs = 2359296;
+  conf.output_buf.offs = 1622016;
 
   conf.eltwise_buf.mem = NULL;
   conf.eltwise_buf.offs = 0;  // Input byte address for elementwise add (0 = UBUF Input Buffer)
@@ -340,9 +339,10 @@ void CYOLOv3Pywrap::Layer_3() {
   conf.run[0].lrn = 0x0;  // [0] : 1 = LRN enable, 0 = LRN disable, [1] : 1 = incl. power func, 0 = excl., [8:11] = x^2 scale factor log2
 
   fpga_layer& layer = get_layer(3);
+  layer.name = "max_pooling2d_2";
   layer.type = LT_CONV;
-  layer.input_offs = 0;
-  layer.output_offs = 2359296;
+  layer.input_offs = 2211840;
+  layer.output_offs = 1622016;
   layer.output_size = 589824;
   layer.input_dim[0] = 256;
   layer.input_dim[1] = 144;
@@ -363,7 +363,6 @@ void CYOLOv3Pywrap::Layer_3() {
 //  ->: batch_normalization_3
 //  ->: leaky_re_lu_3
 void CYOLOv3Pywrap::Layer_4() {
-  get_layer(4).name = "conv2d_3, batch_normalization_3, batch_normalization_3, leaky_re_lu_3";
   dmp_dv_cmdraw_conv_v0& conf = get_layer(4).conv_conf;
   conf.header.size = sizeof(conf);
   conf.header.device_type = DMP_DV_DEV_CONV;
@@ -377,11 +376,11 @@ void CYOLOv3Pywrap::Layer_4() {
   conf.z = 1;  // Input Depth
   conf.c = 32;  // Input Channels
   conf.input_buf.mem = io_mem_;
-  conf.input_buf.offs = 2359296;
+  conf.input_buf.offs = 1622016;
 
   // Output Configuration:
   conf.output_buf.mem = io_mem_;
-  conf.output_buf.offs = 0;
+  conf.output_buf.offs = 442368;
 
   conf.eltwise_buf.mem = NULL;
   conf.eltwise_buf.offs = 0;  // Input byte address for elementwise add (0 = UBUF Input Buffer)
@@ -417,9 +416,10 @@ void CYOLOv3Pywrap::Layer_4() {
   conf.run[0].lrn = 0x0;  // [0] : 1 = LRN enable, 0 = LRN disable, [1] : 1 = incl. power func, 0 = excl., [8:11] = x^2 scale factor log2
 
   fpga_layer& layer = get_layer(4);
+  layer.name = "conv2d_3";
   layer.type = LT_CONV;
-  layer.input_offs = 2359296;
-  layer.output_offs = 0;
+  layer.input_offs = 1622016;
+  layer.output_offs = 442368;
   layer.output_size = 1179648;
   layer.input_dim[0] = 128;
   layer.input_dim[1] = 72;
@@ -437,7 +437,6 @@ void CYOLOv3Pywrap::Layer_4() {
 //Layer_5: Convolution Layer
 //  ->: max_pooling2d_3
 void CYOLOv3Pywrap::Layer_5() {
-  get_layer(5).name = "max_pooling2d_3";
   dmp_dv_cmdraw_conv_v0& conf = get_layer(5).conv_conf;
   conf.header.size = sizeof(conf);
   conf.header.device_type = DMP_DV_DEV_CONV;
@@ -451,11 +450,11 @@ void CYOLOv3Pywrap::Layer_5() {
   conf.z = 1;  // Input Depth
   conf.c = 64;  // Input Channels
   conf.input_buf.mem = io_mem_;
-  conf.input_buf.offs = 0;
+  conf.input_buf.offs = 442368;
 
   // Output Configuration:
   conf.output_buf.mem = io_mem_;
-  conf.output_buf.offs = 1179648;
+  conf.output_buf.offs = 147456;
 
   conf.eltwise_buf.mem = NULL;
   conf.eltwise_buf.offs = 0;  // Input byte address for elementwise add (0 = UBUF Input Buffer)
@@ -488,9 +487,10 @@ void CYOLOv3Pywrap::Layer_5() {
   conf.run[0].lrn = 0x0;  // [0] : 1 = LRN enable, 0 = LRN disable, [1] : 1 = incl. power func, 0 = excl., [8:11] = x^2 scale factor log2
 
   fpga_layer& layer = get_layer(5);
+  layer.name = "max_pooling2d_3";
   layer.type = LT_CONV;
-  layer.input_offs = 0;
-  layer.output_offs = 1179648;
+  layer.input_offs = 442368;
+  layer.output_offs = 147456;
   layer.output_size = 294912;
   layer.input_dim[0] = 128;
   layer.input_dim[1] = 72;
@@ -512,7 +512,6 @@ void CYOLOv3Pywrap::Layer_5() {
 //  ->: leaky_re_lu_4
 //  ->: max_pooling2d_4
 void CYOLOv3Pywrap::Layer_6() {
-  get_layer(6).name = "conv2d_4, batch_normalization_4, batch_normalization_4, leaky_re_lu_4, max_pooling2d_4";
   dmp_dv_cmdraw_conv_v0& conf = get_layer(6).conv_conf;
   conf.header.size = sizeof(conf);
   conf.header.device_type = DMP_DV_DEV_CONV;
@@ -526,7 +525,7 @@ void CYOLOv3Pywrap::Layer_6() {
   conf.z = 1;  // Input Depth
   conf.c = 64;  // Input Channels
   conf.input_buf.mem = io_mem_;
-  conf.input_buf.offs = 1179648;
+  conf.input_buf.offs = 147456;
 
   // Output Configuration:
   conf.output_buf.mem = io_mem_;
@@ -567,8 +566,9 @@ void CYOLOv3Pywrap::Layer_6() {
   conf.run[0].lrn = 0x0;  // [0] : 1 = LRN enable, 0 = LRN disable, [1] : 1 = incl. power func, 0 = excl., [8:11] = x^2 scale factor log2
 
   fpga_layer& layer = get_layer(6);
+  layer.name = "max_pooling2d_4";
   layer.type = LT_CONV;
-  layer.input_offs = 1179648;
+  layer.input_offs = 147456;
   layer.output_offs = 0;
   layer.output_size = 147456;
   layer.input_dim[0] = 64;
@@ -590,7 +590,6 @@ void CYOLOv3Pywrap::Layer_6() {
 //  ->: batch_normalization_5
 //  ->: leaky_re_lu_5
 void CYOLOv3Pywrap::Layer_7() {
-  get_layer(7).name = "conv2d_5, batch_normalization_5, batch_normalization_5, leaky_re_lu_5";
   dmp_dv_cmdraw_conv_v0& conf = get_layer(7).conv_conf;
   conf.header.size = sizeof(conf);
   conf.header.device_type = DMP_DV_DEV_CONV;
@@ -608,7 +607,7 @@ void CYOLOv3Pywrap::Layer_7() {
 
   // Output Configuration:
   conf.output_buf.mem = io_mem_;
-  conf.output_buf.offs = 294912;
+  conf.output_buf.offs = 1176768;
 
   conf.eltwise_buf.mem = NULL;
   conf.eltwise_buf.offs = 0;  // Input byte address for elementwise add (0 = UBUF Input Buffer)
@@ -644,9 +643,10 @@ void CYOLOv3Pywrap::Layer_7() {
   conf.run[0].lrn = 0x0;  // [0] : 1 = LRN enable, 0 = LRN disable, [1] : 1 = incl. power func, 0 = excl., [8:11] = x^2 scale factor log2
 
   fpga_layer& layer = get_layer(7);
+  layer.name = "conv2d_5";
   layer.type = LT_CONV;
   layer.input_offs = 0;
-  layer.output_offs = 294912;
+  layer.output_offs = 1176768;
   layer.output_size = 294912;
   layer.input_dim[0] = 32;
   layer.input_dim[1] = 18;
@@ -664,7 +664,6 @@ void CYOLOv3Pywrap::Layer_7() {
 //Layer_8: Convolution Layer
 //  ->: max_pooling2d_5
 void CYOLOv3Pywrap::Layer_8() {
-  get_layer(8).name = "max_pooling2d_5";
   dmp_dv_cmdraw_conv_v0& conf = get_layer(8).conv_conf;
   conf.header.size = sizeof(conf);
   conf.header.device_type = DMP_DV_DEV_CONV;
@@ -678,7 +677,7 @@ void CYOLOv3Pywrap::Layer_8() {
   conf.z = 1;  // Input Depth
   conf.c = 256;  // Input Channels
   conf.input_buf.mem = io_mem_;
-  conf.input_buf.offs = 294912;
+  conf.input_buf.offs = 1176768;
 
   // Output Configuration:
   conf.output_buf.mem = io_mem_;
@@ -715,8 +714,9 @@ void CYOLOv3Pywrap::Layer_8() {
   conf.run[0].lrn = 0x0;  // [0] : 1 = LRN enable, 0 = LRN disable, [1] : 1 = incl. power func, 0 = excl., [8:11] = x^2 scale factor log2
 
   fpga_layer& layer = get_layer(8);
+  layer.name = "max_pooling2d_5";
   layer.type = LT_CONV;
-  layer.input_offs = 294912;
+  layer.input_offs = 1176768;
   layer.output_offs = 0;
   layer.output_size = 73728;
   layer.input_dim[0] = 32;
@@ -739,7 +739,6 @@ void CYOLOv3Pywrap::Layer_8() {
 //  ->: leaky_re_lu_6
 //  ->: max_pooling2d_6
 void CYOLOv3Pywrap::Layer_9() {
-  get_layer(9).name = "conv2d_6, batch_normalization_6, batch_normalization_6, leaky_re_lu_6, max_pooling2d_6";
   dmp_dv_cmdraw_conv_v0& conf = get_layer(9).conv_conf;
   conf.header.size = sizeof(conf);
   conf.header.device_type = DMP_DV_DEV_CONV;
@@ -757,7 +756,7 @@ void CYOLOv3Pywrap::Layer_9() {
 
   // Output Configuration:
   conf.output_buf.mem = io_mem_;
-  conf.output_buf.offs = 589824;
+  conf.output_buf.offs = 294912;
 
   conf.eltwise_buf.mem = NULL;
   conf.eltwise_buf.offs = 0;  // Input byte address for elementwise add (0 = UBUF Input Buffer)
@@ -794,9 +793,10 @@ void CYOLOv3Pywrap::Layer_9() {
   conf.run[0].lrn = 0x0;  // [0] : 1 = LRN enable, 0 = LRN disable, [1] : 1 = incl. power func, 0 = excl., [8:11] = x^2 scale factor log2
 
   fpga_layer& layer = get_layer(9);
+  layer.name = "max_pooling2d_6";
   layer.type = LT_CONV;
   layer.input_offs = 0;
-  layer.output_offs = 589824;
+  layer.output_offs = 294912;
   layer.output_size = 147456;
   layer.input_dim[0] = 16;
   layer.input_dim[1] = 9;
@@ -817,7 +817,6 @@ void CYOLOv3Pywrap::Layer_9() {
 //  ->: batch_normalization_7
 //  ->: leaky_re_lu_7
 void CYOLOv3Pywrap::Layer_10() {
-  get_layer(10).name = "conv2d_7, batch_normalization_7, batch_normalization_7, leaky_re_lu_7";
   dmp_dv_cmdraw_conv_v0& conf = get_layer(10).conv_conf;
   conf.header.size = sizeof(conf);
   conf.header.device_type = DMP_DV_DEV_CONV;
@@ -831,11 +830,11 @@ void CYOLOv3Pywrap::Layer_10() {
   conf.z = 1;  // Input Depth
   conf.c = 512;  // Input Channels
   conf.input_buf.mem = io_mem_;
-  conf.input_buf.offs = 589824;
+  conf.input_buf.offs = 294912;
 
   // Output Configuration:
   conf.output_buf.mem = io_mem_;
-  conf.output_buf.offs = 737280;
+  conf.output_buf.offs = 0;
 
   conf.eltwise_buf.mem = NULL;
   conf.eltwise_buf.offs = 0;  // Input byte address for elementwise add (0 = UBUF Input Buffer)
@@ -871,9 +870,10 @@ void CYOLOv3Pywrap::Layer_10() {
   conf.run[0].lrn = 0x0;  // [0] : 1 = LRN enable, 0 = LRN disable, [1] : 1 = incl. power func, 0 = excl., [8:11] = x^2 scale factor log2
 
   fpga_layer& layer = get_layer(10);
+  layer.name = "conv2d_7";
   layer.type = LT_CONV;
-  layer.input_offs = 589824;
-  layer.output_offs = 737280;
+  layer.input_offs = 294912;
+  layer.output_offs = 0;
   layer.output_size = 294912;
   layer.input_dim[0] = 16;
   layer.input_dim[1] = 9;
@@ -894,7 +894,6 @@ void CYOLOv3Pywrap::Layer_10() {
 //  ->: batch_normalization_8
 //  ->: leaky_re_lu_8
 void CYOLOv3Pywrap::Layer_11() {
-  get_layer(11).name = "conv2d_8, batch_normalization_8, batch_normalization_8, leaky_re_lu_8";
   dmp_dv_cmdraw_conv_v0& conf = get_layer(11).conv_conf;
   conf.header.size = sizeof(conf);
   conf.header.device_type = DMP_DV_DEV_CONV;
@@ -908,11 +907,11 @@ void CYOLOv3Pywrap::Layer_11() {
   conf.z = 1;  // Input Depth
   conf.c = 1024;  // Input Channels
   conf.input_buf.mem = io_mem_;
-  conf.input_buf.offs = 737280;
+  conf.input_buf.offs = 0;
 
   // Output Configuration:
   conf.output_buf.mem = io_mem_;
-  conf.output_buf.offs = 0;
+  conf.output_buf.offs = 477504;
 
   conf.eltwise_buf.mem = NULL;
   conf.eltwise_buf.offs = 0;  // Input byte address for elementwise add (0 = UBUF Input Buffer)
@@ -948,9 +947,10 @@ void CYOLOv3Pywrap::Layer_11() {
   conf.run[0].lrn = 0x0;  // [0] : 1 = LRN enable, 0 = LRN disable, [1] : 1 = incl. power func, 0 = excl., [8:11] = x^2 scale factor log2
 
   fpga_layer& layer = get_layer(11);
+  layer.name = "conv2d_8";
   layer.type = LT_CONV;
-  layer.input_offs = 737280;
-  layer.output_offs = 0;
+  layer.input_offs = 0;
+  layer.output_offs = 477504;
   layer.output_size = 73728;
   layer.input_dim[0] = 16;
   layer.input_dim[1] = 9;
@@ -971,7 +971,6 @@ void CYOLOv3Pywrap::Layer_11() {
 //  ->: batch_normalization_9
 //  ->: leaky_re_lu_9
 void CYOLOv3Pywrap::Layer_12() {
-  get_layer(12).name = "conv2d_9, batch_normalization_9, batch_normalization_9, leaky_re_lu_9";
   dmp_dv_cmdraw_conv_v0& conf = get_layer(12).conv_conf;
   conf.header.size = sizeof(conf);
   conf.header.device_type = DMP_DV_DEV_CONV;
@@ -985,11 +984,11 @@ void CYOLOv3Pywrap::Layer_12() {
   conf.z = 1;  // Input Depth
   conf.c = 256;  // Input Channels
   conf.input_buf.mem = io_mem_;
-  conf.input_buf.offs = 0;
+  conf.input_buf.offs = 477504;
 
   // Output Configuration:
   conf.output_buf.mem = io_mem_;
-  conf.output_buf.offs = 589824;
+  conf.output_buf.offs = 0;
 
   conf.eltwise_buf.mem = NULL;
   conf.eltwise_buf.offs = 0;  // Input byte address for elementwise add (0 = UBUF Input Buffer)
@@ -1025,9 +1024,10 @@ void CYOLOv3Pywrap::Layer_12() {
   conf.run[0].lrn = 0x0;  // [0] : 1 = LRN enable, 0 = LRN disable, [1] : 1 = incl. power func, 0 = excl., [8:11] = x^2 scale factor log2
 
   fpga_layer& layer = get_layer(12);
+  layer.name = "conv2d_9";
   layer.type = LT_CONV;
-  layer.input_offs = 0;
-  layer.output_offs = 589824;
+  layer.input_offs = 477504;
+  layer.output_offs = 0;
   layer.output_size = 147456;
   layer.input_dim[0] = 16;
   layer.input_dim[1] = 9;
@@ -1045,7 +1045,6 @@ void CYOLOv3Pywrap::Layer_12() {
 //Layer_13: Convolution Layer
 //  ->: conv2d_10
 void CYOLOv3Pywrap::Layer_13() {
-  get_layer(13).name = "conv2d_10";
   dmp_dv_cmdraw_conv_v0& conf = get_layer(13).conv_conf;
   conf.header.size = sizeof(conf);
   conf.header.device_type = DMP_DV_DEV_CONV;
@@ -1059,11 +1058,11 @@ void CYOLOv3Pywrap::Layer_13() {
   conf.z = 1;  // Input Depth
   conf.c = 512;  // Input Channels
   conf.input_buf.mem = io_mem_;
-  conf.input_buf.offs = 589824;
+  conf.input_buf.offs = 0;
 
   // Output Configuration:
   conf.output_buf.mem = io_mem_;
-  conf.output_buf.offs = 73728;
+  conf.output_buf.offs = 551232;
 
   conf.eltwise_buf.mem = NULL;
   conf.eltwise_buf.offs = 0;  // Input byte address for elementwise add (0 = UBUF Input Buffer)
@@ -1096,9 +1095,10 @@ void CYOLOv3Pywrap::Layer_13() {
   conf.run[0].lrn = 0x0;  // [0] : 1 = LRN enable, 0 = LRN disable, [1] : 1 = incl. power func, 0 = excl., [8:11] = x^2 scale factor log2
 
   fpga_layer& layer = get_layer(13);
+  layer.name = "conv2d_10";
   layer.type = LT_CONV;
-  layer.input_offs = 589824;
-  layer.output_offs = 73728;
+  layer.input_offs = 0;
+  layer.output_offs = 551232;
   layer.output_size = 73440;
   layer.input_dim[0] = 16;
   layer.input_dim[1] = 9;
@@ -1117,9 +1117,10 @@ void CYOLOv3Pywrap::Layer_13() {
 //	->: flatten_1
 void CYOLOv3Pywrap::Layer_14() {
   fpga_layer& layer = get_layer(14);
+  layer.name = "flatten_1";
   layer.type = LT_FLATTEN;
-  layer.input_offs = 73728;
-  layer.output_offs = 589824;
+  layer.input_offs = 551232;
+  layer.output_offs = 0;
   layer.output_size = 73440;
   layer.input_dim[0] = 16;
   layer.input_dim[1] = 9;
@@ -1138,7 +1139,6 @@ void CYOLOv3Pywrap::Layer_14() {
 //  ->: batch_normalization_10
 //  ->: leaky_re_lu_10
 void CYOLOv3Pywrap::Layer_15() {
-  get_layer(15).name = "conv2d_11, batch_normalization_10, batch_normalization_10, leaky_re_lu_10";
   dmp_dv_cmdraw_conv_v0& conf = get_layer(15).conv_conf;
   conf.header.size = sizeof(conf);
   conf.header.device_type = DMP_DV_DEV_CONV;
@@ -1152,11 +1152,11 @@ void CYOLOv3Pywrap::Layer_15() {
   conf.z = 1;  // Input Depth
   conf.c = 256;  // Input Channels
   conf.input_buf.mem = io_mem_;
-  conf.input_buf.offs = 0;
+  conf.input_buf.offs = 477504;
 
   // Output Configuration:
   conf.output_buf.mem = io_mem_;
-  conf.output_buf.offs = 73728;
+  conf.output_buf.offs = 440640;
 
   conf.eltwise_buf.mem = NULL;
   conf.eltwise_buf.offs = 0;  // Input byte address for elementwise add (0 = UBUF Input Buffer)
@@ -1192,9 +1192,10 @@ void CYOLOv3Pywrap::Layer_15() {
   conf.run[0].lrn = 0x0;  // [0] : 1 = LRN enable, 0 = LRN disable, [1] : 1 = incl. power func, 0 = excl., [8:11] = x^2 scale factor log2
 
   fpga_layer& layer = get_layer(15);
+  layer.name = "conv2d_11";
   layer.type = LT_CONV;
-  layer.input_offs = 0;
-  layer.output_offs = 73728;
+  layer.input_offs = 477504;
+  layer.output_offs = 440640;
   layer.output_size = 36864;
   layer.input_dim[0] = 16;
   layer.input_dim[1] = 9;
@@ -1212,7 +1213,6 @@ void CYOLOv3Pywrap::Layer_15() {
 //Layer_16: Convolution Layer
 //  ->: up_sampling2d_1
 void CYOLOv3Pywrap::Layer_16() {
-  get_layer(16).name = "up_sampling2d_1";
   dmp_dv_cmdraw_conv_v0& conf = get_layer(16).conv_conf;
   conf.header.size = sizeof(conf);
   conf.header.device_type = DMP_DV_DEV_CONV;
@@ -1226,11 +1226,11 @@ void CYOLOv3Pywrap::Layer_16() {
   conf.z = 1;  // Input Depth
   conf.c = 128;  // Input Channels
   conf.input_buf.mem = io_mem_;
-  conf.input_buf.offs = 73728;
+  conf.input_buf.offs = 440640;
 
   // Output Configuration:
   conf.output_buf.mem = io_mem_;
-  conf.output_buf.offs = 147456;
+  conf.output_buf.offs = 1029312;
 
   conf.eltwise_buf.mem = NULL;
   conf.eltwise_buf.offs = 0;  // Input byte address for elementwise add (0 = UBUF Input Buffer)
@@ -1263,9 +1263,10 @@ void CYOLOv3Pywrap::Layer_16() {
   conf.run[0].lrn = 0x0;  // [0] : 1 = LRN enable, 0 = LRN disable, [1] : 1 = incl. power func, 0 = excl., [8:11] = x^2 scale factor log2
 
   fpga_layer& layer = get_layer(16);
+  layer.name = "up_sampling2d_1";
   layer.type = LT_CONV;
-  layer.input_offs = 73728;
-  layer.output_offs = 147456;
+  layer.input_offs = 440640;
+  layer.output_offs = 1029312;
   layer.output_size = 147456;
   layer.input_dim[0] = 16;
   layer.input_dim[1] = 9;
@@ -1284,9 +1285,10 @@ void CYOLOv3Pywrap::Layer_16() {
 //	->: concatenate_1
 void CYOLOv3Pywrap::Layer_17() {
   fpga_layer& layer = get_layer(17);
+  layer.name = "concatenate_1";
   layer.type = LT_CONCAT;
-  layer.input_offs = 147456;
-  layer.output_offs = 147456;
+  layer.input_offs = 1029312;
+  layer.output_offs = 1029312;
   layer.output_size = 442368;
   layer.input_dim[0] = 32;
   layer.input_dim[1] = 18;
@@ -1307,7 +1309,6 @@ void CYOLOv3Pywrap::Layer_17() {
 //  ->: batch_normalization_11
 //  ->: leaky_re_lu_11
 void CYOLOv3Pywrap::Layer_18() {
-  get_layer(18).name = "conv2d_12, batch_normalization_11, batch_normalization_11, leaky_re_lu_11";
   dmp_dv_cmdraw_conv_v0& conf = get_layer(18).conv_conf;
   conf.header.size = sizeof(conf);
   conf.header.device_type = DMP_DV_DEV_CONV;
@@ -1321,11 +1322,11 @@ void CYOLOv3Pywrap::Layer_18() {
   conf.z = 1;  // Input Depth
   conf.c = 384;  // Input Channels
   conf.input_buf.mem = io_mem_;
-  conf.input_buf.offs = 147456;
+  conf.input_buf.offs = 1029312;
 
   // Output Configuration:
   conf.output_buf.mem = io_mem_;
-  conf.output_buf.offs = 957024;
+  conf.output_buf.offs = 734400;
 
   conf.eltwise_buf.mem = NULL;
   conf.eltwise_buf.offs = 0;  // Input byte address for elementwise add (0 = UBUF Input Buffer)
@@ -1361,9 +1362,10 @@ void CYOLOv3Pywrap::Layer_18() {
   conf.run[0].lrn = 0x0;  // [0] : 1 = LRN enable, 0 = LRN disable, [1] : 1 = incl. power func, 0 = excl., [8:11] = x^2 scale factor log2
 
   fpga_layer& layer = get_layer(18);
+  layer.name = "conv2d_12";
   layer.type = LT_CONV;
-  layer.input_offs = 147456;
-  layer.output_offs = 957024;
+  layer.input_offs = 1029312;
+  layer.output_offs = 734400;
   layer.output_size = 294912;
   layer.input_dim[0] = 32;
   layer.input_dim[1] = 18;
@@ -1375,13 +1377,12 @@ void CYOLOv3Pywrap::Layer_18() {
   layer.output_dim_size = 3;
   layer.is_output = false;
   layer.is_f32_output = false;
-  layer.is_input_hw_layout = false;
+  layer.is_input_hw_layout = true;
 }//end of  Layer_18
 
 //Layer_19: Convolution Layer
 //  ->: conv2d_13
 void CYOLOv3Pywrap::Layer_19() {
-  get_layer(19).name = "conv2d_13";
   dmp_dv_cmdraw_conv_v0& conf = get_layer(19).conv_conf;
   conf.header.size = sizeof(conf);
   conf.header.device_type = DMP_DV_DEV_CONV;
@@ -1395,11 +1396,11 @@ void CYOLOv3Pywrap::Layer_19() {
   conf.z = 1;  // Input Depth
   conf.c = 256;  // Input Channels
   conf.input_buf.mem = io_mem_;
-  conf.input_buf.offs = 957024;
+  conf.input_buf.offs = 734400;
 
   // Output Configuration:
   conf.output_buf.mem = io_mem_;
-  conf.output_buf.offs = 0;
+  conf.output_buf.offs = 440640;
 
   conf.eltwise_buf.mem = NULL;
   conf.eltwise_buf.offs = 0;  // Input byte address for elementwise add (0 = UBUF Input Buffer)
@@ -1432,9 +1433,10 @@ void CYOLOv3Pywrap::Layer_19() {
   conf.run[0].lrn = 0x0;  // [0] : 1 = LRN enable, 0 = LRN disable, [1] : 1 = incl. power func, 0 = excl., [8:11] = x^2 scale factor log2
 
   fpga_layer& layer = get_layer(19);
+  layer.name = "conv2d_13";
   layer.type = LT_CONV;
-  layer.input_offs = 957024;
-  layer.output_offs = 0;
+  layer.input_offs = 734400;
+  layer.output_offs = 440640;
   layer.output_size = 293760;
   layer.input_dim[0] = 32;
   layer.input_dim[1] = 18;
@@ -1453,9 +1455,10 @@ void CYOLOv3Pywrap::Layer_19() {
 //	->: flatten_2
 void CYOLOv3Pywrap::Layer_20() {
   fpga_layer& layer = get_layer(20);
+  layer.name = "flatten_2";
   layer.type = LT_FLATTEN;
-  layer.input_offs = 0;
-  layer.output_offs = 663264;
+  layer.input_offs = 440640;
+  layer.output_offs = 73440;
   layer.output_size = 293760;
   layer.input_dim[0] = 32;
   layer.input_dim[1] = 18;
@@ -1472,9 +1475,10 @@ void CYOLOv3Pywrap::Layer_20() {
 //	->: concatenate_2
 void CYOLOv3Pywrap::Layer_21() {
   fpga_layer& layer = get_layer(21);
+  layer.name = "concatenate_2";
   layer.type = LT_CONCAT;
-  layer.input_offs = 589824;
-  layer.output_offs = 589824;
+  layer.input_offs = 0;
+  layer.output_offs = 0;
   layer.output_size = 367200;
   layer.input_dim[0] = 183600;
   layer.input_dim_size = 1;

@@ -28,7 +28,7 @@ CKerasSqueezeNet::~CKerasSqueezeNet() {
 }
 
 bool CKerasSqueezeNet::Initialize() {
-  if (!ReserveMemory(1363280, 903168)) {
+  if (!ReserveMemory(1363280, 1136448)) {
     return false;
   }
 
@@ -65,7 +65,6 @@ bool CKerasSqueezeNet::Initialize() {
 //  ->: relu_conv1
 //  ->: pool1
 void CKerasSqueezeNet::Layer_0() {
-  get_layer(0).name = "conv1, relu_conv1, pool1";
   dmp_dv_cmdraw_conv_v0& conf = get_layer(0).conv_conf;
   conf.header.size = sizeof(conf);
   conf.header.device_type = DMP_DV_DEV_CONV;
@@ -79,11 +78,11 @@ void CKerasSqueezeNet::Layer_0() {
   conf.z = 1;  // Input Depth
   conf.c = 3;  // Input Channels
   conf.input_buf.mem = io_mem_;
-  conf.input_buf.offs = 0;
+  conf.input_buf.offs = 501760;
 
   // Output Configuration:
   conf.output_buf.mem = io_mem_;
-  conf.output_buf.offs = 309184;
+  conf.output_buf.offs = 100352;
 
   conf.eltwise_buf.mem = NULL;
   conf.eltwise_buf.offs = 0;  // Input byte address for elementwise add (0 = UBUF Input Buffer)
@@ -118,9 +117,10 @@ void CKerasSqueezeNet::Layer_0() {
   conf.run[0].lrn = 0x0;  // [0] : 1 = LRN enable, 0 = LRN disable, [1] : 1 = incl. power func, 0 = excl., [8:11] = x^2 scale factor log2
 
   fpga_layer& layer = get_layer(0);
+  layer.name = "pool1";
   layer.type = LT_CONV;
-  layer.input_offs = 0;
-  layer.output_offs = 309184;
+  layer.input_offs = 501760;
+  layer.output_offs = 100352;
   layer.output_size = 401408;
   layer.input_dim[0] = 227;
   layer.input_dim[1] = 227;
@@ -139,7 +139,6 @@ void CKerasSqueezeNet::Layer_0() {
 //  ->: fire2/squeeze1x1
 //  ->: fire2/relu_squeeze1x1
 void CKerasSqueezeNet::Layer_1() {
-  get_layer(1).name = "fire2/squeeze1x1, fire2/relu_squeeze1x1";
   dmp_dv_cmdraw_conv_v0& conf = get_layer(1).conv_conf;
   conf.header.size = sizeof(conf);
   conf.header.device_type = DMP_DV_DEV_CONV;
@@ -153,7 +152,7 @@ void CKerasSqueezeNet::Layer_1() {
   conf.z = 1;  // Input Depth
   conf.c = 64;  // Input Channels
   conf.input_buf.mem = io_mem_;
-  conf.input_buf.offs = 309184;
+  conf.input_buf.offs = 100352;
 
   // Output Configuration:
   conf.output_buf.mem = io_mem_;
@@ -191,8 +190,9 @@ void CKerasSqueezeNet::Layer_1() {
   conf.run[0].lrn = 0x0;  // [0] : 1 = LRN enable, 0 = LRN disable, [1] : 1 = incl. power func, 0 = excl., [8:11] = x^2 scale factor log2
 
   fpga_layer& layer = get_layer(1);
+  layer.name = "fire2/squeeze1x1";
   layer.type = LT_CONV;
-  layer.input_offs = 309184;
+  layer.input_offs = 100352;
   layer.output_offs = 0;
   layer.output_size = 100352;
   layer.input_dim[0] = 56;
@@ -214,7 +214,6 @@ void CKerasSqueezeNet::Layer_1() {
 //  ->: fire2/expand3x3
 //  ->: fire2/relu_expand3x3
 void CKerasSqueezeNet::Layer_2() {
-  get_layer(2).name = "fire2/expand1x1, fire2/relu_expand1x1, fire2/expand3x3, fire2/relu_expand3x3";
   dmp_dv_cmdraw_conv_v0& conf = get_layer(2).conv_conf;
   conf.header.size = sizeof(conf);
   conf.header.device_type = DMP_DV_DEV_CONV;
@@ -232,7 +231,7 @@ void CKerasSqueezeNet::Layer_2() {
 
   // Output Configuration:
   conf.output_buf.mem = io_mem_;
-  conf.output_buf.offs = 100352;
+  conf.output_buf.offs = 333632;
 
   conf.eltwise_buf.mem = NULL;
   conf.eltwise_buf.offs = 0;  // Input byte address for elementwise add (0 = UBUF Input Buffer)
@@ -290,9 +289,10 @@ void CKerasSqueezeNet::Layer_2() {
   conf.run[1].lrn = 0x0;  // [0] : 1 = LRN enable, 0 = LRN disable, [1] : 1 = incl. power func, 0 = excl., [8:11] = x^2 scale factor log2
 
   fpga_layer& layer = get_layer(2);
+  layer.name = "fire2/concat";
   layer.type = LT_CONV;
   layer.input_offs = 0;
-  layer.output_offs = 100352;
+  layer.output_offs = 333632;
   layer.output_size = 802816;
   layer.input_dim[0] = 56;
   layer.input_dim[1] = 56;
@@ -311,7 +311,6 @@ void CKerasSqueezeNet::Layer_2() {
 //  ->: fire3/squeeze1x1
 //  ->: fire3/relu_squeeze1x1
 void CKerasSqueezeNet::Layer_3() {
-  get_layer(3).name = "fire3/squeeze1x1, fire3/relu_squeeze1x1";
   dmp_dv_cmdraw_conv_v0& conf = get_layer(3).conv_conf;
   conf.header.size = sizeof(conf);
   conf.header.device_type = DMP_DV_DEV_CONV;
@@ -325,11 +324,11 @@ void CKerasSqueezeNet::Layer_3() {
   conf.z = 1;  // Input Depth
   conf.c = 128;  // Input Channels
   conf.input_buf.mem = io_mem_;
-  conf.input_buf.offs = 100352;
+  conf.input_buf.offs = 333632;
 
   // Output Configuration:
   conf.output_buf.mem = io_mem_;
-  conf.output_buf.offs = 0;
+  conf.output_buf.offs = 233280;
 
   conf.eltwise_buf.mem = NULL;
   conf.eltwise_buf.offs = 0;  // Input byte address for elementwise add (0 = UBUF Input Buffer)
@@ -363,9 +362,10 @@ void CKerasSqueezeNet::Layer_3() {
   conf.run[0].lrn = 0x0;  // [0] : 1 = LRN enable, 0 = LRN disable, [1] : 1 = incl. power func, 0 = excl., [8:11] = x^2 scale factor log2
 
   fpga_layer& layer = get_layer(3);
+  layer.name = "fire3/squeeze1x1";
   layer.type = LT_CONV;
-  layer.input_offs = 100352;
-  layer.output_offs = 0;
+  layer.input_offs = 333632;
+  layer.output_offs = 233280;
   layer.output_size = 100352;
   layer.input_dim[0] = 56;
   layer.input_dim[1] = 56;
@@ -388,7 +388,6 @@ void CKerasSqueezeNet::Layer_3() {
 //  ->: fire3/relu_expand3x3
 //  ->: pool3
 void CKerasSqueezeNet::Layer_4() {
-  get_layer(4).name = "fire3/expand1x1, fire3/relu_expand1x1, pool3, fire3/expand3x3, fire3/relu_expand3x3, pool3";
   dmp_dv_cmdraw_conv_v0& conf = get_layer(4).conv_conf;
   conf.header.size = sizeof(conf);
   conf.header.device_type = DMP_DV_DEV_CONV;
@@ -402,11 +401,11 @@ void CKerasSqueezeNet::Layer_4() {
   conf.z = 1;  // Input Depth
   conf.c = 16;  // Input Channels
   conf.input_buf.mem = io_mem_;
-  conf.input_buf.offs = 0;
+  conf.input_buf.offs = 233280;
 
   // Output Configuration:
   conf.output_buf.mem = io_mem_;
-  conf.output_buf.offs = 100352;
+  conf.output_buf.offs = 46656;
 
   conf.eltwise_buf.mem = NULL;
   conf.eltwise_buf.offs = 0;  // Input byte address for elementwise add (0 = UBUF Input Buffer)
@@ -466,9 +465,10 @@ void CKerasSqueezeNet::Layer_4() {
   conf.run[1].lrn = 0x0;  // [0] : 1 = LRN enable, 0 = LRN disable, [1] : 1 = incl. power func, 0 = excl., [8:11] = x^2 scale factor log2
 
   fpga_layer& layer = get_layer(4);
+  layer.name = "pool3";
   layer.type = LT_CONV;
-  layer.input_offs = 0;
-  layer.output_offs = 100352;
+  layer.input_offs = 233280;
+  layer.output_offs = 46656;
   layer.output_size = 186624;
   layer.input_dim[0] = 56;
   layer.input_dim[1] = 56;
@@ -487,7 +487,6 @@ void CKerasSqueezeNet::Layer_4() {
 //  ->: fire4/squeeze1x1
 //  ->: fire4/relu_squeeze1x1
 void CKerasSqueezeNet::Layer_5() {
-  get_layer(5).name = "fire4/squeeze1x1, fire4/relu_squeeze1x1";
   dmp_dv_cmdraw_conv_v0& conf = get_layer(5).conv_conf;
   conf.header.size = sizeof(conf);
   conf.header.device_type = DMP_DV_DEV_CONV;
@@ -501,7 +500,7 @@ void CKerasSqueezeNet::Layer_5() {
   conf.z = 1;  // Input Depth
   conf.c = 128;  // Input Channels
   conf.input_buf.mem = io_mem_;
-  conf.input_buf.offs = 100352;
+  conf.input_buf.offs = 46656;
 
   // Output Configuration:
   conf.output_buf.mem = io_mem_;
@@ -539,8 +538,9 @@ void CKerasSqueezeNet::Layer_5() {
   conf.run[0].lrn = 0x0;  // [0] : 1 = LRN enable, 0 = LRN disable, [1] : 1 = incl. power func, 0 = excl., [8:11] = x^2 scale factor log2
 
   fpga_layer& layer = get_layer(5);
+  layer.name = "fire4/squeeze1x1";
   layer.type = LT_CONV;
-  layer.input_offs = 100352;
+  layer.input_offs = 46656;
   layer.output_offs = 0;
   layer.output_size = 46656;
   layer.input_dim[0] = 27;
@@ -562,7 +562,6 @@ void CKerasSqueezeNet::Layer_5() {
 //  ->: fire4/expand3x3
 //  ->: fire4/relu_expand3x3
 void CKerasSqueezeNet::Layer_6() {
-  get_layer(6).name = "fire4/expand1x1, fire4/relu_expand1x1, fire4/expand3x3, fire4/relu_expand3x3";
   dmp_dv_cmdraw_conv_v0& conf = get_layer(6).conv_conf;
   conf.header.size = sizeof(conf);
   conf.header.device_type = DMP_DV_DEV_CONV;
@@ -580,7 +579,7 @@ void CKerasSqueezeNet::Layer_6() {
 
   // Output Configuration:
   conf.output_buf.mem = io_mem_;
-  conf.output_buf.offs = 46656;
+  conf.output_buf.offs = 149408;
 
   conf.eltwise_buf.mem = NULL;
   conf.eltwise_buf.offs = 0;  // Input byte address for elementwise add (0 = UBUF Input Buffer)
@@ -638,9 +637,10 @@ void CKerasSqueezeNet::Layer_6() {
   conf.run[1].lrn = 0x0;  // [0] : 1 = LRN enable, 0 = LRN disable, [1] : 1 = incl. power func, 0 = excl., [8:11] = x^2 scale factor log2
 
   fpga_layer& layer = get_layer(6);
+  layer.name = "fire4/concat";
   layer.type = LT_CONV;
   layer.input_offs = 0;
-  layer.output_offs = 46656;
+  layer.output_offs = 149408;
   layer.output_size = 373248;
   layer.input_dim[0] = 27;
   layer.input_dim[1] = 27;
@@ -659,7 +659,6 @@ void CKerasSqueezeNet::Layer_6() {
 //  ->: fire5/squeeze1x1
 //  ->: fire5/relu_squeeze1x1
 void CKerasSqueezeNet::Layer_7() {
-  get_layer(7).name = "fire5/squeeze1x1, fire5/relu_squeeze1x1";
   dmp_dv_cmdraw_conv_v0& conf = get_layer(7).conv_conf;
   conf.header.size = sizeof(conf);
   conf.header.device_type = DMP_DV_DEV_CONV;
@@ -673,11 +672,11 @@ void CKerasSqueezeNet::Layer_7() {
   conf.z = 1;  // Input Depth
   conf.c = 256;  // Input Channels
   conf.input_buf.mem = io_mem_;
-  conf.input_buf.offs = 46656;
+  conf.input_buf.offs = 149408;
 
   // Output Configuration:
   conf.output_buf.mem = io_mem_;
-  conf.output_buf.offs = 0;
+  conf.output_buf.offs = 102752;
 
   conf.eltwise_buf.mem = NULL;
   conf.eltwise_buf.offs = 0;  // Input byte address for elementwise add (0 = UBUF Input Buffer)
@@ -711,9 +710,10 @@ void CKerasSqueezeNet::Layer_7() {
   conf.run[0].lrn = 0x0;  // [0] : 1 = LRN enable, 0 = LRN disable, [1] : 1 = incl. power func, 0 = excl., [8:11] = x^2 scale factor log2
 
   fpga_layer& layer = get_layer(7);
+  layer.name = "fire5/squeeze1x1";
   layer.type = LT_CONV;
-  layer.input_offs = 46656;
-  layer.output_offs = 0;
+  layer.input_offs = 149408;
+  layer.output_offs = 102752;
   layer.output_size = 46656;
   layer.input_dim[0] = 27;
   layer.input_dim[1] = 27;
@@ -736,7 +736,6 @@ void CKerasSqueezeNet::Layer_7() {
 //  ->: fire5/relu_expand3x3
 //  ->: pool5
 void CKerasSqueezeNet::Layer_8() {
-  get_layer(8).name = "fire5/expand1x1, fire5/relu_expand1x1, pool5, fire5/expand3x3, fire5/relu_expand3x3, pool5";
   dmp_dv_cmdraw_conv_v0& conf = get_layer(8).conv_conf;
   conf.header.size = sizeof(conf);
   conf.header.device_type = DMP_DV_DEV_CONV;
@@ -750,11 +749,11 @@ void CKerasSqueezeNet::Layer_8() {
   conf.z = 1;  // Input Depth
   conf.c = 32;  // Input Channels
   conf.input_buf.mem = io_mem_;
-  conf.input_buf.offs = 0;
+  conf.input_buf.offs = 102752;
 
   // Output Configuration:
   conf.output_buf.mem = io_mem_;
-  conf.output_buf.offs = 46656;
+  conf.output_buf.offs = 16224;
 
   conf.eltwise_buf.mem = NULL;
   conf.eltwise_buf.offs = 0;  // Input byte address for elementwise add (0 = UBUF Input Buffer)
@@ -814,9 +813,10 @@ void CKerasSqueezeNet::Layer_8() {
   conf.run[1].lrn = 0x0;  // [0] : 1 = LRN enable, 0 = LRN disable, [1] : 1 = incl. power func, 0 = excl., [8:11] = x^2 scale factor log2
 
   fpga_layer& layer = get_layer(8);
+  layer.name = "pool5";
   layer.type = LT_CONV;
-  layer.input_offs = 0;
-  layer.output_offs = 46656;
+  layer.input_offs = 102752;
+  layer.output_offs = 16224;
   layer.output_size = 86528;
   layer.input_dim[0] = 27;
   layer.input_dim[1] = 27;
@@ -835,7 +835,6 @@ void CKerasSqueezeNet::Layer_8() {
 //  ->: fire6/squeeze1x1
 //  ->: fire6/relu_squeeze1x1
 void CKerasSqueezeNet::Layer_9() {
-  get_layer(9).name = "fire6/squeeze1x1, fire6/relu_squeeze1x1";
   dmp_dv_cmdraw_conv_v0& conf = get_layer(9).conv_conf;
   conf.header.size = sizeof(conf);
   conf.header.device_type = DMP_DV_DEV_CONV;
@@ -849,7 +848,7 @@ void CKerasSqueezeNet::Layer_9() {
   conf.z = 1;  // Input Depth
   conf.c = 256;  // Input Channels
   conf.input_buf.mem = io_mem_;
-  conf.input_buf.offs = 46656;
+  conf.input_buf.offs = 16224;
 
   // Output Configuration:
   conf.output_buf.mem = io_mem_;
@@ -887,8 +886,9 @@ void CKerasSqueezeNet::Layer_9() {
   conf.run[0].lrn = 0x0;  // [0] : 1 = LRN enable, 0 = LRN disable, [1] : 1 = incl. power func, 0 = excl., [8:11] = x^2 scale factor log2
 
   fpga_layer& layer = get_layer(9);
+  layer.name = "fire6/squeeze1x1";
   layer.type = LT_CONV;
-  layer.input_offs = 46656;
+  layer.input_offs = 16224;
   layer.output_offs = 0;
   layer.output_size = 16224;
   layer.input_dim[0] = 13;
@@ -910,7 +910,6 @@ void CKerasSqueezeNet::Layer_9() {
 //  ->: fire6/expand3x3
 //  ->: fire6/relu_expand3x3
 void CKerasSqueezeNet::Layer_10() {
-  get_layer(10).name = "fire6/expand1x1, fire6/relu_expand1x1, fire6/expand3x3, fire6/relu_expand3x3";
   dmp_dv_cmdraw_conv_v0& conf = get_layer(10).conv_conf;
   conf.header.size = sizeof(conf);
   conf.header.device_type = DMP_DV_DEV_CONV;
@@ -986,6 +985,7 @@ void CKerasSqueezeNet::Layer_10() {
   conf.run[1].lrn = 0x0;  // [0] : 1 = LRN enable, 0 = LRN disable, [1] : 1 = incl. power func, 0 = excl., [8:11] = x^2 scale factor log2
 
   fpga_layer& layer = get_layer(10);
+  layer.name = "fire6/concat";
   layer.type = LT_CONV;
   layer.input_offs = 0;
   layer.output_offs = 16224;
@@ -1007,7 +1007,6 @@ void CKerasSqueezeNet::Layer_10() {
 //  ->: fire7/squeeze1x1
 //  ->: fire7/relu_squeeze1x1
 void CKerasSqueezeNet::Layer_11() {
-  get_layer(11).name = "fire7/squeeze1x1, fire7/relu_squeeze1x1";
   dmp_dv_cmdraw_conv_v0& conf = get_layer(11).conv_conf;
   conf.header.size = sizeof(conf);
   conf.header.device_type = DMP_DV_DEV_CONV;
@@ -1059,6 +1058,7 @@ void CKerasSqueezeNet::Layer_11() {
   conf.run[0].lrn = 0x0;  // [0] : 1 = LRN enable, 0 = LRN disable, [1] : 1 = incl. power func, 0 = excl., [8:11] = x^2 scale factor log2
 
   fpga_layer& layer = get_layer(11);
+  layer.name = "fire7/squeeze1x1";
   layer.type = LT_CONV;
   layer.input_offs = 16224;
   layer.output_offs = 0;
@@ -1082,7 +1082,6 @@ void CKerasSqueezeNet::Layer_11() {
 //  ->: fire7/expand3x3
 //  ->: fire7/relu_expand3x3
 void CKerasSqueezeNet::Layer_12() {
-  get_layer(12).name = "fire7/expand1x1, fire7/relu_expand1x1, fire7/expand3x3, fire7/relu_expand3x3";
   dmp_dv_cmdraw_conv_v0& conf = get_layer(12).conv_conf;
   conf.header.size = sizeof(conf);
   conf.header.device_type = DMP_DV_DEV_CONV;
@@ -1100,7 +1099,7 @@ void CKerasSqueezeNet::Layer_12() {
 
   // Output Configuration:
   conf.output_buf.mem = io_mem_;
-  conf.output_buf.offs = 16224;
+  conf.output_buf.offs = 21632;
 
   conf.eltwise_buf.mem = NULL;
   conf.eltwise_buf.offs = 0;  // Input byte address for elementwise add (0 = UBUF Input Buffer)
@@ -1158,9 +1157,10 @@ void CKerasSqueezeNet::Layer_12() {
   conf.run[1].lrn = 0x0;  // [0] : 1 = LRN enable, 0 = LRN disable, [1] : 1 = incl. power func, 0 = excl., [8:11] = x^2 scale factor log2
 
   fpga_layer& layer = get_layer(12);
+  layer.name = "fire7/concat";
   layer.type = LT_CONV;
   layer.input_offs = 0;
-  layer.output_offs = 16224;
+  layer.output_offs = 21632;
   layer.output_size = 129792;
   layer.input_dim[0] = 13;
   layer.input_dim[1] = 13;
@@ -1179,7 +1179,6 @@ void CKerasSqueezeNet::Layer_12() {
 //  ->: fire8/squeeze1x1
 //  ->: fire8/relu_squeeze1x1
 void CKerasSqueezeNet::Layer_13() {
-  get_layer(13).name = "fire8/squeeze1x1, fire8/relu_squeeze1x1";
   dmp_dv_cmdraw_conv_v0& conf = get_layer(13).conv_conf;
   conf.header.size = sizeof(conf);
   conf.header.device_type = DMP_DV_DEV_CONV;
@@ -1193,11 +1192,11 @@ void CKerasSqueezeNet::Layer_13() {
   conf.z = 1;  // Input Depth
   conf.c = 384;  // Input Channels
   conf.input_buf.mem = io_mem_;
-  conf.input_buf.offs = 16224;
+  conf.input_buf.offs = 21632;
 
   // Output Configuration:
   conf.output_buf.mem = io_mem_;
-  conf.output_buf.offs = 146016;
+  conf.output_buf.offs = 0;
 
   conf.eltwise_buf.mem = NULL;
   conf.eltwise_buf.offs = 0;  // Input byte address for elementwise add (0 = UBUF Input Buffer)
@@ -1231,9 +1230,10 @@ void CKerasSqueezeNet::Layer_13() {
   conf.run[0].lrn = 0x0;  // [0] : 1 = LRN enable, 0 = LRN disable, [1] : 1 = incl. power func, 0 = excl., [8:11] = x^2 scale factor log2
 
   fpga_layer& layer = get_layer(13);
+  layer.name = "fire8/squeeze1x1";
   layer.type = LT_CONV;
-  layer.input_offs = 16224;
-  layer.output_offs = 146016;
+  layer.input_offs = 21632;
+  layer.output_offs = 0;
   layer.output_size = 21632;
   layer.input_dim[0] = 13;
   layer.input_dim[1] = 13;
@@ -1254,7 +1254,6 @@ void CKerasSqueezeNet::Layer_13() {
 //  ->: fire8/expand3x3
 //  ->: fire8/relu_expand3x3
 void CKerasSqueezeNet::Layer_14() {
-  get_layer(14).name = "fire8/expand1x1, fire8/relu_expand1x1, fire8/expand3x3, fire8/relu_expand3x3";
   dmp_dv_cmdraw_conv_v0& conf = get_layer(14).conv_conf;
   conf.header.size = sizeof(conf);
   conf.header.device_type = DMP_DV_DEV_CONV;
@@ -1268,11 +1267,11 @@ void CKerasSqueezeNet::Layer_14() {
   conf.z = 1;  // Input Depth
   conf.c = 64;  // Input Channels
   conf.input_buf.mem = io_mem_;
-  conf.input_buf.offs = 146016;
+  conf.input_buf.offs = 0;
 
   // Output Configuration:
   conf.output_buf.mem = io_mem_;
-  conf.output_buf.offs = 167648;
+  conf.output_buf.offs = 21632;
 
   conf.eltwise_buf.mem = NULL;
   conf.eltwise_buf.offs = 0;  // Input byte address for elementwise add (0 = UBUF Input Buffer)
@@ -1330,9 +1329,10 @@ void CKerasSqueezeNet::Layer_14() {
   conf.run[1].lrn = 0x0;  // [0] : 1 = LRN enable, 0 = LRN disable, [1] : 1 = incl. power func, 0 = excl., [8:11] = x^2 scale factor log2
 
   fpga_layer& layer = get_layer(14);
+  layer.name = "fire8/concat";
   layer.type = LT_CONV;
-  layer.input_offs = 146016;
-  layer.output_offs = 167648;
+  layer.input_offs = 0;
+  layer.output_offs = 21632;
   layer.output_size = 173056;
   layer.input_dim[0] = 13;
   layer.input_dim[1] = 13;
@@ -1351,7 +1351,6 @@ void CKerasSqueezeNet::Layer_14() {
 //  ->: fire9/squeeze1x1
 //  ->: fire9/relu_squeeze1x1
 void CKerasSqueezeNet::Layer_15() {
-  get_layer(15).name = "fire9/squeeze1x1, fire9/relu_squeeze1x1";
   dmp_dv_cmdraw_conv_v0& conf = get_layer(15).conv_conf;
   conf.header.size = sizeof(conf);
   conf.header.device_type = DMP_DV_DEV_CONV;
@@ -1365,7 +1364,7 @@ void CKerasSqueezeNet::Layer_15() {
   conf.z = 1;  // Input Depth
   conf.c = 512;  // Input Channels
   conf.input_buf.mem = io_mem_;
-  conf.input_buf.offs = 167648;
+  conf.input_buf.offs = 21632;
 
   // Output Configuration:
   conf.output_buf.mem = io_mem_;
@@ -1403,8 +1402,9 @@ void CKerasSqueezeNet::Layer_15() {
   conf.run[0].lrn = 0x0;  // [0] : 1 = LRN enable, 0 = LRN disable, [1] : 1 = incl. power func, 0 = excl., [8:11] = x^2 scale factor log2
 
   fpga_layer& layer = get_layer(15);
+  layer.name = "fire9/squeeze1x1";
   layer.type = LT_CONV;
-  layer.input_offs = 167648;
+  layer.input_offs = 21632;
   layer.output_offs = 0;
   layer.output_size = 21632;
   layer.input_dim[0] = 13;
@@ -1426,7 +1426,6 @@ void CKerasSqueezeNet::Layer_15() {
 //  ->: fire9/expand3x3
 //  ->: fire9/relu_expand3x3
 void CKerasSqueezeNet::Layer_16() {
-  get_layer(16).name = "fire9/expand1x1, fire9/relu_expand1x1, fire9/expand3x3, fire9/relu_expand3x3";
   dmp_dv_cmdraw_conv_v0& conf = get_layer(16).conv_conf;
   conf.header.size = sizeof(conf);
   conf.header.device_type = DMP_DV_DEV_CONV;
@@ -1444,7 +1443,7 @@ void CKerasSqueezeNet::Layer_16() {
 
   // Output Configuration:
   conf.output_buf.mem = io_mem_;
-  conf.output_buf.offs = 21632;
+  conf.output_buf.offs = 350000;
 
   conf.eltwise_buf.mem = NULL;
   conf.eltwise_buf.offs = 0;  // Input byte address for elementwise add (0 = UBUF Input Buffer)
@@ -1502,9 +1501,10 @@ void CKerasSqueezeNet::Layer_16() {
   conf.run[1].lrn = 0x0;  // [0] : 1 = LRN enable, 0 = LRN disable, [1] : 1 = incl. power func, 0 = excl., [8:11] = x^2 scale factor log2
 
   fpga_layer& layer = get_layer(16);
+  layer.name = "fire9/concat";
   layer.type = LT_CONV;
   layer.input_offs = 0;
-  layer.output_offs = 21632;
+  layer.output_offs = 350000;
   layer.output_size = 173056;
   layer.input_dim[0] = 13;
   layer.input_dim[1] = 13;
@@ -1523,7 +1523,6 @@ void CKerasSqueezeNet::Layer_16() {
 //  ->: conv10
 //  ->: relu_conv10
 void CKerasSqueezeNet::Layer_17() {
-  get_layer(17).name = "conv10, relu_conv10";
   dmp_dv_cmdraw_conv_v0& conf = get_layer(17).conv_conf;
   conf.header.size = sizeof(conf);
   conf.header.device_type = DMP_DV_DEV_CONV;
@@ -1537,11 +1536,11 @@ void CKerasSqueezeNet::Layer_17() {
   conf.z = 1;  // Input Depth
   conf.c = 512;  // Input Channels
   conf.input_buf.mem = io_mem_;
-  conf.input_buf.offs = 21632;
+  conf.input_buf.offs = 350000;
 
   // Output Configuration:
   conf.output_buf.mem = io_mem_;
-  conf.output_buf.offs = 194688;
+  conf.output_buf.offs = 12000;
 
   conf.eltwise_buf.mem = NULL;
   conf.eltwise_buf.offs = 0;  // Input byte address for elementwise add (0 = UBUF Input Buffer)
@@ -1575,9 +1574,10 @@ void CKerasSqueezeNet::Layer_17() {
   conf.run[0].lrn = 0x0;  // [0] : 1 = LRN enable, 0 = LRN disable, [1] : 1 = incl. power func, 0 = excl., [8:11] = x^2 scale factor log2
 
   fpga_layer& layer = get_layer(17);
+  layer.name = "conv10";
   layer.type = LT_CONV;
-  layer.input_offs = 21632;
-  layer.output_offs = 194688;
+  layer.input_offs = 350000;
+  layer.output_offs = 12000;
   layer.output_size = 338000;
   layer.input_dim[0] = 13;
   layer.input_dim[1] = 13;
@@ -1593,9 +1593,8 @@ void CKerasSqueezeNet::Layer_17() {
 }//end of  Layer_17
 
 //Layer_18: Convolution Layer
-//  ->: global_average_pooling2d_1_7
+//  ->: global_average_pooling2d_1_7_7
 void CKerasSqueezeNet::Layer_18() {
-  get_layer(18).name = "global_average_pooling2d_1_7";
   dmp_dv_cmdraw_conv_v0& conf = get_layer(18).conv_conf;
   conf.header.size = sizeof(conf);
   conf.header.device_type = DMP_DV_DEV_CONV;
@@ -1609,11 +1608,11 @@ void CKerasSqueezeNet::Layer_18() {
   conf.z = 1;  // Input Depth
   conf.c = 1000;  // Input Channels
   conf.input_buf.mem = io_mem_;
-  conf.input_buf.offs = 194688;
+  conf.input_buf.offs = 12000;
 
   // Output Configuration:
   conf.output_buf.mem = io_mem_;
-  conf.output_buf.offs = 0;
+  conf.output_buf.offs = 4000;
 
   conf.eltwise_buf.mem = NULL;
   conf.eltwise_buf.offs = 0;  // Input byte address for elementwise add (0 = UBUF Input Buffer)
@@ -1624,7 +1623,7 @@ void CKerasSqueezeNet::Layer_18() {
   //--------------------------------------------------
   //RUN : 0
   //--------------------------------------------------
-  //->: global_average_pooling2d_1_7
+  //->: global_average_pooling2d_1_7_7
   conf.run[0].m = 1000;  // Output Channels
   conf.run[0].conv_enable = 0;  // 1 = Enabled, 0 = Disabled
   conf.run[0].p = 0x1;  // Filter Width and Height
@@ -1646,9 +1645,10 @@ void CKerasSqueezeNet::Layer_18() {
   conf.run[0].lrn = 0x0;  // [0] : 1 = LRN enable, 0 = LRN disable, [1] : 1 = incl. power func, 0 = excl., [8:11] = x^2 scale factor log2
 
   fpga_layer& layer = get_layer(18);
+  layer.name = "global_average_pooling2d_1_7_7";
   layer.type = LT_CONV;
-  layer.input_offs = 194688;
-  layer.output_offs = 0;
+  layer.input_offs = 12000;
+  layer.output_offs = 4000;
   layer.output_size = 8000;
   layer.input_dim[0] = 13;
   layer.input_dim[1] = 13;
@@ -1664,9 +1664,8 @@ void CKerasSqueezeNet::Layer_18() {
 }//end of  Layer_18
 
 //Layer_19: Convolution Layer
-//  ->: global_average_pooling2d_1_2
+//  ->: global_average_pooling2d_1_2_2
 void CKerasSqueezeNet::Layer_19() {
-  get_layer(19).name = "global_average_pooling2d_1_2";
   dmp_dv_cmdraw_conv_v0& conf = get_layer(19).conv_conf;
   conf.header.size = sizeof(conf);
   conf.header.device_type = DMP_DV_DEV_CONV;
@@ -1680,11 +1679,11 @@ void CKerasSqueezeNet::Layer_19() {
   conf.z = 1;  // Input Depth
   conf.c = 1000;  // Input Channels
   conf.input_buf.mem = io_mem_;
-  conf.input_buf.offs = 0;
+  conf.input_buf.offs = 4000;
 
   // Output Configuration:
   conf.output_buf.mem = io_mem_;
-  conf.output_buf.offs = 8000;
+  conf.output_buf.offs = 2000;
 
   conf.eltwise_buf.mem = NULL;
   conf.eltwise_buf.offs = 0;  // Input byte address for elementwise add (0 = UBUF Input Buffer)
@@ -1695,7 +1694,7 @@ void CKerasSqueezeNet::Layer_19() {
   //--------------------------------------------------
   //RUN : 0
   //--------------------------------------------------
-  //->: global_average_pooling2d_1_2
+  //->: global_average_pooling2d_1_2_2
   conf.run[0].m = 1000;  // Output Channels
   conf.run[0].conv_enable = 0;  // 1 = Enabled, 0 = Disabled
   conf.run[0].p = 0x1;  // Filter Width and Height
@@ -1708,7 +1707,7 @@ void CKerasSqueezeNet::Layer_19() {
   conf.run[0].conv_dilation = 0x0;  // bits [7:0] = X dilation, bits [15:8] = Y dilation
   conf.run[0].pool_enable = 2;  // 0 = disabled, 1 = max pooling, 2 = average pooling
   conf.run[0].pool_size = 0x202;  // bits [7:0] = width, bits [15:8] = height
-  conf.run[0].pool_stride = 0x101;  // bits [7:0] = X stride, bits [15:8] = Y stride
+  conf.run[0].pool_stride = 0x202;  // bits [7:0] = X stride, bits [15:8] = Y stride
   conf.run[0].pool_pad = 0x0;  // bits [7:0] = left padding, bits [15:8] = right padding, bits [23:16] = top padding, bits [31:24] = bottom padding
   conf.run[0].pool_avg_param = 0x34A4;  // Usually set to 1/pool_size^2 in FP16 format when using average pooling (average pooling assumes square size)
   conf.run[0].actfunc = 0;  // Activation Function: 0 = None, 1 = Tanh, 2 = Leaky ReLU, 3 = Sigmoid, 4 = PReLU, 5 = ELU, 6 = ReLU6
@@ -1717,9 +1716,10 @@ void CKerasSqueezeNet::Layer_19() {
   conf.run[0].lrn = 0x0;  // [0] : 1 = LRN enable, 0 = LRN disable, [1] : 1 = incl. power func, 0 = excl., [8:11] = x^2 scale factor log2
 
   fpga_layer& layer = get_layer(19);
+  layer.name = "global_average_pooling2d_1_2_2";
   layer.type = LT_CONV;
-  layer.input_offs = 0;
-  layer.output_offs = 8000;
+  layer.input_offs = 4000;
+  layer.output_offs = 2000;
   layer.output_size = 2000;
   layer.input_dim[0] = 2;
   layer.input_dim[1] = 2;
@@ -1738,10 +1738,11 @@ void CKerasSqueezeNet::Layer_19() {
 //	->: loss
 void CKerasSqueezeNet::Layer_20() {
   fpga_layer& layer = get_layer(20);
+  layer.name = "loss";
   layer.type = LT_SOFTMAX;
-  layer.input_offs = 8000;
+  layer.input_offs = 2000;
   layer.output_offs = 0;
-  layer.output_size = 4000;
+  layer.output_size = 2000;
   layer.input_dim[0] = 1;
   layer.input_dim[1] = 1;
   layer.input_dim[2] = 1000;
@@ -1751,7 +1752,7 @@ void CKerasSqueezeNet::Layer_20() {
   layer.output_dim[2] = 1000;
   layer.output_dim_size = 3;
   layer.is_output = true;
-  layer.is_f32_output = true;
+  layer.is_f32_output = false;
   layer.is_input_hw_layout = true;
   layer.softmax_axis = 2;
   output_layers_[0] = &layer;

@@ -28,7 +28,7 @@ CCaffeMobileNet::~CCaffeMobileNet() {
 }
 
 bool CCaffeMobileNet::Initialize() {
-  if (!ReserveMemory(5083984, 3512320)) {
+  if (!ReserveMemory(5083984, 2809856)) {
     return false;
   }
 
@@ -75,7 +75,6 @@ bool CCaffeMobileNet::Initialize() {
 //  ->: conv1/scale
 //  ->: relu1
 void CCaffeMobileNet::Layer_0() {
-  get_layer(0).name = "conv1, conv1/bn, conv1/scale, relu1";
   dmp_dv_cmdraw_conv_v0& conf = get_layer(0).conv_conf;
   conf.header.size = sizeof(conf);
   conf.header.device_type = DMP_DV_DEV_CONV;
@@ -93,7 +92,7 @@ void CCaffeMobileNet::Layer_0() {
 
   // Output Configuration:
   conf.output_buf.mem = io_mem_;
-  conf.output_buf.offs = 301056;
+  conf.output_buf.offs = 802816;
 
   conf.eltwise_buf.mem = NULL;
   conf.eltwise_buf.offs = 0;  // Input byte address for elementwise add (0 = UBUF Input Buffer)
@@ -129,9 +128,10 @@ void CCaffeMobileNet::Layer_0() {
   conf.run[0].lrn = 0x0;  // [0] : 1 = LRN enable, 0 = LRN disable, [1] : 1 = incl. power func, 0 = excl., [8:11] = x^2 scale factor log2
 
   fpga_layer& layer = get_layer(0);
+  layer.name = "conv1";
   layer.type = LT_CONV;
   layer.input_offs = 0;
-  layer.output_offs = 301056;
+  layer.output_offs = 802816;
   layer.output_size = 802816;
   layer.input_dim[0] = 224;
   layer.input_dim[1] = 224;
@@ -152,7 +152,6 @@ void CCaffeMobileNet::Layer_0() {
 //  ->: conv2_1/dw/scale
 //  ->: relu2_1/dw
 void CCaffeMobileNet::Layer_1() {
-  get_layer(1).name = "conv2_1/dw, conv2_1/dw/bn, conv2_1/dw/scale, relu2_1/dw";
   dmp_dv_cmdraw_conv_v0& conf = get_layer(1).conv_conf;
   conf.header.size = sizeof(conf);
   conf.header.device_type = DMP_DV_DEV_CONV;
@@ -166,11 +165,11 @@ void CCaffeMobileNet::Layer_1() {
   conf.z = 1;  // Input Depth
   conf.c = 32;  // Input Channels
   conf.input_buf.mem = io_mem_;
-  conf.input_buf.offs = 301056;
+  conf.input_buf.offs = 802816;
 
   // Output Configuration:
   conf.output_buf.mem = io_mem_;
-  conf.output_buf.offs = 1103872;
+  conf.output_buf.offs = 0;
 
   conf.eltwise_buf.mem = NULL;
   conf.eltwise_buf.offs = 0;  // Input byte address for elementwise add (0 = UBUF Input Buffer)
@@ -206,9 +205,10 @@ void CCaffeMobileNet::Layer_1() {
   conf.run[0].lrn = 0x0;  // [0] : 1 = LRN enable, 0 = LRN disable, [1] : 1 = incl. power func, 0 = excl., [8:11] = x^2 scale factor log2
 
   fpga_layer& layer = get_layer(1);
+  layer.name = "conv2_1/dw";
   layer.type = LT_CONV;
-  layer.input_offs = 301056;
-  layer.output_offs = 1103872;
+  layer.input_offs = 802816;
+  layer.output_offs = 0;
   layer.output_size = 802816;
   layer.input_dim[0] = 112;
   layer.input_dim[1] = 112;
@@ -229,7 +229,6 @@ void CCaffeMobileNet::Layer_1() {
 //  ->: conv2_1/sep/scale
 //  ->: relu2_1/sep
 void CCaffeMobileNet::Layer_2() {
-  get_layer(2).name = "conv2_1/sep, conv2_1/sep/bn, conv2_1/sep/scale, relu2_1/sep";
   dmp_dv_cmdraw_conv_v0& conf = get_layer(2).conv_conf;
   conf.header.size = sizeof(conf);
   conf.header.device_type = DMP_DV_DEV_CONV;
@@ -243,11 +242,11 @@ void CCaffeMobileNet::Layer_2() {
   conf.z = 1;  // Input Depth
   conf.c = 32;  // Input Channels
   conf.input_buf.mem = io_mem_;
-  conf.input_buf.offs = 1103872;
+  conf.input_buf.offs = 0;
 
   // Output Configuration:
   conf.output_buf.mem = io_mem_;
-  conf.output_buf.offs = 1906688;
+  conf.output_buf.offs = 1204224;
 
   conf.eltwise_buf.mem = NULL;
   conf.eltwise_buf.offs = 0;  // Input byte address for elementwise add (0 = UBUF Input Buffer)
@@ -283,9 +282,10 @@ void CCaffeMobileNet::Layer_2() {
   conf.run[0].lrn = 0x0;  // [0] : 1 = LRN enable, 0 = LRN disable, [1] : 1 = incl. power func, 0 = excl., [8:11] = x^2 scale factor log2
 
   fpga_layer& layer = get_layer(2);
+  layer.name = "conv2_1/sep";
   layer.type = LT_CONV;
-  layer.input_offs = 1103872;
-  layer.output_offs = 1906688;
+  layer.input_offs = 0;
+  layer.output_offs = 1204224;
   layer.output_size = 1605632;
   layer.input_dim[0] = 112;
   layer.input_dim[1] = 112;
@@ -306,7 +306,6 @@ void CCaffeMobileNet::Layer_2() {
 //  ->: conv2_2/dw/scale
 //  ->: relu2_2/dw
 void CCaffeMobileNet::Layer_3() {
-  get_layer(3).name = "conv2_2/dw, conv2_2/dw/bn, conv2_2/dw/scale, relu2_2/dw";
   dmp_dv_cmdraw_conv_v0& conf = get_layer(3).conv_conf;
   conf.header.size = sizeof(conf);
   conf.header.device_type = DMP_DV_DEV_CONV;
@@ -320,11 +319,11 @@ void CCaffeMobileNet::Layer_3() {
   conf.z = 1;  // Input Depth
   conf.c = 64;  // Input Channels
   conf.input_buf.mem = io_mem_;
-  conf.input_buf.offs = 1906688;
+  conf.input_buf.offs = 1204224;
 
   // Output Configuration:
   conf.output_buf.mem = io_mem_;
-  conf.output_buf.offs = 0;
+  conf.output_buf.offs = 802816;
 
   conf.eltwise_buf.mem = NULL;
   conf.eltwise_buf.offs = 0;  // Input byte address for elementwise add (0 = UBUF Input Buffer)
@@ -360,9 +359,10 @@ void CCaffeMobileNet::Layer_3() {
   conf.run[0].lrn = 0x0;  // [0] : 1 = LRN enable, 0 = LRN disable, [1] : 1 = incl. power func, 0 = excl., [8:11] = x^2 scale factor log2
 
   fpga_layer& layer = get_layer(3);
+  layer.name = "conv2_2/dw";
   layer.type = LT_CONV;
-  layer.input_offs = 1906688;
-  layer.output_offs = 0;
+  layer.input_offs = 1204224;
+  layer.output_offs = 802816;
   layer.output_size = 401408;
   layer.input_dim[0] = 112;
   layer.input_dim[1] = 112;
@@ -383,7 +383,6 @@ void CCaffeMobileNet::Layer_3() {
 //  ->: conv2_2/sep/scale
 //  ->: relu2_2/sep
 void CCaffeMobileNet::Layer_4() {
-  get_layer(4).name = "conv2_2/sep, conv2_2/sep/bn, conv2_2/sep/scale, relu2_2/sep";
   dmp_dv_cmdraw_conv_v0& conf = get_layer(4).conv_conf;
   conf.header.size = sizeof(conf);
   conf.header.device_type = DMP_DV_DEV_CONV;
@@ -397,11 +396,11 @@ void CCaffeMobileNet::Layer_4() {
   conf.z = 1;  // Input Depth
   conf.c = 64;  // Input Channels
   conf.input_buf.mem = io_mem_;
-  conf.input_buf.offs = 0;
+  conf.input_buf.offs = 802816;
 
   // Output Configuration:
   conf.output_buf.mem = io_mem_;
-  conf.output_buf.offs = 401408;
+  conf.output_buf.offs = 0;
 
   conf.eltwise_buf.mem = NULL;
   conf.eltwise_buf.offs = 0;  // Input byte address for elementwise add (0 = UBUF Input Buffer)
@@ -437,9 +436,10 @@ void CCaffeMobileNet::Layer_4() {
   conf.run[0].lrn = 0x0;  // [0] : 1 = LRN enable, 0 = LRN disable, [1] : 1 = incl. power func, 0 = excl., [8:11] = x^2 scale factor log2
 
   fpga_layer& layer = get_layer(4);
+  layer.name = "conv2_2/sep";
   layer.type = LT_CONV;
-  layer.input_offs = 0;
-  layer.output_offs = 401408;
+  layer.input_offs = 802816;
+  layer.output_offs = 0;
   layer.output_size = 802816;
   layer.input_dim[0] = 56;
   layer.input_dim[1] = 56;
@@ -460,7 +460,6 @@ void CCaffeMobileNet::Layer_4() {
 //  ->: conv3_1/dw/scale
 //  ->: relu3_1/dw
 void CCaffeMobileNet::Layer_5() {
-  get_layer(5).name = "conv3_1/dw, conv3_1/dw/bn, conv3_1/dw/scale, relu3_1/dw";
   dmp_dv_cmdraw_conv_v0& conf = get_layer(5).conv_conf;
   conf.header.size = sizeof(conf);
   conf.header.device_type = DMP_DV_DEV_CONV;
@@ -474,11 +473,11 @@ void CCaffeMobileNet::Layer_5() {
   conf.z = 1;  // Input Depth
   conf.c = 128;  // Input Channels
   conf.input_buf.mem = io_mem_;
-  conf.input_buf.offs = 401408;
+  conf.input_buf.offs = 0;
 
   // Output Configuration:
   conf.output_buf.mem = io_mem_;
-  conf.output_buf.offs = 1204224;
+  conf.output_buf.offs = 1404928;
 
   conf.eltwise_buf.mem = NULL;
   conf.eltwise_buf.offs = 0;  // Input byte address for elementwise add (0 = UBUF Input Buffer)
@@ -514,9 +513,10 @@ void CCaffeMobileNet::Layer_5() {
   conf.run[0].lrn = 0x0;  // [0] : 1 = LRN enable, 0 = LRN disable, [1] : 1 = incl. power func, 0 = excl., [8:11] = x^2 scale factor log2
 
   fpga_layer& layer = get_layer(5);
+  layer.name = "conv3_1/dw";
   layer.type = LT_CONV;
-  layer.input_offs = 401408;
-  layer.output_offs = 1204224;
+  layer.input_offs = 0;
+  layer.output_offs = 1404928;
   layer.output_size = 802816;
   layer.input_dim[0] = 56;
   layer.input_dim[1] = 56;
@@ -537,7 +537,6 @@ void CCaffeMobileNet::Layer_5() {
 //  ->: conv3_1/sep/scale
 //  ->: relu3_1/sep
 void CCaffeMobileNet::Layer_6() {
-  get_layer(6).name = "conv3_1/sep, conv3_1/sep/bn, conv3_1/sep/scale, relu3_1/sep";
   dmp_dv_cmdraw_conv_v0& conf = get_layer(6).conv_conf;
   conf.header.size = sizeof(conf);
   conf.header.device_type = DMP_DV_DEV_CONV;
@@ -551,11 +550,11 @@ void CCaffeMobileNet::Layer_6() {
   conf.z = 1;  // Input Depth
   conf.c = 128;  // Input Channels
   conf.input_buf.mem = io_mem_;
-  conf.input_buf.offs = 1204224;
+  conf.input_buf.offs = 1404928;
 
   // Output Configuration:
   conf.output_buf.mem = io_mem_;
-  conf.output_buf.offs = 0;
+  conf.output_buf.offs = 602112;
 
   conf.eltwise_buf.mem = NULL;
   conf.eltwise_buf.offs = 0;  // Input byte address for elementwise add (0 = UBUF Input Buffer)
@@ -591,9 +590,10 @@ void CCaffeMobileNet::Layer_6() {
   conf.run[0].lrn = 0x0;  // [0] : 1 = LRN enable, 0 = LRN disable, [1] : 1 = incl. power func, 0 = excl., [8:11] = x^2 scale factor log2
 
   fpga_layer& layer = get_layer(6);
+  layer.name = "conv3_1/sep";
   layer.type = LT_CONV;
-  layer.input_offs = 1204224;
-  layer.output_offs = 0;
+  layer.input_offs = 1404928;
+  layer.output_offs = 602112;
   layer.output_size = 802816;
   layer.input_dim[0] = 56;
   layer.input_dim[1] = 56;
@@ -614,7 +614,6 @@ void CCaffeMobileNet::Layer_6() {
 //  ->: conv3_2/dw/scale
 //  ->: relu3_2/dw
 void CCaffeMobileNet::Layer_7() {
-  get_layer(7).name = "conv3_2/dw, conv3_2/dw/bn, conv3_2/dw/scale, relu3_2/dw";
   dmp_dv_cmdraw_conv_v0& conf = get_layer(7).conv_conf;
   conf.header.size = sizeof(conf);
   conf.header.device_type = DMP_DV_DEV_CONV;
@@ -628,11 +627,11 @@ void CCaffeMobileNet::Layer_7() {
   conf.z = 1;  // Input Depth
   conf.c = 128;  // Input Channels
   conf.input_buf.mem = io_mem_;
-  conf.input_buf.offs = 0;
+  conf.input_buf.offs = 602112;
 
   // Output Configuration:
   conf.output_buf.mem = io_mem_;
-  conf.output_buf.offs = 802816;
+  conf.output_buf.offs = 401408;
 
   conf.eltwise_buf.mem = NULL;
   conf.eltwise_buf.offs = 0;  // Input byte address for elementwise add (0 = UBUF Input Buffer)
@@ -668,9 +667,10 @@ void CCaffeMobileNet::Layer_7() {
   conf.run[0].lrn = 0x0;  // [0] : 1 = LRN enable, 0 = LRN disable, [1] : 1 = incl. power func, 0 = excl., [8:11] = x^2 scale factor log2
 
   fpga_layer& layer = get_layer(7);
+  layer.name = "conv3_2/dw";
   layer.type = LT_CONV;
-  layer.input_offs = 0;
-  layer.output_offs = 802816;
+  layer.input_offs = 602112;
+  layer.output_offs = 401408;
   layer.output_size = 200704;
   layer.input_dim[0] = 56;
   layer.input_dim[1] = 56;
@@ -691,7 +691,6 @@ void CCaffeMobileNet::Layer_7() {
 //  ->: conv3_2/sep/scale
 //  ->: relu3_2/sep
 void CCaffeMobileNet::Layer_8() {
-  get_layer(8).name = "conv3_2/sep, conv3_2/sep/bn, conv3_2/sep/scale, relu3_2/sep";
   dmp_dv_cmdraw_conv_v0& conf = get_layer(8).conv_conf;
   conf.header.size = sizeof(conf);
   conf.header.device_type = DMP_DV_DEV_CONV;
@@ -705,7 +704,7 @@ void CCaffeMobileNet::Layer_8() {
   conf.z = 1;  // Input Depth
   conf.c = 128;  // Input Channels
   conf.input_buf.mem = io_mem_;
-  conf.input_buf.offs = 802816;
+  conf.input_buf.offs = 401408;
 
   // Output Configuration:
   conf.output_buf.mem = io_mem_;
@@ -745,8 +744,9 @@ void CCaffeMobileNet::Layer_8() {
   conf.run[0].lrn = 0x0;  // [0] : 1 = LRN enable, 0 = LRN disable, [1] : 1 = incl. power func, 0 = excl., [8:11] = x^2 scale factor log2
 
   fpga_layer& layer = get_layer(8);
+  layer.name = "conv3_2/sep";
   layer.type = LT_CONV;
-  layer.input_offs = 802816;
+  layer.input_offs = 401408;
   layer.output_offs = 0;
   layer.output_size = 401408;
   layer.input_dim[0] = 28;
@@ -768,7 +768,6 @@ void CCaffeMobileNet::Layer_8() {
 //  ->: conv4_1/dw/scale
 //  ->: relu4_1/dw
 void CCaffeMobileNet::Layer_9() {
-  get_layer(9).name = "conv4_1/dw, conv4_1/dw/bn, conv4_1/dw/scale, relu4_1/dw";
   dmp_dv_cmdraw_conv_v0& conf = get_layer(9).conv_conf;
   conf.header.size = sizeof(conf);
   conf.header.device_type = DMP_DV_DEV_CONV;
@@ -786,7 +785,7 @@ void CCaffeMobileNet::Layer_9() {
 
   // Output Configuration:
   conf.output_buf.mem = io_mem_;
-  conf.output_buf.offs = 401408;
+  conf.output_buf.offs = 702464;
 
   conf.eltwise_buf.mem = NULL;
   conf.eltwise_buf.offs = 0;  // Input byte address for elementwise add (0 = UBUF Input Buffer)
@@ -822,9 +821,10 @@ void CCaffeMobileNet::Layer_9() {
   conf.run[0].lrn = 0x0;  // [0] : 1 = LRN enable, 0 = LRN disable, [1] : 1 = incl. power func, 0 = excl., [8:11] = x^2 scale factor log2
 
   fpga_layer& layer = get_layer(9);
+  layer.name = "conv4_1/dw";
   layer.type = LT_CONV;
   layer.input_offs = 0;
-  layer.output_offs = 401408;
+  layer.output_offs = 702464;
   layer.output_size = 401408;
   layer.input_dim[0] = 28;
   layer.input_dim[1] = 28;
@@ -845,7 +845,6 @@ void CCaffeMobileNet::Layer_9() {
 //  ->: conv4_1/sep/scale
 //  ->: relu4_1/sep
 void CCaffeMobileNet::Layer_10() {
-  get_layer(10).name = "conv4_1/sep, conv4_1/sep/bn, conv4_1/sep/scale, relu4_1/sep";
   dmp_dv_cmdraw_conv_v0& conf = get_layer(10).conv_conf;
   conf.header.size = sizeof(conf);
   conf.header.device_type = DMP_DV_DEV_CONV;
@@ -859,11 +858,11 @@ void CCaffeMobileNet::Layer_10() {
   conf.z = 1;  // Input Depth
   conf.c = 256;  // Input Channels
   conf.input_buf.mem = io_mem_;
-  conf.input_buf.offs = 401408;
+  conf.input_buf.offs = 702464;
 
   // Output Configuration:
   conf.output_buf.mem = io_mem_;
-  conf.output_buf.offs = 0;
+  conf.output_buf.offs = 301056;
 
   conf.eltwise_buf.mem = NULL;
   conf.eltwise_buf.offs = 0;  // Input byte address for elementwise add (0 = UBUF Input Buffer)
@@ -899,9 +898,10 @@ void CCaffeMobileNet::Layer_10() {
   conf.run[0].lrn = 0x0;  // [0] : 1 = LRN enable, 0 = LRN disable, [1] : 1 = incl. power func, 0 = excl., [8:11] = x^2 scale factor log2
 
   fpga_layer& layer = get_layer(10);
+  layer.name = "conv4_1/sep";
   layer.type = LT_CONV;
-  layer.input_offs = 401408;
-  layer.output_offs = 0;
+  layer.input_offs = 702464;
+  layer.output_offs = 301056;
   layer.output_size = 401408;
   layer.input_dim[0] = 28;
   layer.input_dim[1] = 28;
@@ -922,7 +922,6 @@ void CCaffeMobileNet::Layer_10() {
 //  ->: conv4_2/dw/scale
 //  ->: relu4_2/dw
 void CCaffeMobileNet::Layer_11() {
-  get_layer(11).name = "conv4_2/dw, conv4_2/dw/bn, conv4_2/dw/scale, relu4_2/dw";
   dmp_dv_cmdraw_conv_v0& conf = get_layer(11).conv_conf;
   conf.header.size = sizeof(conf);
   conf.header.device_type = DMP_DV_DEV_CONV;
@@ -936,11 +935,11 @@ void CCaffeMobileNet::Layer_11() {
   conf.z = 1;  // Input Depth
   conf.c = 256;  // Input Channels
   conf.input_buf.mem = io_mem_;
-  conf.input_buf.offs = 0;
+  conf.input_buf.offs = 301056;
 
   // Output Configuration:
   conf.output_buf.mem = io_mem_;
-  conf.output_buf.offs = 401408;
+  conf.output_buf.offs = 200704;
 
   conf.eltwise_buf.mem = NULL;
   conf.eltwise_buf.offs = 0;  // Input byte address for elementwise add (0 = UBUF Input Buffer)
@@ -976,9 +975,10 @@ void CCaffeMobileNet::Layer_11() {
   conf.run[0].lrn = 0x0;  // [0] : 1 = LRN enable, 0 = LRN disable, [1] : 1 = incl. power func, 0 = excl., [8:11] = x^2 scale factor log2
 
   fpga_layer& layer = get_layer(11);
+  layer.name = "conv4_2/dw";
   layer.type = LT_CONV;
-  layer.input_offs = 0;
-  layer.output_offs = 401408;
+  layer.input_offs = 301056;
+  layer.output_offs = 200704;
   layer.output_size = 100352;
   layer.input_dim[0] = 28;
   layer.input_dim[1] = 28;
@@ -999,7 +999,6 @@ void CCaffeMobileNet::Layer_11() {
 //  ->: conv4_2/sep/scale
 //  ->: relu4_2/sep
 void CCaffeMobileNet::Layer_12() {
-  get_layer(12).name = "conv4_2/sep, conv4_2/sep/bn, conv4_2/sep/scale, relu4_2/sep";
   dmp_dv_cmdraw_conv_v0& conf = get_layer(12).conv_conf;
   conf.header.size = sizeof(conf);
   conf.header.device_type = DMP_DV_DEV_CONV;
@@ -1013,7 +1012,7 @@ void CCaffeMobileNet::Layer_12() {
   conf.z = 1;  // Input Depth
   conf.c = 256;  // Input Channels
   conf.input_buf.mem = io_mem_;
-  conf.input_buf.offs = 401408;
+  conf.input_buf.offs = 200704;
 
   // Output Configuration:
   conf.output_buf.mem = io_mem_;
@@ -1053,8 +1052,9 @@ void CCaffeMobileNet::Layer_12() {
   conf.run[0].lrn = 0x0;  // [0] : 1 = LRN enable, 0 = LRN disable, [1] : 1 = incl. power func, 0 = excl., [8:11] = x^2 scale factor log2
 
   fpga_layer& layer = get_layer(12);
+  layer.name = "conv4_2/sep";
   layer.type = LT_CONV;
-  layer.input_offs = 401408;
+  layer.input_offs = 200704;
   layer.output_offs = 0;
   layer.output_size = 200704;
   layer.input_dim[0] = 14;
@@ -1076,7 +1076,6 @@ void CCaffeMobileNet::Layer_12() {
 //  ->: conv5_1/dw/scale
 //  ->: relu5_1/dw
 void CCaffeMobileNet::Layer_13() {
-  get_layer(13).name = "conv5_1/dw, conv5_1/dw/bn, conv5_1/dw/scale, relu5_1/dw";
   dmp_dv_cmdraw_conv_v0& conf = get_layer(13).conv_conf;
   conf.header.size = sizeof(conf);
   conf.header.device_type = DMP_DV_DEV_CONV;
@@ -1130,6 +1129,7 @@ void CCaffeMobileNet::Layer_13() {
   conf.run[0].lrn = 0x0;  // [0] : 1 = LRN enable, 0 = LRN disable, [1] : 1 = incl. power func, 0 = excl., [8:11] = x^2 scale factor log2
 
   fpga_layer& layer = get_layer(13);
+  layer.name = "conv5_1/dw";
   layer.type = LT_CONV;
   layer.input_offs = 0;
   layer.output_offs = 200704;
@@ -1153,7 +1153,6 @@ void CCaffeMobileNet::Layer_13() {
 //  ->: conv5_1/sep/scale
 //  ->: relu5_1/sep
 void CCaffeMobileNet::Layer_14() {
-  get_layer(14).name = "conv5_1/sep, conv5_1/sep/bn, conv5_1/sep/scale, relu5_1/sep";
   dmp_dv_cmdraw_conv_v0& conf = get_layer(14).conv_conf;
   conf.header.size = sizeof(conf);
   conf.header.device_type = DMP_DV_DEV_CONV;
@@ -1207,6 +1206,7 @@ void CCaffeMobileNet::Layer_14() {
   conf.run[0].lrn = 0x0;  // [0] : 1 = LRN enable, 0 = LRN disable, [1] : 1 = incl. power func, 0 = excl., [8:11] = x^2 scale factor log2
 
   fpga_layer& layer = get_layer(14);
+  layer.name = "conv5_1/sep";
   layer.type = LT_CONV;
   layer.input_offs = 200704;
   layer.output_offs = 0;
@@ -1230,7 +1230,6 @@ void CCaffeMobileNet::Layer_14() {
 //  ->: conv5_2/dw/scale
 //  ->: relu5_2/dw
 void CCaffeMobileNet::Layer_15() {
-  get_layer(15).name = "conv5_2/dw, conv5_2/dw/bn, conv5_2/dw/scale, relu5_2/dw";
   dmp_dv_cmdraw_conv_v0& conf = get_layer(15).conv_conf;
   conf.header.size = sizeof(conf);
   conf.header.device_type = DMP_DV_DEV_CONV;
@@ -1284,6 +1283,7 @@ void CCaffeMobileNet::Layer_15() {
   conf.run[0].lrn = 0x0;  // [0] : 1 = LRN enable, 0 = LRN disable, [1] : 1 = incl. power func, 0 = excl., [8:11] = x^2 scale factor log2
 
   fpga_layer& layer = get_layer(15);
+  layer.name = "conv5_2/dw";
   layer.type = LT_CONV;
   layer.input_offs = 0;
   layer.output_offs = 200704;
@@ -1307,7 +1307,6 @@ void CCaffeMobileNet::Layer_15() {
 //  ->: conv5_2/sep/scale
 //  ->: relu5_2/sep
 void CCaffeMobileNet::Layer_16() {
-  get_layer(16).name = "conv5_2/sep, conv5_2/sep/bn, conv5_2/sep/scale, relu5_2/sep";
   dmp_dv_cmdraw_conv_v0& conf = get_layer(16).conv_conf;
   conf.header.size = sizeof(conf);
   conf.header.device_type = DMP_DV_DEV_CONV;
@@ -1361,6 +1360,7 @@ void CCaffeMobileNet::Layer_16() {
   conf.run[0].lrn = 0x0;  // [0] : 1 = LRN enable, 0 = LRN disable, [1] : 1 = incl. power func, 0 = excl., [8:11] = x^2 scale factor log2
 
   fpga_layer& layer = get_layer(16);
+  layer.name = "conv5_2/sep";
   layer.type = LT_CONV;
   layer.input_offs = 200704;
   layer.output_offs = 0;
@@ -1384,7 +1384,6 @@ void CCaffeMobileNet::Layer_16() {
 //  ->: conv5_3/dw/scale
 //  ->: relu5_3/dw
 void CCaffeMobileNet::Layer_17() {
-  get_layer(17).name = "conv5_3/dw, conv5_3/dw/bn, conv5_3/dw/scale, relu5_3/dw";
   dmp_dv_cmdraw_conv_v0& conf = get_layer(17).conv_conf;
   conf.header.size = sizeof(conf);
   conf.header.device_type = DMP_DV_DEV_CONV;
@@ -1438,6 +1437,7 @@ void CCaffeMobileNet::Layer_17() {
   conf.run[0].lrn = 0x0;  // [0] : 1 = LRN enable, 0 = LRN disable, [1] : 1 = incl. power func, 0 = excl., [8:11] = x^2 scale factor log2
 
   fpga_layer& layer = get_layer(17);
+  layer.name = "conv5_3/dw";
   layer.type = LT_CONV;
   layer.input_offs = 0;
   layer.output_offs = 200704;
@@ -1461,7 +1461,6 @@ void CCaffeMobileNet::Layer_17() {
 //  ->: conv5_3/sep/scale
 //  ->: relu5_3/sep
 void CCaffeMobileNet::Layer_18() {
-  get_layer(18).name = "conv5_3/sep, conv5_3/sep/bn, conv5_3/sep/scale, relu5_3/sep";
   dmp_dv_cmdraw_conv_v0& conf = get_layer(18).conv_conf;
   conf.header.size = sizeof(conf);
   conf.header.device_type = DMP_DV_DEV_CONV;
@@ -1515,6 +1514,7 @@ void CCaffeMobileNet::Layer_18() {
   conf.run[0].lrn = 0x0;  // [0] : 1 = LRN enable, 0 = LRN disable, [1] : 1 = incl. power func, 0 = excl., [8:11] = x^2 scale factor log2
 
   fpga_layer& layer = get_layer(18);
+  layer.name = "conv5_3/sep";
   layer.type = LT_CONV;
   layer.input_offs = 200704;
   layer.output_offs = 0;
@@ -1538,7 +1538,6 @@ void CCaffeMobileNet::Layer_18() {
 //  ->: conv5_4/dw/scale
 //  ->: relu5_4/dw
 void CCaffeMobileNet::Layer_19() {
-  get_layer(19).name = "conv5_4/dw, conv5_4/dw/bn, conv5_4/dw/scale, relu5_4/dw";
   dmp_dv_cmdraw_conv_v0& conf = get_layer(19).conv_conf;
   conf.header.size = sizeof(conf);
   conf.header.device_type = DMP_DV_DEV_CONV;
@@ -1592,6 +1591,7 @@ void CCaffeMobileNet::Layer_19() {
   conf.run[0].lrn = 0x0;  // [0] : 1 = LRN enable, 0 = LRN disable, [1] : 1 = incl. power func, 0 = excl., [8:11] = x^2 scale factor log2
 
   fpga_layer& layer = get_layer(19);
+  layer.name = "conv5_4/dw";
   layer.type = LT_CONV;
   layer.input_offs = 0;
   layer.output_offs = 200704;
@@ -1615,7 +1615,6 @@ void CCaffeMobileNet::Layer_19() {
 //  ->: conv5_4/sep/scale
 //  ->: relu5_4/sep
 void CCaffeMobileNet::Layer_20() {
-  get_layer(20).name = "conv5_4/sep, conv5_4/sep/bn, conv5_4/sep/scale, relu5_4/sep";
   dmp_dv_cmdraw_conv_v0& conf = get_layer(20).conv_conf;
   conf.header.size = sizeof(conf);
   conf.header.device_type = DMP_DV_DEV_CONV;
@@ -1669,6 +1668,7 @@ void CCaffeMobileNet::Layer_20() {
   conf.run[0].lrn = 0x0;  // [0] : 1 = LRN enable, 0 = LRN disable, [1] : 1 = incl. power func, 0 = excl., [8:11] = x^2 scale factor log2
 
   fpga_layer& layer = get_layer(20);
+  layer.name = "conv5_4/sep";
   layer.type = LT_CONV;
   layer.input_offs = 200704;
   layer.output_offs = 0;
@@ -1692,7 +1692,6 @@ void CCaffeMobileNet::Layer_20() {
 //  ->: conv5_5/dw/scale
 //  ->: relu5_5/dw
 void CCaffeMobileNet::Layer_21() {
-  get_layer(21).name = "conv5_5/dw, conv5_5/dw/bn, conv5_5/dw/scale, relu5_5/dw";
   dmp_dv_cmdraw_conv_v0& conf = get_layer(21).conv_conf;
   conf.header.size = sizeof(conf);
   conf.header.device_type = DMP_DV_DEV_CONV;
@@ -1710,7 +1709,7 @@ void CCaffeMobileNet::Layer_21() {
 
   // Output Configuration:
   conf.output_buf.mem = io_mem_;
-  conf.output_buf.offs = 200704;
+  conf.output_buf.offs = 351232;
 
   conf.eltwise_buf.mem = NULL;
   conf.eltwise_buf.offs = 0;  // Input byte address for elementwise add (0 = UBUF Input Buffer)
@@ -1746,9 +1745,10 @@ void CCaffeMobileNet::Layer_21() {
   conf.run[0].lrn = 0x0;  // [0] : 1 = LRN enable, 0 = LRN disable, [1] : 1 = incl. power func, 0 = excl., [8:11] = x^2 scale factor log2
 
   fpga_layer& layer = get_layer(21);
+  layer.name = "conv5_5/dw";
   layer.type = LT_CONV;
   layer.input_offs = 0;
-  layer.output_offs = 200704;
+  layer.output_offs = 351232;
   layer.output_size = 200704;
   layer.input_dim[0] = 14;
   layer.input_dim[1] = 14;
@@ -1769,7 +1769,6 @@ void CCaffeMobileNet::Layer_21() {
 //  ->: conv5_5/sep/scale
 //  ->: relu5_5/sep
 void CCaffeMobileNet::Layer_22() {
-  get_layer(22).name = "conv5_5/sep, conv5_5/sep/bn, conv5_5/sep/scale, relu5_5/sep";
   dmp_dv_cmdraw_conv_v0& conf = get_layer(22).conv_conf;
   conf.header.size = sizeof(conf);
   conf.header.device_type = DMP_DV_DEV_CONV;
@@ -1783,11 +1782,11 @@ void CCaffeMobileNet::Layer_22() {
   conf.z = 1;  // Input Depth
   conf.c = 512;  // Input Channels
   conf.input_buf.mem = io_mem_;
-  conf.input_buf.offs = 200704;
+  conf.input_buf.offs = 351232;
 
   // Output Configuration:
   conf.output_buf.mem = io_mem_;
-  conf.output_buf.offs = 0;
+  conf.output_buf.offs = 150528;
 
   conf.eltwise_buf.mem = NULL;
   conf.eltwise_buf.offs = 0;  // Input byte address for elementwise add (0 = UBUF Input Buffer)
@@ -1823,9 +1822,10 @@ void CCaffeMobileNet::Layer_22() {
   conf.run[0].lrn = 0x0;  // [0] : 1 = LRN enable, 0 = LRN disable, [1] : 1 = incl. power func, 0 = excl., [8:11] = x^2 scale factor log2
 
   fpga_layer& layer = get_layer(22);
+  layer.name = "conv5_5/sep";
   layer.type = LT_CONV;
-  layer.input_offs = 200704;
-  layer.output_offs = 0;
+  layer.input_offs = 351232;
+  layer.output_offs = 150528;
   layer.output_size = 200704;
   layer.input_dim[0] = 14;
   layer.input_dim[1] = 14;
@@ -1846,7 +1846,6 @@ void CCaffeMobileNet::Layer_22() {
 //  ->: conv5_6/dw/scale
 //  ->: relu5_6/dw
 void CCaffeMobileNet::Layer_23() {
-  get_layer(23).name = "conv5_6/dw, conv5_6/dw/bn, conv5_6/dw/scale, relu5_6/dw";
   dmp_dv_cmdraw_conv_v0& conf = get_layer(23).conv_conf;
   conf.header.size = sizeof(conf);
   conf.header.device_type = DMP_DV_DEV_CONV;
@@ -1860,11 +1859,11 @@ void CCaffeMobileNet::Layer_23() {
   conf.z = 1;  // Input Depth
   conf.c = 512;  // Input Channels
   conf.input_buf.mem = io_mem_;
-  conf.input_buf.offs = 0;
+  conf.input_buf.offs = 150528;
 
   // Output Configuration:
   conf.output_buf.mem = io_mem_;
-  conf.output_buf.offs = 200704;
+  conf.output_buf.offs = 100352;
 
   conf.eltwise_buf.mem = NULL;
   conf.eltwise_buf.offs = 0;  // Input byte address for elementwise add (0 = UBUF Input Buffer)
@@ -1900,9 +1899,10 @@ void CCaffeMobileNet::Layer_23() {
   conf.run[0].lrn = 0x0;  // [0] : 1 = LRN enable, 0 = LRN disable, [1] : 1 = incl. power func, 0 = excl., [8:11] = x^2 scale factor log2
 
   fpga_layer& layer = get_layer(23);
+  layer.name = "conv5_6/dw";
   layer.type = LT_CONV;
-  layer.input_offs = 0;
-  layer.output_offs = 200704;
+  layer.input_offs = 150528;
+  layer.output_offs = 100352;
   layer.output_size = 50176;
   layer.input_dim[0] = 14;
   layer.input_dim[1] = 14;
@@ -1923,7 +1923,6 @@ void CCaffeMobileNet::Layer_23() {
 //  ->: conv5_6/sep/scale
 //  ->: relu5_6/sep
 void CCaffeMobileNet::Layer_24() {
-  get_layer(24).name = "conv5_6/sep, conv5_6/sep/bn, conv5_6/sep/scale, relu5_6/sep";
   dmp_dv_cmdraw_conv_v0& conf = get_layer(24).conv_conf;
   conf.header.size = sizeof(conf);
   conf.header.device_type = DMP_DV_DEV_CONV;
@@ -1937,7 +1936,7 @@ void CCaffeMobileNet::Layer_24() {
   conf.z = 1;  // Input Depth
   conf.c = 512;  // Input Channels
   conf.input_buf.mem = io_mem_;
-  conf.input_buf.offs = 200704;
+  conf.input_buf.offs = 100352;
 
   // Output Configuration:
   conf.output_buf.mem = io_mem_;
@@ -1977,8 +1976,9 @@ void CCaffeMobileNet::Layer_24() {
   conf.run[0].lrn = 0x0;  // [0] : 1 = LRN enable, 0 = LRN disable, [1] : 1 = incl. power func, 0 = excl., [8:11] = x^2 scale factor log2
 
   fpga_layer& layer = get_layer(24);
+  layer.name = "conv5_6/sep";
   layer.type = LT_CONV;
-  layer.input_offs = 200704;
+  layer.input_offs = 100352;
   layer.output_offs = 0;
   layer.output_size = 100352;
   layer.input_dim[0] = 7;
@@ -2000,7 +2000,6 @@ void CCaffeMobileNet::Layer_24() {
 //  ->: conv6/dw/scale
 //  ->: relu6/dw
 void CCaffeMobileNet::Layer_25() {
-  get_layer(25).name = "conv6/dw, conv6/dw/bn, conv6/dw/scale, relu6/dw";
   dmp_dv_cmdraw_conv_v0& conf = get_layer(25).conv_conf;
   conf.header.size = sizeof(conf);
   conf.header.device_type = DMP_DV_DEV_CONV;
@@ -2018,7 +2017,7 @@ void CCaffeMobileNet::Layer_25() {
 
   // Output Configuration:
   conf.output_buf.mem = io_mem_;
-  conf.output_buf.offs = 100352;
+  conf.output_buf.offs = 106400;
 
   conf.eltwise_buf.mem = NULL;
   conf.eltwise_buf.offs = 0;  // Input byte address for elementwise add (0 = UBUF Input Buffer)
@@ -2054,9 +2053,10 @@ void CCaffeMobileNet::Layer_25() {
   conf.run[0].lrn = 0x0;  // [0] : 1 = LRN enable, 0 = LRN disable, [1] : 1 = incl. power func, 0 = excl., [8:11] = x^2 scale factor log2
 
   fpga_layer& layer = get_layer(25);
+  layer.name = "conv6/dw";
   layer.type = LT_CONV;
   layer.input_offs = 0;
-  layer.output_offs = 100352;
+  layer.output_offs = 106400;
   layer.output_size = 100352;
   layer.input_dim[0] = 7;
   layer.input_dim[1] = 7;
@@ -2077,7 +2077,6 @@ void CCaffeMobileNet::Layer_25() {
 //  ->: conv6/sep/scale
 //  ->: relu6/sep
 void CCaffeMobileNet::Layer_26() {
-  get_layer(26).name = "conv6/sep, conv6/sep/bn, conv6/sep/scale, relu6/sep";
   dmp_dv_cmdraw_conv_v0& conf = get_layer(26).conv_conf;
   conf.header.size = sizeof(conf);
   conf.header.device_type = DMP_DV_DEV_CONV;
@@ -2091,11 +2090,11 @@ void CCaffeMobileNet::Layer_26() {
   conf.z = 1;  // Input Depth
   conf.c = 1024;  // Input Channels
   conf.input_buf.mem = io_mem_;
-  conf.input_buf.offs = 100352;
+  conf.input_buf.offs = 106400;
 
   // Output Configuration:
   conf.output_buf.mem = io_mem_;
-  conf.output_buf.offs = 0;
+  conf.output_buf.offs = 6048;
 
   conf.eltwise_buf.mem = NULL;
   conf.eltwise_buf.offs = 0;  // Input byte address for elementwise add (0 = UBUF Input Buffer)
@@ -2131,9 +2130,10 @@ void CCaffeMobileNet::Layer_26() {
   conf.run[0].lrn = 0x0;  // [0] : 1 = LRN enable, 0 = LRN disable, [1] : 1 = incl. power func, 0 = excl., [8:11] = x^2 scale factor log2
 
   fpga_layer& layer = get_layer(26);
+  layer.name = "conv6/sep";
   layer.type = LT_CONV;
-  layer.input_offs = 100352;
-  layer.output_offs = 0;
+  layer.input_offs = 106400;
+  layer.output_offs = 6048;
   layer.output_size = 100352;
   layer.input_dim[0] = 7;
   layer.input_dim[1] = 7;
@@ -2151,7 +2151,6 @@ void CCaffeMobileNet::Layer_26() {
 //Layer_27: Convolution Layer
 //  ->: pool6
 void CCaffeMobileNet::Layer_27() {
-  get_layer(27).name = "pool6";
   dmp_dv_cmdraw_conv_v0& conf = get_layer(27).conv_conf;
   conf.header.size = sizeof(conf);
   conf.header.device_type = DMP_DV_DEV_CONV;
@@ -2165,11 +2164,11 @@ void CCaffeMobileNet::Layer_27() {
   conf.z = 1;  // Input Depth
   conf.c = 1024;  // Input Channels
   conf.input_buf.mem = io_mem_;
-  conf.input_buf.offs = 0;
+  conf.input_buf.offs = 6048;
 
   // Output Configuration:
   conf.output_buf.mem = io_mem_;
-  conf.output_buf.offs = 100352;
+  conf.output_buf.offs = 4000;
 
   conf.eltwise_buf.mem = NULL;
   conf.eltwise_buf.offs = 0;  // Input byte address for elementwise add (0 = UBUF Input Buffer)
@@ -2202,9 +2201,10 @@ void CCaffeMobileNet::Layer_27() {
   conf.run[0].lrn = 0x0;  // [0] : 1 = LRN enable, 0 = LRN disable, [1] : 1 = incl. power func, 0 = excl., [8:11] = x^2 scale factor log2
 
   fpga_layer& layer = get_layer(27);
+  layer.name = "pool6";
   layer.type = LT_CONV;
-  layer.input_offs = 0;
-  layer.output_offs = 100352;
+  layer.input_offs = 6048;
+  layer.output_offs = 4000;
   layer.output_size = 2048;
   layer.input_dim[0] = 7;
   layer.input_dim[1] = 7;
@@ -2222,7 +2222,6 @@ void CCaffeMobileNet::Layer_27() {
 //Layer_28: Convolution Layer
 //  ->: fc7
 void CCaffeMobileNet::Layer_28() {
-  get_layer(28).name = "fc7";
   dmp_dv_cmdraw_conv_v0& conf = get_layer(28).conv_conf;
   conf.header.size = sizeof(conf);
   conf.header.device_type = DMP_DV_DEV_CONV;
@@ -2236,11 +2235,11 @@ void CCaffeMobileNet::Layer_28() {
   conf.z = 1;  // Input Depth
   conf.c = 1024;  // Input Channels
   conf.input_buf.mem = io_mem_;
-  conf.input_buf.offs = 100352;
+  conf.input_buf.offs = 4000;
 
   // Output Configuration:
   conf.output_buf.mem = io_mem_;
-  conf.output_buf.offs = 0;
+  conf.output_buf.offs = 2000;
 
   conf.eltwise_buf.mem = NULL;
   conf.eltwise_buf.offs = 0;  // Input byte address for elementwise add (0 = UBUF Input Buffer)
@@ -2273,9 +2272,10 @@ void CCaffeMobileNet::Layer_28() {
   conf.run[0].lrn = 0x0;  // [0] : 1 = LRN enable, 0 = LRN disable, [1] : 1 = incl. power func, 0 = excl., [8:11] = x^2 scale factor log2
 
   fpga_layer& layer = get_layer(28);
+  layer.name = "fc7";
   layer.type = LT_CONV;
-  layer.input_offs = 100352;
-  layer.output_offs = 0;
+  layer.input_offs = 4000;
+  layer.output_offs = 2000;
   layer.output_size = 2000;
   layer.input_dim[0] = 1;
   layer.input_dim[1] = 1;
@@ -2294,10 +2294,11 @@ void CCaffeMobileNet::Layer_28() {
 //	->: prob
 void CCaffeMobileNet::Layer_29() {
   fpga_layer& layer = get_layer(29);
+  layer.name = "prob";
   layer.type = LT_SOFTMAX;
-  layer.input_offs = 0;
-  layer.output_offs = 2000;
-  layer.output_size = 4000;
+  layer.input_offs = 2000;
+  layer.output_offs = 0;
+  layer.output_size = 2000;
   layer.input_dim[0] = 1;
   layer.input_dim[1] = 1;
   layer.input_dim[2] = 1000;
@@ -2307,7 +2308,7 @@ void CCaffeMobileNet::Layer_29() {
   layer.output_dim[2] = 1000;
   layer.output_dim_size = 3;
   layer.is_output = true;
-  layer.is_f32_output = true;
+  layer.is_f32_output = false;
   layer.is_input_hw_layout = true;
   layer.softmax_axis = 2;
   output_layers_[0] = &layer;
