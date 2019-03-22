@@ -132,7 +132,6 @@ int handle_keyboard_input(int &exit_code, bool &pause) {
       }
       break;
     }
-    case '1':
     case 32:  // SPACE
       pause = !pause;
       break;
