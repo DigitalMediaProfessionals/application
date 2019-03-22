@@ -64,6 +64,7 @@ COverlayRGB *cam_overlay[RING_BUF_SIZE];
 uint32_t imgView[IMAGE_W * IMAGE_H * 3];
 __fp16 imgProc[RING_BUF_SIZE][IMAGE_W * IMAGE_H * 3];
 vector<float> netout[RING_BUF_SIZE];
+vector<string> image_names;
 
 unsigned preproc_rbuf_idx   = 0;
 unsigned inference_rbuf_idx = 0;
@@ -72,7 +73,8 @@ unsigned postproc_rbuf_idx  = 0;
 int exit_code = -1;
 bool do_pause = false;
 
-static __attribute__((unused)) void save_out (CDeconvNetBasic &net) {
+#ifdef DUMP
+static void save_out (CDMPNetwork &net) {
   std::string d("network_inout");
   mkdir(d.c_str(), 0777);
   for(int i = 0; i < net.get_total_layer_count(); i++) {
@@ -96,7 +98,7 @@ static __attribute__((unused)) void save_out (CDeconvNetBasic &net) {
     close(fd);
   }
 }
-
+#endif
 
 // Post-processing functions, defined in segnet_post.cpp
 void visualize(vector<float> &netoutCPU, COverlayRGB &overlay);
@@ -112,16 +114,8 @@ static void *preproc(void*) {
   unsigned &rbuf_idx = preproc_rbuf_idx;
 
   // Get input images filenames
-  vector<string> image_names;
-  unsigned image_nr = 0;
-  get_jpeg_image_names("./images_segmentation/", image_names);
   int num_images = image_names.size();
-  if (num_images == 0) {
-    cout << "No input images." << endl;
-    exit_code = 1;
-    return NULL;
-  }
-
+  unsigned image_nr = 0;
   while (exit_code == -1) {
     while ((rbuf_idx + 1) % RING_BUF_SIZE == postproc_rbuf_idx) {
       usleep(USLEEP_TIME);
@@ -132,6 +126,9 @@ static void *preproc(void*) {
     if (!do_pause) {
       // Get pre-processed image data
       decode_jpg_file(image_names[image_nr], imgView, IMAGE_W, IMAGE_H);
+#ifdef DUMP
+	  cout << "Image: " << image_names[image_nr] << endl;
+#endif
     }
 	cam_overlay[rbuf_idx]->convert_to_overlay_pixel_format(imgView, IMAGE_W*IMAGE_H);
 	preproc_image(imgView, imgProc[rbuf_idx], IMAGE_W, IMAGE_H,
@@ -143,7 +140,6 @@ static void *preproc(void*) {
     increment_circular_variable(rbuf_idx, RING_BUF_SIZE - 1);
 
 #ifdef DUMP
-    // TODO: remove
     break;
 #endif
   }
@@ -175,7 +171,6 @@ static void *inference(void*) {
     increment_circular_variable(rbuf_idx, RING_BUF_SIZE - 1);
 
 #ifdef DUMP
-    // TODO: remove
     break;
 #endif
   }
@@ -238,7 +233,6 @@ static void *postproc(void*) {
     increment_circular_variable(rbuf_idx, RING_BUF_SIZE - 1);
 
 #ifdef DUMP
-    // TODO: remove
     break;
 #endif
   }
@@ -251,6 +245,12 @@ int main(int argc, char **argv) {
   if (!init_fb()) {
     fprintf(stderr, "init_fb() failed\n");
     return 1;
+  }
+
+  get_jpeg_image_names("./images_segmentation/", image_names);
+  if (image_names.size() == 0) {
+    cout << "No input images." << endl;
+    return -1;
   }
 
   for(int i = 0; i < RING_BUF_SIZE; i++) {
