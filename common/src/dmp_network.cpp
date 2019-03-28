@@ -18,6 +18,7 @@
 #include <string.h>
 
 #include <iostream>
+#include <functional>
 
 #include "dmp_network.h"
 
@@ -181,7 +182,7 @@ bool CDMP_Network::Commit() {
 }
 
 
-/// @brief Reorders channels from WHC8 to HWC.
+/// @brief Reorders channels from WHC8 to WHC.
 static void remap(uint16_t* __restrict src, uint16_t* __restrict dst, int x_size, int y_size, int channel_size, bool need_transpose) {
   if (channel_size <= 8 && !need_transpose) {
     memcpy(dst, src, sizeof(uint16_t) * x_size * y_size * channel_size);
@@ -201,7 +202,7 @@ static void remap(uint16_t* __restrict src, uint16_t* __restrict dst, int x_size
 }
 
 
-/// @brief Reorders channels from HWC to WHC8.
+/// @brief Reorders channels from WHC to WHC8.
 static void remap_hw(uint16_t* __restrict src, uint16_t* __restrict dst, int x_size, int y_size, int channel_size, bool need_transpose) {
   if (channel_size <= 8 && !need_transpose) {
     memcpy(dst, src, sizeof(uint16_t) * x_size * y_size * channel_size);
@@ -236,26 +237,50 @@ static void float_to_fp16(__fp16* __restrict dst, const float* __restrict src, i
   }
 }
 
-#define _IDX(x, y, c) ((((x) * (H)) + (y)) * (C) + (c))
-static void run_softmax_0(__fp16* dst, __fp16* src, int* dim, int dim_size) {
+static int _src_idx_softmax(int x, int y, int c, int W, int H, int C) {
+  int block_base = C & ~0x7;
+  int block_idx = C >> 3;
+  int cinb = c - block_base;
+  int clen_block = c >= block_base ? C - block_base: 8;
+  return block_idx * 8 * W * H + (y * W + x) * clen_block + cinb;
+}
+
+static int _src_idx_softmax_need_transpose(int x, int y, int c, int W, int H, int C) {
+  int block_base = C & ~0x7;
+  int block_idx = C >> 3;
+  int cinb = c - block_base;
+  int clen_block = c >= block_base ? C - block_base: 8;
+  return block_idx * 8 * W * H + (x * H + y) * clen_block + cinb;
+}
+
+#define _IDX(x, y, c) ((((x) * H) + (y)) * C + (c))
+#define _SRC_IDX_FN (is_input_hw_layout ? \
+                     static_cast<std::function<int(int, int, int)>>([=](int x, int y, int c) { return _IDX(x, y, c); }) : \
+                     (need_transpose ? \
+                      static_cast<std::function<int(int, int, int)>>([=](int x, int y, int c) { return _src_idx_softmax_need_transpose(x, y, c, W, H, C); }) :\
+                      static_cast<std::function<int(int, int, int)>>([=](int x, int y, int c) { return _src_idx_softmax(x, y, c, W, H, C); })))
+    
+static void run_softmax_0(__fp16* dst, __fp16* src, int* dim, int dim_size,
+                          bool is_input_hw_layout, bool need_transpose) {
   int W = dim[0];
   int H = (dim_size >= 2 ? dim[1] : 1);
   int C = (dim_size >= 3 ? dim[2] : 1);
+  auto src_idx = _SRC_IDX_FN;
   for (int y = 0; y < H; y++) {
     for (int c = 0; c < C; c++) {
-      __fp16 maxVal = src[_IDX(0, y, c)];
+      __fp16 maxVal = src[src_idx(0, y, c)];
       for (int x = 1; x < W; x++) {
-        __fp16 v = src[_IDX(x, y, c)];
+        __fp16 v = src[src_idx(x, y, c)];
         if (v > maxVal) {
           maxVal = v;
         }
       }
       for (int x = 0; x < W; x++) {
-        src[_IDX(x, y, c)] -= maxVal;
+        src[src_idx(x, y, c)] -= maxVal;
       }
       __fp16 e_sum = 0;
       for (int x = 0; x < W; x++) {
-        float v = (float)(src[_IDX(x, y, c)]);
+        float v = (float)(src[src_idx(x, y, c)]);
         __fp16 exp = (__fp16)std::exp(v);
         dst[_IDX(x, y, c)] = exp;
         e_sum += exp;
@@ -267,25 +292,27 @@ static void run_softmax_0(__fp16* dst, __fp16* src, int* dim, int dim_size) {
   }
 }
 
-static void run_softmax_1(__fp16* dst, __fp16* src, int* dim, int dim_size) {
+static void run_softmax_1(__fp16* dst, __fp16* src, int* dim, int dim_size,
+                          bool is_input_hw_layout, bool need_transpose) {
   int W = dim[0];
   int H = dim[1];
   int C = (dim_size >= 3 ? dim[2] : 1);
+  auto src_idx = _SRC_IDX_FN;
   for (int x = 0; x < W; x++) {
     for (int c = 0; c < C; c++) {
-      __fp16 maxVal = src[_IDX(x, 0, c)];
+      __fp16 maxVal = src[src_idx(x, 0, c)];
       for (int y = 1; y < H; y++) {
-        __fp16 v = src[_IDX(x, y, c)];
+        __fp16 v = src[src_idx(x, y, c)];
         if (v > maxVal) {
           maxVal = v;
         }
       }
       for (int y = 0; y < H; y++) {
-        src[_IDX(x, y, c)] -= maxVal;
+        src[src_idx(x, y, c)] -= maxVal;
       }
       __fp16 e_sum = 0;
       for (int y = 0; y < H; y++) {
-        float v = (float)(src[_IDX(x, y, c)]);
+        float v = (float)(src[src_idx(x, y, c)]);
         __fp16 exp = (__fp16)std::exp(v);
         dst[_IDX(x, y, c)] = exp;
         e_sum += exp;
@@ -297,25 +324,27 @@ static void run_softmax_1(__fp16* dst, __fp16* src, int* dim, int dim_size) {
   }
 }
 
-static void run_softmax_2(__fp16* dst, __fp16* src, int* dim, int dim_size) {
+static void run_softmax_2(__fp16* dst, __fp16* src, int* dim, int dim_size,
+                          bool is_input_hw_layout, bool need_transpose) {
   int W = dim[0];
   int H = dim[1];
   int C = dim[2];
+  auto src_idx = _SRC_IDX_FN;
   for (int x = 0; x < W; x++) {
     for (int y = 0; y < H; y++) {
-      __fp16 maxVal = src[_IDX(x, y, 0)];
+      __fp16 maxVal = src[src_idx(x, y, 0)];
       for (int c = 1; c < C; c++) {
-        __fp16 v = src[_IDX(x, y, c)];
+        __fp16 v = src[src_idx(x, y, c)];
         if (v > maxVal) {
           maxVal = v;
         }
       }
       for (int c = 0; c < C; c++) {
-        src[_IDX(x, y, c)] -= maxVal;
+        src[src_idx(x, y, c)] -= maxVal;
       }
       __fp16 e_sum = 0;
       for (int c = 0; c < C; c++) {
-        float v = (float)(src[_IDX(x, y, c)]);
+        float v = (float)(src[src_idx(x, y, c)]);
         __fp16 exp = (__fp16)std::exp(v);
         dst[_IDX(x, y, c)] = exp;
         e_sum += exp;
@@ -327,42 +356,31 @@ static void run_softmax_2(__fp16* dst, __fp16* src, int* dim, int dim_size) {
     }
   }
 }
+#undef _SRC_IDX_FN
 #undef _IDX
 
 /// @brief Runs softmax operation on CPU.
 static void run_softmax(fpga_layer& layer, int softmax_axis, uint8_t *io_ptr, bool need_transpose) {
-  void *orig_src_buffer = io_ptr + layer.input_offs;
-  void *src_buffer = orig_src_buffer;
+  void *src_buffer = io_ptr + layer.input_offs;
   void *dst_buffer = io_ptr + layer.output_offs;
-  size_t tensor_size = layer.input_dim[0] * 
-                        (layer.input_dim_size >= 2 ? layer.input_dim[1] : 1 ) *
-                        (layer.input_dim_size >= 3 ? layer.input_dim[2] : 1 );
-  if (layer.is_input_hw_layout) {
-    uint16_t *src = (uint16_t*)src_buffer;
-    uint16_t *dst = (uint16_t*)dst_buffer;
-    int x_size = layer.input_dim[0];
-    int y_size = layer.input_dim[1];
-    int channel_size = layer.input_dim[2];
-    dst += x_size * y_size * channel_size;
-    remap(src, dst, x_size, y_size, channel_size, need_transpose);
-    src_buffer = dst;
-  }
-
   switch (softmax_axis) {
     case 0:
       run_softmax_0(reinterpret_cast<__fp16*>(dst_buffer), 
                     reinterpret_cast<__fp16*>(src_buffer),
-                    layer.input_dim, layer.input_dim_size);
+                    layer.input_dim, layer.input_dim_size,
+                    layer.is_input_hw_layout, need_transpose);
       break;
     case 1:
       run_softmax_1(reinterpret_cast<__fp16*>(dst_buffer), 
                     reinterpret_cast<__fp16*>(src_buffer),
-                    layer.input_dim, layer.input_dim_size);
+                    layer.input_dim, layer.input_dim_size,
+                    layer.is_input_hw_layout, need_transpose);
       break;
     case 2:
       run_softmax_2(reinterpret_cast<__fp16*>(dst_buffer), 
                     reinterpret_cast<__fp16*>(src_buffer),
-                    layer.input_dim, layer.input_dim_size);
+                    layer.input_dim, layer.input_dim_size,
+                    layer.is_input_hw_layout, need_transpose);
       break;
     default:
       ERR("Unexpected softmax_axis is given: %d\n", softmax_axis);
@@ -370,8 +388,7 @@ static void run_softmax(fpga_layer& layer, int softmax_axis, uint8_t *io_ptr, bo
   }
 
   if (layer.is_f32_output) {
-    memcpy(orig_src_buffer, dst_buffer, tensor_size * sizeof(__fp16));
-    fp16_to_float(reinterpret_cast<float*>(dst_buffer), reinterpret_cast<__fp16*>(orig_src_buffer), tensor_size);
+    ERR("Softmax's output is not of fp32\n");
   }
 }
 
@@ -436,7 +453,7 @@ static void run_copy_concat(fpga_layer& layer, int input_layer_num, fpga_layer *
       p += sz;
     }
   } else if (layer.output_dim_size == 2) {
-	ERR("CopyConcatenation for 2D tensor is not implemented yet\n");
+  ERR("CopyConcatenation for 2D tensor is not implemented yet\n");
   }
 }
 
