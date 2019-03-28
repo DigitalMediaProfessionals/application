@@ -242,7 +242,7 @@ static int _src_idx_softmax(int x, int y, int c, int W, int H, int C) {
   int block_idx = C >> 3;
   int cinb = c - block_base;
   int clen_block = c >= block_base ? C - block_base: 8;
-  return block_idx * 8 * W * H + (y * W + x) * (clen_block * W * H) + cinb;
+  return block_idx * 8 * W * H + (y * W + x) * clen_block + cinb;
 }
 
 static int _src_idx_softmax_need_transpose(int x, int y, int c, int W, int H, int C) {
@@ -250,7 +250,7 @@ static int _src_idx_softmax_need_transpose(int x, int y, int c, int W, int H, in
   int block_idx = C >> 3;
   int cinb = c - block_base;
   int clen_block = c >= block_base ? C - block_base: 8;
-  return block_idx * 8 * W * H + (x * H + y) * (clen_block * W * H) + cinb;
+  return block_idx * 8 * W * H + (x * H + y) * clen_block + cinb;
 }
 
 #define _IDX(x, y, c) ((((x) * H) + (y)) * C + (c))
