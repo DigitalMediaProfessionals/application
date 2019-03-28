@@ -105,7 +105,7 @@ class CDeconvNetBasic : public CDMP_Network {
   | ID | Layers | Type | Dim In | Dim Out | Param | Mem |
   | :- | :- | :-: | :-: | :-: | :-: | :-: |
   | 7 | FPGA-Layer | Convolution | (40, 30, 128) | (40, 30, 128) | - | - |
-  | 7-0 | batch_normalization_11 | Convolution | (40, 30, 128) | (40, 30, 128) | - | 18688 |
+  | 7-0 | conv2d_transpose_8 | Convolution | (40, 30, 128) | (40, 30, 128) | - | 295168 |
 
   */
   void Layer_7();
@@ -115,8 +115,8 @@ class CDeconvNetBasic : public CDMP_Network {
 
   | ID | Layers | Type | Dim In | Dim Out | Param | Mem |
   | :- | :- | :-: | :-: | :-: | :-: | :-: |
-  | 8 | FPGA-Layer | Convolution | (40, 30, 128) | (40, 30, 128) | - | - |
-  | 8-0 | conv2d_transpose_8 | Convolution | (40, 30, 128) | (40, 30, 128) | - | 295168 |
+  | 8 | FPGA-Layer | Convolution | (40, 30, 128) | (80, 60, 96) | - | - |
+  | 8-0 | conv2d_transpose_5 | Convolution | (40, 30, 128) | (80, 60, 96) | - | 221376 |
 
   */
   void Layer_8();
@@ -126,8 +126,8 @@ class CDeconvNetBasic : public CDMP_Network {
 
   | ID | Layers | Type | Dim In | Dim Out | Param | Mem |
   | :- | :- | :-: | :-: | :-: | :-: | :-: |
-  | 9 | FPGA-Layer | Convolution | (40, 30, 128) | (80, 60, 96) | - | - |
-  | 9-0 | conv2d_transpose_5 | Convolution | (40, 30, 128) | (80, 60, 96) | - | 221376 |
+  | 9 | FPGA-Layer | Convolution | (80, 60, 96) | (80, 60, 96) | - | - |
+  | 9-0 | conv2d_transpose_6 | Convolution | (80, 60, 96) | (80, 60, 96) | - | 166080 |
 
   */
   void Layer_9();
@@ -137,8 +137,8 @@ class CDeconvNetBasic : public CDMP_Network {
 
   | ID | Layers | Type | Dim In | Dim Out | Param | Mem |
   | :- | :- | :-: | :-: | :-: | :-: | :-: |
-  | 10 | FPGA-Layer | Convolution | (80, 60, 96) | (80, 60, 96) | - | - |
-  | 10-0 | conv2d_transpose_6 | Convolution | (80, 60, 96) | (80, 60, 96) | - | 166080 |
+  | 10 | FPGA-Layer | Convolution | (80, 60, 96) | (160, 120, 80) | - | - |
+  | 10-0 | conv2d_transpose_3 | Convolution | (80, 60, 96) | (160, 120, 80) | - | 138400 |
 
   */
   void Layer_10();
@@ -148,8 +148,8 @@ class CDeconvNetBasic : public CDMP_Network {
 
   | ID | Layers | Type | Dim In | Dim Out | Param | Mem |
   | :- | :- | :-: | :-: | :-: | :-: | :-: |
-  | 11 | FPGA-Layer | Convolution | (80, 60, 96) | (160, 120, 80) | - | - |
-  | 11-0 | conv2d_transpose_3 | Convolution | (80, 60, 96) | (160, 120, 80) | - | 138400 |
+  | 11 | FPGA-Layer | Convolution | (160, 120, 80) | (160, 120, 80) | - | - |
+  | 11-0 | conv2d_transpose_4 | Convolution | (160, 120, 80) | (160, 120, 80) | - | 115360 |
 
   */
   void Layer_11();
@@ -159,8 +159,8 @@ class CDeconvNetBasic : public CDMP_Network {
 
   | ID | Layers | Type | Dim In | Dim Out | Param | Mem |
   | :- | :- | :-: | :-: | :-: | :-: | :-: |
-  | 12 | FPGA-Layer | Convolution | (160, 120, 80) | (160, 120, 80) | - | - |
-  | 12-0 | conv2d_transpose_4 | Convolution | (160, 120, 80) | (160, 120, 80) | - | 115360 |
+  | 12 | FPGA-Layer | Convolution | (160, 120, 80) | (320, 240, 64) | - | - |
+  | 12-0 | conv2d_transpose_1 | Convolution | (160, 120, 80) | (320, 240, 64) | - | 92288 |
 
   */
   void Layer_12();
@@ -170,8 +170,8 @@ class CDeconvNetBasic : public CDMP_Network {
 
   | ID | Layers | Type | Dim In | Dim Out | Param | Mem |
   | :- | :- | :-: | :-: | :-: | :-: | :-: |
-  | 13 | FPGA-Layer | Convolution | (160, 120, 80) | (320, 240, 64) | - | - |
-  | 13-0 | conv2d_transpose_1 | Convolution | (160, 120, 80) | (320, 240, 64) | - | 92288 |
+  | 13 | FPGA-Layer | Convolution | (320, 240, 64) | (320, 240, 64) | - | - |
+  | 13-0 | conv2d_transpose_2 | Convolution | (320, 240, 64) | (320, 240, 64) | - | 73856 |
 
   */
   void Layer_13();
@@ -181,8 +181,8 @@ class CDeconvNetBasic : public CDMP_Network {
 
   | ID | Layers | Type | Dim In | Dim Out | Param | Mem |
   | :- | :- | :-: | :-: | :-: | :-: | :-: |
-  | 14 | FPGA-Layer | Convolution | (320, 240, 64) | (320, 240, 64) | - | - |
-  | 14-0 | conv2d_transpose_2 | Convolution | (320, 240, 64) | (320, 240, 64) | - | 73856 |
+  | 14 | FPGA-Layer | Convolution | (320, 240, 64) | (320, 240, 12) | - | - |
+  | 14-0 | conv2d_5 | Convolution | (320, 240, 64) | (320, 240, 12) | - | 13856 |
 
   */
   void Layer_14();
@@ -192,21 +192,10 @@ class CDeconvNetBasic : public CDMP_Network {
 
   | ID | Layers | Type | Dim In | Dim Out | Param | Mem |
   | :- | :- | :-: | :-: | :-: | :-: | :-: |
-  | 15 | FPGA-Layer | Convolution | (320, 240, 64) | (320, 240, 12) | - | - |
-  | 15-0 | conv2d_5 | Convolution | (320, 240, 64) | (320, 240, 12) | - | 13856 |
+  | 15 | FPGA-Layer | Flatten | (320, 240, 12) | (921600,) | - | - |
 
   */
   void Layer_15();
-  /*!
-
-  Layer description
-
-  | ID | Layers | Type | Dim In | Dim Out | Param | Mem |
-  | :- | :- | :-: | :-: | :-: | :-: | :-: |
-  | 16 | FPGA-Layer | Flatten | (320, 240, 12) | (921600,) | - | - |
-
-  */
-  void Layer_16();
 
  public:
   virtual bool Initialize();
