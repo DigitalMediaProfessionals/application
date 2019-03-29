@@ -1,13 +1,11 @@
 SUBDIRS = common/src \
 	MouseDemo \
-	CaffeGoogLeNet \
-	CaffeGoogLeNetCam \
 	CaffeMobileNet \
 	CaffeSqueezeNet \
-	KerasGoogLeNet \
 	KerasMobileNet \
 	KerasSqueezeNet \
 	SegNetBasic \
+	DeconvNetBasic \
 	YOLOv3 \
 	YOLOv3Camera \
 	YOLOv3Pywrap \
