@@ -12,7 +12,9 @@ SUBDIRS = common/src \
 	YOLOv3Camera \
 	YOLOv3Pywrap \
 	KerasDepthMap \
-	JointFace
+	JointFace \
+	LaneDetection \
+	DeconvNetBasic
 
 .PHONY: all clean
 
