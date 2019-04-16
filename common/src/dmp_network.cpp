@@ -506,12 +506,12 @@ bool CDMP_Network::RunNetwork() {
               i_layer, layer.name.c_str(), layer.cmdlist_pos, layer.cmdlist_size);
           return false;
         }
-        uint64_t usec;
-        if (dmp_dv_cmdlist_wait(cmdlist, exec_id, &usec)) {
+        if (dmp_dv_cmdlist_wait(cmdlist, exec_id)) {
           ERR("Wait for command completion failed, issued on layer %d, name=%s: %s\n",
               i_layer, layer.name.c_str(), dmp_dv_get_last_error_message());
           return false;
         }
+        const int usec = dmp_dv_get_last_cmdlist_exec_time(cmdlist);
         switch (layer.type) {
           case LT_CONV:
             conv_usec += usec;
@@ -525,7 +525,7 @@ bool CDMP_Network::RunNetwork() {
             return false;
         }
         if (iprint_ > 1) {
-          LOG("Waited on command list for layer %d, name=%s cmdlist_pos=%d cmdlist_size=%d, exec_id=%lld, usec=%lu\n",
+          LOG("Waited on command list for layer %d, name=%s cmdlist_pos=%d cmdlist_size=%d, exec_id=%lld, usec=%d\n",
               i_layer, layer.name.c_str(), layer.cmdlist_pos, layer.cmdlist_size, (long long)exec_id, usec);
         }
         exec_id = -1;
