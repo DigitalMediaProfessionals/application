@@ -486,7 +486,6 @@ bool CDMP_Network::RunNetwork() {
           ERR("Failed to end synchronization on memory for input/output: %s", dmp_dv_get_last_error_message());
           return false;
         }
-        dt.reset();  // start time measurement
         exec_id = dmp_dv_cmdlist_exec(layer.cmdlist);
         if (exec_id < 0) {
           ERR("Could not execute command list for layer %d, name=%s: %s\n",
@@ -507,12 +506,12 @@ bool CDMP_Network::RunNetwork() {
               i_layer, layer.name.c_str(), layer.cmdlist_pos, layer.cmdlist_size);
           return false;
         }
-        if (dmp_dv_cmdlist_wait(cmdlist, exec_id)) {
+        uint64_t usec;
+        if (dmp_dv_cmdlist_wait(cmdlist, exec_id, &usec)) {
           ERR("Wait for command completion failed, issued on layer %d, name=%s: %s\n",
               i_layer, layer.name.c_str(), dmp_dv_get_last_error_message());
           return false;
         }
-        const int usec = dt.get_us();
         switch (layer.type) {
           case LT_CONV:
             conv_usec += usec;
@@ -526,7 +525,7 @@ bool CDMP_Network::RunNetwork() {
             return false;
         }
         if (iprint_ > 1) {
-          LOG("Waited on command list for layer %d, name=%s cmdlist_pos=%d cmdlist_size=%d, exec_id=%lld, usec=%d\n",
+          LOG("Waited on command list for layer %d, name=%s cmdlist_pos=%d cmdlist_size=%d, exec_id=%lld, usec=%lu\n",
               i_layer, layer.name.c_str(), layer.cmdlist_pos, layer.cmdlist_size, (long long)exec_id, usec);
         }
         exec_id = -1;
