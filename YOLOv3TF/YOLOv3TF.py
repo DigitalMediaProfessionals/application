@@ -273,11 +273,7 @@ parser = argparse.ArgumentParser()
 parser.add_argument('-v', '--verbose', help="enable verbose mode", action="store_true")
 parser.add_argument('--image-dir', help="path to directory containing images to be procedured", default="./images_yolo/")
 parser.add_argument('--model-path', help="path to the YOLOv3-tiny KERAS model", default="../model/yolov3-tiny.h5")
-parser.add_argument('--output-type', help="output type, must be one of {jpg, avi}", default="jpg")
 CONFIG = parser.parse_args()
-
-if CONFIG.output_type not in ["jpg", "avi"]:
-    raise ValueError("Please specify --out-type correctly")
 
 # get image names
 p = Path(CONFIG.image_dir)
@@ -291,15 +287,10 @@ img_paths = sorted(img_paths)
 # Set learning phase flag to 0 to reduce generated graph passes.
 K.set_learning_phase(0)
 
-vwriter = None
 try:
     # initialize output
-    if CONFIG.output_type == "jpg":
-        output_dir = "./output/"
-        os.makedirs(output_dir, exist_ok=True)
-    elif CONFIG.output_type == "avi":
-        _fourcc = cv2.VideoWriter_fourcc(*'XVID')
-        vwriter = cv2.VideoWriter('output.avi', _fourcc, 10.0, (INPUT_W, INPUT_H))
+    output_dir = "./output/"
+    os.makedirs(output_dir, exist_ok=True)
 
     # load YOLOv3-tiny model
     model = tf.keras.models.load_model(CONFIG.model_path)
@@ -326,11 +317,4 @@ try:
                           [b[YOLO_OUT_CLS:] for b in bboxes])
 
         # output
-        if CONFIG.output_type == "jpg":
-            cv2.imwrite(output_dir + str(img_path.name), img)
-        elif CONFIG.output_type == "avi":
-            vwriter.write(img)
-
-finally:
-    if vwriter:
-        vwriter.release()
+        cv2.imwrite(output_dir + str(img_path.name), img)
