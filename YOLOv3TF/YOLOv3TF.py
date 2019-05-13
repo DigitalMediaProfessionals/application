@@ -302,7 +302,7 @@ try:
         vwriter = cv2.VideoWriter('output.avi', _fourcc, 10.0, (INPUT_W, INPUT_H))
 
     # load YOLOv3-tiny model
-    model = tf.keras.models.load_model(CONFIG.model-path)
+    model = tf.keras.models.load_model(CONFIG.model_path)
 
     # main inference loop
     for img_path in img_paths:
