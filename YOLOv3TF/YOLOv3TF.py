@@ -271,7 +271,7 @@ def draw_bboxes(img, hw, bboxes_rect, bboxes_cls, thickness=2):
 # parse cmdline args
 parser = argparse.ArgumentParser()
 parser.add_argument('-v', '--verbose', help="enable verbose mode", action="store_true")
-parser.add_argument('--image-dir', help="path to directory containing images to be procedured", default="./images_yolo/")
+parser.add_argument('--image-dir', help="path to directory containing images to be procedured", default="../bin/images_yolo/")
 parser.add_argument('--model-path', help="path to the YOLOv3-tiny KERAS model", default="../model/yolov3-tiny.h5")
 CONFIG = parser.parse_args()
 
