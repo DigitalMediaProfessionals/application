@@ -287,34 +287,33 @@ img_paths = sorted(img_paths)
 # Set learning phase flag to 0 to reduce generated graph passes.
 K.set_learning_phase(0)
 
-try:
-    # initialize output
-    output_dir = "./output/"
-    os.makedirs(output_dir, exist_ok=True)
+# initialize output
+output_dir = "./output/"
+os.makedirs(output_dir, exist_ok=True)
 
-    # load YOLOv3-tiny model
-    model = tf.keras.models.load_model(CONFIG.model_path)
+# load YOLOv3-tiny model
+model = tf.keras.models.load_model(CONFIG.model_path)
 
-    # main inference loop
-    for img_path in img_paths:
-        # load image
-        if CONFIG.verbose:
-            print("process {}".format(img_path))
-        img = cv2.imread(str(img_path))
-        rgb = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
-        rgb = cv2.resize(rgb, (INPUT_W, INPUT_H))
-        rgb = (rgb / 256).astype(np.float16, copy=False)
+# main inference loop
+for img_path in img_paths:
+    # load image
+    if CONFIG.verbose:
+        print("process {}".format(img_path))
+    img = cv2.imread(str(img_path))
+    rgb = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+    rgb = cv2.resize(rgb, (INPUT_W, INPUT_H))
+    rgb = (rgb / 256).astype(np.float16, copy=False)
 
-        # inference
-        rgb = np.expand_dims(rgb, 0)
-        outs = model.predict(rgb)
-        outs.shape = (-1)
+    # inference
+    rgb = np.expand_dims(rgb, 0)
+    outs = model.predict(rgb)
+    outs.shape = (-1)
 
-        # manipulate outs
-        bboxes = get_bboxes(outs)
-        img = draw_bboxes(img, img.shape[0:2],
-                          [b[:YOLO_OUT_OBJNESS] for b in bboxes],
-                          [b[YOLO_OUT_CLS:] for b in bboxes])
+    # manipulate outs
+    bboxes = get_bboxes(outs)
+    img = draw_bboxes(img, img.shape[0:2],
+                      [b[:YOLO_OUT_OBJNESS] for b in bboxes],
+                      [b[YOLO_OUT_CLS:] for b in bboxes])
 
-        # output
-        cv2.imwrite(output_dir + str(img_path.name), img)
+    # output
+    cv2.imwrite(output_dir + str(img_path.name), img)
