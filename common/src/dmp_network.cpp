@@ -176,8 +176,79 @@ bool CDMP_Network::LoadWeights(const std::string& filename) {
   return true;
 }
 
+static bool fill_u8tofp16_table(dmp_dv_mem table, CDMP_Network::U8_CVT_POLICY policy, uint16_t *u8_cvt_table) {
+  __fp16 *map = reinterpret_cast<__fp16*>(dmp_dv_mem_map(table));
+  if (!map) {
+    return false;
+  }
 
-bool CDMP_Network::Commit() {
+  if (policy == CDMP_Network::UCP_USER_SPECIFY) {
+    memcpy(map, u8_cvt_table, sizeof(__fp16) * 3 * (UINT8_MAX + 1));
+  } else {
+    for (int16_t i = 0; i <= UINT8_MAX; i++) {
+      __fp16 v;
+      switch (policy) {
+        case CDMP_Network::UCP_DIV_255:
+          v = i / 255.0;
+          break;
+        case CDMP_Network::UCP_MINUS_128:
+          v = i - 128;
+          break;
+        case CDMP_Network::UCP_MINUS_128_DIV_128:
+          v = (i - 128) / 128.0;
+          break;
+        case CDMP_Network::UCP_MINUS_127_5_DIV_128:
+          v = (i - 127.5) / 128.0;
+          break;
+        case CDMP_Network::UCP_DIRECT_CVT:
+          v = i;
+          break;
+        default: 
+          return false;
+      }
+      map[3 * i + 0] = v;
+      map[3 * i + 1] = v;
+      map[3 * i + 2] = v;
+    }
+  }
+
+  if (dmp_dv_mem_sync_start(table, 0, 1)) {
+    return false;
+  }
+  if (dmp_dv_mem_sync_end(table)) {
+    return false;
+  }
+  dmp_dv_mem_unmap(table);
+
+  return true;
+}
+
+bool CDMP_Network::Commit(U8_CVT_POLICY cvt, uint16_t *u8_cvt_table) {
+  if (cvt != UCP_NOTHING) {
+    if (cvt == UCP_USER_SPECIFY && u8_cvt_table == nullptr) {
+      ERR("Please specify u8_cvt_table when cvt == UCP_USER_SPECIFY");
+      return false;
+    }
+
+    struct fpga_layer &layer = layers_[0];
+    memcpy(&layer.conv_conf_v1.conv_cmd, &layer.conv_conf, sizeof(dmp_dv_cmdraw_conv_v0));
+    layer.conv_conf_v1.header.size = sizeof(layer.conv_conf_v1);
+    layer.conv_conf_v1.header.version = 1;
+    layer.conv_conf_v1.header.device_type = DMP_DV_DEV_CONV;
+    layer.conv_conf_v1.is_u8_input = 1;
+
+    size_t sz = (UINT8_MAX + 1) * 3 * sizeof(__fp16);
+    dmp_dv_mem mem = dmp_dv_mem_alloc(ctx_, sz);
+    if (!mem) {
+      ERR("Failed to allocate %zu bytes for DV accelerator: %s\n",
+          io_size_, dmp_dv_get_last_error_message());
+      return false;
+    }
+    fill_u8tofp16_table(mem, cvt, u8_cvt_table);
+    layer.conv_conf_v1.u8tofp16_table.mem = mem;
+    layer.conv_conf_v1.u8tofp16_table.offs = 0;
+  }
+
   return GenerateCommandLists();
 }
 
@@ -713,7 +784,8 @@ bool CDMP_Network::GenerateCommandLists() {
           cmdlists_.push_back(cmdlist);
         }
         it->cmdlist = cmdlists_.back();
-        if (dmp_dv_cmdlist_add_raw(it->cmdlist, (dmp_dv_cmdraw*)&it->conv_conf)) {
+        dmp_dv_cmdraw * cmdraw = (dmp_dv_cmdraw*)(it->conv_conf_v1.size ? &it->conv_conf_v1 : &it->conv_conf);
+        if (dmp_dv_cmdlist_add_raw(it->cmdlist, cmdraw)) {
           ERR("dmp_dv_cmdlist_add_raw() failed: %s\n", dmp_dv_get_last_error_message());
           return false;
         }

@@ -41,6 +41,7 @@
 #include "stats.h"
 #include "dmp_dv.h"
 #include "dmp_dv_cmdraw_v0.h"
+#include "dmp_dv_cmdraw_v1.h"
 
 
 /// @brief Layer type enumeration.
@@ -73,6 +74,7 @@ struct fpga_layer {
   std::string name;  // layer name
   union {
     struct dmp_dv_cmdraw_conv_v0 conv_conf;  // convolutional configuration
+    struct dmp_dv_cmdraw_conv_v1 conv_conf_v1;  // convolutional configuration
     struct dmp_dv_cmdraw_fc_v0 fc_conf;      // fully connected configuration
     int softmax_axis;  // softmax configuration
     struct {
@@ -160,7 +162,19 @@ class CDMP_Network {
 
   /// @brief Commits the network configuration.
   /// @details Must be called after LoadWeights if network contains fully connected layer.
-  bool Commit();
+  /// @param u8_cvt_table conversion table from uint8_t to fp16.
+ 
+  enum U8_CVT_POLICY {
+    UCP_DIV_255,
+    UCP_MINUS_128,
+    UCP_MINUS_128_DIV_128,
+    UCP_MINUS_127_5_DIV_128,
+    UCP_DIRECT_CVT,
+    UCP_USER_SPECIFY,
+    UCP_NOTHING,
+  };
+
+  bool Commit(U8_CVT_POLICY cvt=UCP_NOTHING, uint16_t *u8_cvt_table=nullptr);
 
   /// @brief Runs the network.
   bool RunNetwork();
