@@ -56,6 +56,17 @@ enum layer_type {
   LT_CUSTOM,
 };
 
+/// @brief Input data convert policy
+enum convert_policy {
+  CP_DIV_255,
+  CP_MINUS_128,
+  CP_MINUS_128_DIV_128,
+  CP_MINUS_127_5_DIV_128,
+  CP_DIRECT_CVT,
+  CP_USER_SPECIFY,
+  CP_NOTHING,
+};
+
 
 /// @brief Forward reference for layer specification.
 struct fpga_layer;
@@ -126,6 +137,9 @@ class CDMP_Network {
     last_conv_usec_ = 0;
     last_fc_usec_ = 0;
     last_cpu_usec_ = 0;
+    
+    cvt_policy_ = CP_NOTHING;
+    cvt_table_ = NULL;
 
     weights_loaded_ = false;
     want_layer_outputs_ = false;
@@ -160,21 +174,12 @@ class CDMP_Network {
   /// @brief Loads packed weights from file.
   bool LoadWeights(const std::string& filename);
 
+  /// @brief Set network input convert policy.
+  bool SetConvertPolicy(convert_policy cvt_policy, uint16_t *cvt_table=NULL);
+
   /// @brief Commits the network configuration.
   /// @details Must be called after LoadWeights if network contains fully connected layer.
-  /// @param u8_cvt_table conversion table from uint8_t to fp16.
- 
-  enum U8_CVT_POLICY {
-    UCP_DIV_255,
-    UCP_MINUS_128,
-    UCP_MINUS_128_DIV_128,
-    UCP_MINUS_127_5_DIV_128,
-    UCP_DIRECT_CVT,
-    UCP_USER_SPECIFY,
-    UCP_NOTHING,
-  };
-
-  bool Commit(U8_CVT_POLICY cvt=UCP_NOTHING, uint16_t *u8_cvt_table=nullptr);
+  bool Commit();
 
   /// @brief Runs the network.
   bool RunNetwork();
@@ -283,6 +288,12 @@ class CDMP_Network {
 
   /// @brief Last time spent on all layers executed on CPU in microseconds.
   int last_cpu_usec_;
+  
+  /// @brief Network input convert policy
+  convert_policy cvt_policy_;
+  
+  /// @brief Network input convert table
+  uint16_t *cvt_table_;
 
  private:
   /// @brief Releases held resources.

@@ -176,31 +176,41 @@ bool CDMP_Network::LoadWeights(const std::string& filename) {
   return true;
 }
 
-static bool fill_u8tofp16_table(dmp_dv_mem table, CDMP_Network::U8_CVT_POLICY policy, uint16_t *u8_cvt_table) {
+bool CDMP_Network::SetConvertPolicy(convert_policy cvt_policy, uint16_t *cvt_table) {
+  if (cvt_policy == CP_USER_SPECIFY && cvt_table == NULL) {
+    ERR("Please specify cvt_table when cvt_policy == UCP_USER_SPECIFY");
+    return false;
+  }
+  cvt_policy_ = cvt_policy;
+  cvt_table_ = cvt_table;
+  return true;
+}
+
+static bool fill_u8tofp16_table(dmp_dv_mem table, convert_policy policy, uint16_t *u8_cvt_table) {
   __fp16 *map = reinterpret_cast<__fp16*>(dmp_dv_mem_map(table));
   if (!map) {
     return false;
   }
 
-  if (policy == CDMP_Network::UCP_USER_SPECIFY) {
-    memcpy(map, u8_cvt_table, sizeof(__fp16) * 3 * (UINT8_MAX + 1));
+  if (policy == CP_USER_SPECIFY) {
+    memcpy(map, u8_cvt_table, sizeof(__fp16) * 3 * 256);
   } else {
-    for (int16_t i = 0; i <= UINT8_MAX; i++) {
+    for (int i = 0; i < 256; i++) {
       __fp16 v;
       switch (policy) {
-        case CDMP_Network::UCP_DIV_255:
+        case CP_DIV_255:
           v = i / 255.0;
           break;
-        case CDMP_Network::UCP_MINUS_128:
+        case CP_MINUS_128:
           v = i - 128;
           break;
-        case CDMP_Network::UCP_MINUS_128_DIV_128:
+        case CP_MINUS_128_DIV_128:
           v = (i - 128) / 128.0;
           break;
-        case CDMP_Network::UCP_MINUS_127_5_DIV_128:
+        case CP_MINUS_127_5_DIV_128:
           v = (i - 127.5) / 128.0;
           break;
-        case CDMP_Network::UCP_DIRECT_CVT:
+        case CP_DIRECT_CVT:
           v = i;
           break;
         default: 
@@ -223,28 +233,17 @@ static bool fill_u8tofp16_table(dmp_dv_mem table, CDMP_Network::U8_CVT_POLICY po
   return true;
 }
 
-bool CDMP_Network::Commit(U8_CVT_POLICY cvt, uint16_t *u8_cvt_table) {
-  if (cvt != UCP_NOTHING) {
-    if (cvt == UCP_USER_SPECIFY && u8_cvt_table == nullptr) {
-      ERR("Please specify u8_cvt_table when cvt == UCP_USER_SPECIFY");
-      return false;
-    }
-
+bool CDMP_Network::Commit() {
+  if (cvt_policy_ != CP_NOTHING) {
     struct fpga_layer &layer = layers_[0];
-    memcpy(&layer.conv_conf_v1.conv_cmd, &layer.conv_conf, sizeof(dmp_dv_cmdraw_conv_v0));
-    layer.conv_conf_v1.header.size = sizeof(layer.conv_conf_v1);
-    layer.conv_conf_v1.header.version = 1;
-    layer.conv_conf_v1.header.device_type = DMP_DV_DEV_CONV;
-    layer.conv_conf_v1.is_u8_input = 1;
-
-    size_t sz = (UINT8_MAX + 1) * 3 * sizeof(__fp16);
+    size_t sz = 256 * 3 * sizeof(__fp16);
     dmp_dv_mem mem = dmp_dv_mem_alloc(ctx_, sz);
     if (!mem) {
       ERR("Failed to allocate %zu bytes for DV accelerator: %s\n",
           io_size_, dmp_dv_get_last_error_message());
       return false;
     }
-    fill_u8tofp16_table(mem, cvt, u8_cvt_table);
+    fill_u8tofp16_table(mem, cvt_policy_, cvt_table_);
     layer.conv_conf_v1.u8tofp16_table.mem = mem;
     layer.conv_conf_v1.u8tofp16_table.offs = 0;
   }
@@ -784,8 +783,7 @@ bool CDMP_Network::GenerateCommandLists() {
           cmdlists_.push_back(cmdlist);
         }
         it->cmdlist = cmdlists_.back();
-        dmp_dv_cmdraw * cmdraw = (dmp_dv_cmdraw*)(it->conv_conf_v1.size ? &it->conv_conf_v1 : &it->conv_conf);
-        if (dmp_dv_cmdlist_add_raw(it->cmdlist, cmdraw)) {
+        if (dmp_dv_cmdlist_add_raw(it->cmdlist, (dmp_dv_cmdraw*)&it->conv_conf)) {
           ERR("dmp_dv_cmdlist_add_raw() failed: %s\n", dmp_dv_get_last_error_message());
           return false;
         }
