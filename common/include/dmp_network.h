@@ -139,6 +139,7 @@ class CDMP_Network {
     last_cpu_usec_ = 0;
     
     cvt_policy_ = CP_NOTHING;
+    cvt_is_bgr_ = false;
     cvt_table_ = NULL;
 
     weights_loaded_ = false;
@@ -175,7 +176,7 @@ class CDMP_Network {
   bool LoadWeights(const std::string& filename);
 
   /// @brief Set network input convert policy.
-  bool SetConvertPolicy(convert_policy cvt_policy, uint16_t *cvt_table=NULL);
+  bool SetConvertPolicy(convert_policy cvt_policy, bool is_bgr, uint16_t *cvt_table=NULL);
 
   /// @brief Commits the network configuration.
   /// @details Must be called after LoadWeights if network contains fully connected layer.
@@ -291,6 +292,9 @@ class CDMP_Network {
   
   /// @brief Network input convert policy
   convert_policy cvt_policy_;
+  
+  /// @brief Network input convert should output BGR format
+  bool cvt_is_bgr_;
   
   /// @brief Network input convert table
   uint16_t *cvt_table_;
