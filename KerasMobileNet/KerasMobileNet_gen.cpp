@@ -28,6 +28,7 @@ CKerasMobileNet::~CKerasMobileNet() {
 }
 
 bool CKerasMobileNet::Initialize() {
+  is_weight_transposed = true;  // The weight matrix is transposed.
   if (!ReserveMemory(5083984, 2809856)) {
     return false;
   }
@@ -75,7 +76,11 @@ bool CKerasMobileNet::Initialize() {
 //  ->: conv1_bn
 //  ->: conv1_relu
 void CKerasMobileNet::Layer_0() {
-  dmp_dv_cmdraw_conv_v0& conf = get_layer(0).conv_conf;
+  dmp_dv_cmdraw_conv_v1& conf_v1 = get_layer(0).conv_conf_v1;
+  conf_v1.header.size = sizeof(conf_v1);
+  conf_v1.header.device_type = DMP_DV_DEV_CONV;
+  conf_v1.header.version = 1;
+  dmp_dv_cmdraw_conv_v0& conf = conf_v1.conv_cmd;
   conf.header.size = sizeof(conf);
   conf.header.device_type = DMP_DV_DEV_CONV;
   conf.header.version = 0;
@@ -87,6 +92,7 @@ void CKerasMobileNet::Layer_0() {
   conf.h = 224;  // Input Height
   conf.z = 1;  // Input Depth
   conf.c = 3;  // Input Channels
+  conf.input_circular_offset = 0x8000;  // The weight matrix is transposed.
   conf.input_buf.mem = io_mem_;
   conf.input_buf.offs = 0;
 
@@ -151,7 +157,11 @@ void CKerasMobileNet::Layer_0() {
 //  ->: conv_dw_1_bn
 //  ->: conv_dw_1_relu
 void CKerasMobileNet::Layer_1() {
-  dmp_dv_cmdraw_conv_v0& conf = get_layer(1).conv_conf;
+  dmp_dv_cmdraw_conv_v1& conf_v1 = get_layer(1).conv_conf_v1;
+  conf_v1.header.size = sizeof(conf_v1);
+  conf_v1.header.device_type = DMP_DV_DEV_CONV;
+  conf_v1.header.version = 1;
+  dmp_dv_cmdraw_conv_v0& conf = conf_v1.conv_cmd;
   conf.header.size = sizeof(conf);
   conf.header.device_type = DMP_DV_DEV_CONV;
   conf.header.version = 0;
@@ -163,6 +173,7 @@ void CKerasMobileNet::Layer_1() {
   conf.h = 112;  // Input Height
   conf.z = 1;  // Input Depth
   conf.c = 32;  // Input Channels
+  conf.input_circular_offset = 0x8000;  // The weight matrix is transposed.
   conf.input_buf.mem = io_mem_;
   conf.input_buf.offs = 802816;
 
@@ -227,7 +238,11 @@ void CKerasMobileNet::Layer_1() {
 //  ->: conv_pw_1_bn
 //  ->: conv_pw_1_relu
 void CKerasMobileNet::Layer_2() {
-  dmp_dv_cmdraw_conv_v0& conf = get_layer(2).conv_conf;
+  dmp_dv_cmdraw_conv_v1& conf_v1 = get_layer(2).conv_conf_v1;
+  conf_v1.header.size = sizeof(conf_v1);
+  conf_v1.header.device_type = DMP_DV_DEV_CONV;
+  conf_v1.header.version = 1;
+  dmp_dv_cmdraw_conv_v0& conf = conf_v1.conv_cmd;
   conf.header.size = sizeof(conf);
   conf.header.device_type = DMP_DV_DEV_CONV;
   conf.header.version = 0;
@@ -239,6 +254,7 @@ void CKerasMobileNet::Layer_2() {
   conf.h = 112;  // Input Height
   conf.z = 1;  // Input Depth
   conf.c = 32;  // Input Channels
+  conf.input_circular_offset = 0x8000;  // The weight matrix is transposed.
   conf.input_buf.mem = io_mem_;
   conf.input_buf.offs = 0;
 
@@ -303,7 +319,11 @@ void CKerasMobileNet::Layer_2() {
 //  ->: conv_dw_2_bn
 //  ->: conv_dw_2_relu
 void CKerasMobileNet::Layer_3() {
-  dmp_dv_cmdraw_conv_v0& conf = get_layer(3).conv_conf;
+  dmp_dv_cmdraw_conv_v1& conf_v1 = get_layer(3).conv_conf_v1;
+  conf_v1.header.size = sizeof(conf_v1);
+  conf_v1.header.device_type = DMP_DV_DEV_CONV;
+  conf_v1.header.version = 1;
+  dmp_dv_cmdraw_conv_v0& conf = conf_v1.conv_cmd;
   conf.header.size = sizeof(conf);
   conf.header.device_type = DMP_DV_DEV_CONV;
   conf.header.version = 0;
@@ -315,6 +335,7 @@ void CKerasMobileNet::Layer_3() {
   conf.h = 112;  // Input Height
   conf.z = 1;  // Input Depth
   conf.c = 64;  // Input Channels
+  conf.input_circular_offset = 0x8000;  // The weight matrix is transposed.
   conf.input_buf.mem = io_mem_;
   conf.input_buf.offs = 1204224;
 
@@ -379,7 +400,11 @@ void CKerasMobileNet::Layer_3() {
 //  ->: conv_pw_2_bn
 //  ->: conv_pw_2_relu
 void CKerasMobileNet::Layer_4() {
-  dmp_dv_cmdraw_conv_v0& conf = get_layer(4).conv_conf;
+  dmp_dv_cmdraw_conv_v1& conf_v1 = get_layer(4).conv_conf_v1;
+  conf_v1.header.size = sizeof(conf_v1);
+  conf_v1.header.device_type = DMP_DV_DEV_CONV;
+  conf_v1.header.version = 1;
+  dmp_dv_cmdraw_conv_v0& conf = conf_v1.conv_cmd;
   conf.header.size = sizeof(conf);
   conf.header.device_type = DMP_DV_DEV_CONV;
   conf.header.version = 0;
@@ -391,6 +416,7 @@ void CKerasMobileNet::Layer_4() {
   conf.h = 56;  // Input Height
   conf.z = 1;  // Input Depth
   conf.c = 64;  // Input Channels
+  conf.input_circular_offset = 0x8000;  // The weight matrix is transposed.
   conf.input_buf.mem = io_mem_;
   conf.input_buf.offs = 802816;
 
@@ -455,7 +481,11 @@ void CKerasMobileNet::Layer_4() {
 //  ->: conv_dw_3_bn
 //  ->: conv_dw_3_relu
 void CKerasMobileNet::Layer_5() {
-  dmp_dv_cmdraw_conv_v0& conf = get_layer(5).conv_conf;
+  dmp_dv_cmdraw_conv_v1& conf_v1 = get_layer(5).conv_conf_v1;
+  conf_v1.header.size = sizeof(conf_v1);
+  conf_v1.header.device_type = DMP_DV_DEV_CONV;
+  conf_v1.header.version = 1;
+  dmp_dv_cmdraw_conv_v0& conf = conf_v1.conv_cmd;
   conf.header.size = sizeof(conf);
   conf.header.device_type = DMP_DV_DEV_CONV;
   conf.header.version = 0;
@@ -467,6 +497,7 @@ void CKerasMobileNet::Layer_5() {
   conf.h = 56;  // Input Height
   conf.z = 1;  // Input Depth
   conf.c = 128;  // Input Channels
+  conf.input_circular_offset = 0x8000;  // The weight matrix is transposed.
   conf.input_buf.mem = io_mem_;
   conf.input_buf.offs = 0;
 
@@ -531,7 +562,11 @@ void CKerasMobileNet::Layer_5() {
 //  ->: conv_pw_3_bn
 //  ->: conv_pw_3_relu
 void CKerasMobileNet::Layer_6() {
-  dmp_dv_cmdraw_conv_v0& conf = get_layer(6).conv_conf;
+  dmp_dv_cmdraw_conv_v1& conf_v1 = get_layer(6).conv_conf_v1;
+  conf_v1.header.size = sizeof(conf_v1);
+  conf_v1.header.device_type = DMP_DV_DEV_CONV;
+  conf_v1.header.version = 1;
+  dmp_dv_cmdraw_conv_v0& conf = conf_v1.conv_cmd;
   conf.header.size = sizeof(conf);
   conf.header.device_type = DMP_DV_DEV_CONV;
   conf.header.version = 0;
@@ -543,6 +578,7 @@ void CKerasMobileNet::Layer_6() {
   conf.h = 56;  // Input Height
   conf.z = 1;  // Input Depth
   conf.c = 128;  // Input Channels
+  conf.input_circular_offset = 0x8000;  // The weight matrix is transposed.
   conf.input_buf.mem = io_mem_;
   conf.input_buf.offs = 1404928;
 
@@ -607,7 +643,11 @@ void CKerasMobileNet::Layer_6() {
 //  ->: conv_dw_4_bn
 //  ->: conv_dw_4_relu
 void CKerasMobileNet::Layer_7() {
-  dmp_dv_cmdraw_conv_v0& conf = get_layer(7).conv_conf;
+  dmp_dv_cmdraw_conv_v1& conf_v1 = get_layer(7).conv_conf_v1;
+  conf_v1.header.size = sizeof(conf_v1);
+  conf_v1.header.device_type = DMP_DV_DEV_CONV;
+  conf_v1.header.version = 1;
+  dmp_dv_cmdraw_conv_v0& conf = conf_v1.conv_cmd;
   conf.header.size = sizeof(conf);
   conf.header.device_type = DMP_DV_DEV_CONV;
   conf.header.version = 0;
@@ -619,6 +659,7 @@ void CKerasMobileNet::Layer_7() {
   conf.h = 56;  // Input Height
   conf.z = 1;  // Input Depth
   conf.c = 128;  // Input Channels
+  conf.input_circular_offset = 0x8000;  // The weight matrix is transposed.
   conf.input_buf.mem = io_mem_;
   conf.input_buf.offs = 602112;
 
@@ -683,7 +724,11 @@ void CKerasMobileNet::Layer_7() {
 //  ->: conv_pw_4_bn
 //  ->: conv_pw_4_relu
 void CKerasMobileNet::Layer_8() {
-  dmp_dv_cmdraw_conv_v0& conf = get_layer(8).conv_conf;
+  dmp_dv_cmdraw_conv_v1& conf_v1 = get_layer(8).conv_conf_v1;
+  conf_v1.header.size = sizeof(conf_v1);
+  conf_v1.header.device_type = DMP_DV_DEV_CONV;
+  conf_v1.header.version = 1;
+  dmp_dv_cmdraw_conv_v0& conf = conf_v1.conv_cmd;
   conf.header.size = sizeof(conf);
   conf.header.device_type = DMP_DV_DEV_CONV;
   conf.header.version = 0;
@@ -695,6 +740,7 @@ void CKerasMobileNet::Layer_8() {
   conf.h = 28;  // Input Height
   conf.z = 1;  // Input Depth
   conf.c = 128;  // Input Channels
+  conf.input_circular_offset = 0x8000;  // The weight matrix is transposed.
   conf.input_buf.mem = io_mem_;
   conf.input_buf.offs = 401408;
 
@@ -759,7 +805,11 @@ void CKerasMobileNet::Layer_8() {
 //  ->: conv_dw_5_bn
 //  ->: conv_dw_5_relu
 void CKerasMobileNet::Layer_9() {
-  dmp_dv_cmdraw_conv_v0& conf = get_layer(9).conv_conf;
+  dmp_dv_cmdraw_conv_v1& conf_v1 = get_layer(9).conv_conf_v1;
+  conf_v1.header.size = sizeof(conf_v1);
+  conf_v1.header.device_type = DMP_DV_DEV_CONV;
+  conf_v1.header.version = 1;
+  dmp_dv_cmdraw_conv_v0& conf = conf_v1.conv_cmd;
   conf.header.size = sizeof(conf);
   conf.header.device_type = DMP_DV_DEV_CONV;
   conf.header.version = 0;
@@ -771,6 +821,7 @@ void CKerasMobileNet::Layer_9() {
   conf.h = 28;  // Input Height
   conf.z = 1;  // Input Depth
   conf.c = 256;  // Input Channels
+  conf.input_circular_offset = 0x8000;  // The weight matrix is transposed.
   conf.input_buf.mem = io_mem_;
   conf.input_buf.offs = 0;
 
@@ -835,7 +886,11 @@ void CKerasMobileNet::Layer_9() {
 //  ->: conv_pw_5_bn
 //  ->: conv_pw_5_relu
 void CKerasMobileNet::Layer_10() {
-  dmp_dv_cmdraw_conv_v0& conf = get_layer(10).conv_conf;
+  dmp_dv_cmdraw_conv_v1& conf_v1 = get_layer(10).conv_conf_v1;
+  conf_v1.header.size = sizeof(conf_v1);
+  conf_v1.header.device_type = DMP_DV_DEV_CONV;
+  conf_v1.header.version = 1;
+  dmp_dv_cmdraw_conv_v0& conf = conf_v1.conv_cmd;
   conf.header.size = sizeof(conf);
   conf.header.device_type = DMP_DV_DEV_CONV;
   conf.header.version = 0;
@@ -847,6 +902,7 @@ void CKerasMobileNet::Layer_10() {
   conf.h = 28;  // Input Height
   conf.z = 1;  // Input Depth
   conf.c = 256;  // Input Channels
+  conf.input_circular_offset = 0x8000;  // The weight matrix is transposed.
   conf.input_buf.mem = io_mem_;
   conf.input_buf.offs = 702464;
 
@@ -911,7 +967,11 @@ void CKerasMobileNet::Layer_10() {
 //  ->: conv_dw_6_bn
 //  ->: conv_dw_6_relu
 void CKerasMobileNet::Layer_11() {
-  dmp_dv_cmdraw_conv_v0& conf = get_layer(11).conv_conf;
+  dmp_dv_cmdraw_conv_v1& conf_v1 = get_layer(11).conv_conf_v1;
+  conf_v1.header.size = sizeof(conf_v1);
+  conf_v1.header.device_type = DMP_DV_DEV_CONV;
+  conf_v1.header.version = 1;
+  dmp_dv_cmdraw_conv_v0& conf = conf_v1.conv_cmd;
   conf.header.size = sizeof(conf);
   conf.header.device_type = DMP_DV_DEV_CONV;
   conf.header.version = 0;
@@ -923,6 +983,7 @@ void CKerasMobileNet::Layer_11() {
   conf.h = 28;  // Input Height
   conf.z = 1;  // Input Depth
   conf.c = 256;  // Input Channels
+  conf.input_circular_offset = 0x8000;  // The weight matrix is transposed.
   conf.input_buf.mem = io_mem_;
   conf.input_buf.offs = 301056;
 
@@ -987,7 +1048,11 @@ void CKerasMobileNet::Layer_11() {
 //  ->: conv_pw_6_bn
 //  ->: conv_pw_6_relu
 void CKerasMobileNet::Layer_12() {
-  dmp_dv_cmdraw_conv_v0& conf = get_layer(12).conv_conf;
+  dmp_dv_cmdraw_conv_v1& conf_v1 = get_layer(12).conv_conf_v1;
+  conf_v1.header.size = sizeof(conf_v1);
+  conf_v1.header.device_type = DMP_DV_DEV_CONV;
+  conf_v1.header.version = 1;
+  dmp_dv_cmdraw_conv_v0& conf = conf_v1.conv_cmd;
   conf.header.size = sizeof(conf);
   conf.header.device_type = DMP_DV_DEV_CONV;
   conf.header.version = 0;
@@ -999,6 +1064,7 @@ void CKerasMobileNet::Layer_12() {
   conf.h = 14;  // Input Height
   conf.z = 1;  // Input Depth
   conf.c = 256;  // Input Channels
+  conf.input_circular_offset = 0x8000;  // The weight matrix is transposed.
   conf.input_buf.mem = io_mem_;
   conf.input_buf.offs = 200704;
 
@@ -1063,7 +1129,11 @@ void CKerasMobileNet::Layer_12() {
 //  ->: conv_dw_7_bn
 //  ->: conv_dw_7_relu
 void CKerasMobileNet::Layer_13() {
-  dmp_dv_cmdraw_conv_v0& conf = get_layer(13).conv_conf;
+  dmp_dv_cmdraw_conv_v1& conf_v1 = get_layer(13).conv_conf_v1;
+  conf_v1.header.size = sizeof(conf_v1);
+  conf_v1.header.device_type = DMP_DV_DEV_CONV;
+  conf_v1.header.version = 1;
+  dmp_dv_cmdraw_conv_v0& conf = conf_v1.conv_cmd;
   conf.header.size = sizeof(conf);
   conf.header.device_type = DMP_DV_DEV_CONV;
   conf.header.version = 0;
@@ -1075,6 +1145,7 @@ void CKerasMobileNet::Layer_13() {
   conf.h = 14;  // Input Height
   conf.z = 1;  // Input Depth
   conf.c = 512;  // Input Channels
+  conf.input_circular_offset = 0x8000;  // The weight matrix is transposed.
   conf.input_buf.mem = io_mem_;
   conf.input_buf.offs = 0;
 
@@ -1139,7 +1210,11 @@ void CKerasMobileNet::Layer_13() {
 //  ->: conv_pw_7_bn
 //  ->: conv_pw_7_relu
 void CKerasMobileNet::Layer_14() {
-  dmp_dv_cmdraw_conv_v0& conf = get_layer(14).conv_conf;
+  dmp_dv_cmdraw_conv_v1& conf_v1 = get_layer(14).conv_conf_v1;
+  conf_v1.header.size = sizeof(conf_v1);
+  conf_v1.header.device_type = DMP_DV_DEV_CONV;
+  conf_v1.header.version = 1;
+  dmp_dv_cmdraw_conv_v0& conf = conf_v1.conv_cmd;
   conf.header.size = sizeof(conf);
   conf.header.device_type = DMP_DV_DEV_CONV;
   conf.header.version = 0;
@@ -1151,6 +1226,7 @@ void CKerasMobileNet::Layer_14() {
   conf.h = 14;  // Input Height
   conf.z = 1;  // Input Depth
   conf.c = 512;  // Input Channels
+  conf.input_circular_offset = 0x8000;  // The weight matrix is transposed.
   conf.input_buf.mem = io_mem_;
   conf.input_buf.offs = 200704;
 
@@ -1215,7 +1291,11 @@ void CKerasMobileNet::Layer_14() {
 //  ->: conv_dw_8_bn
 //  ->: conv_dw_8_relu
 void CKerasMobileNet::Layer_15() {
-  dmp_dv_cmdraw_conv_v0& conf = get_layer(15).conv_conf;
+  dmp_dv_cmdraw_conv_v1& conf_v1 = get_layer(15).conv_conf_v1;
+  conf_v1.header.size = sizeof(conf_v1);
+  conf_v1.header.device_type = DMP_DV_DEV_CONV;
+  conf_v1.header.version = 1;
+  dmp_dv_cmdraw_conv_v0& conf = conf_v1.conv_cmd;
   conf.header.size = sizeof(conf);
   conf.header.device_type = DMP_DV_DEV_CONV;
   conf.header.version = 0;
@@ -1227,6 +1307,7 @@ void CKerasMobileNet::Layer_15() {
   conf.h = 14;  // Input Height
   conf.z = 1;  // Input Depth
   conf.c = 512;  // Input Channels
+  conf.input_circular_offset = 0x8000;  // The weight matrix is transposed.
   conf.input_buf.mem = io_mem_;
   conf.input_buf.offs = 0;
 
@@ -1291,7 +1372,11 @@ void CKerasMobileNet::Layer_15() {
 //  ->: conv_pw_8_bn
 //  ->: conv_pw_8_relu
 void CKerasMobileNet::Layer_16() {
-  dmp_dv_cmdraw_conv_v0& conf = get_layer(16).conv_conf;
+  dmp_dv_cmdraw_conv_v1& conf_v1 = get_layer(16).conv_conf_v1;
+  conf_v1.header.size = sizeof(conf_v1);
+  conf_v1.header.device_type = DMP_DV_DEV_CONV;
+  conf_v1.header.version = 1;
+  dmp_dv_cmdraw_conv_v0& conf = conf_v1.conv_cmd;
   conf.header.size = sizeof(conf);
   conf.header.device_type = DMP_DV_DEV_CONV;
   conf.header.version = 0;
@@ -1303,6 +1388,7 @@ void CKerasMobileNet::Layer_16() {
   conf.h = 14;  // Input Height
   conf.z = 1;  // Input Depth
   conf.c = 512;  // Input Channels
+  conf.input_circular_offset = 0x8000;  // The weight matrix is transposed.
   conf.input_buf.mem = io_mem_;
   conf.input_buf.offs = 200704;
 
@@ -1367,7 +1453,11 @@ void CKerasMobileNet::Layer_16() {
 //  ->: conv_dw_9_bn
 //  ->: conv_dw_9_relu
 void CKerasMobileNet::Layer_17() {
-  dmp_dv_cmdraw_conv_v0& conf = get_layer(17).conv_conf;
+  dmp_dv_cmdraw_conv_v1& conf_v1 = get_layer(17).conv_conf_v1;
+  conf_v1.header.size = sizeof(conf_v1);
+  conf_v1.header.device_type = DMP_DV_DEV_CONV;
+  conf_v1.header.version = 1;
+  dmp_dv_cmdraw_conv_v0& conf = conf_v1.conv_cmd;
   conf.header.size = sizeof(conf);
   conf.header.device_type = DMP_DV_DEV_CONV;
   conf.header.version = 0;
@@ -1379,6 +1469,7 @@ void CKerasMobileNet::Layer_17() {
   conf.h = 14;  // Input Height
   conf.z = 1;  // Input Depth
   conf.c = 512;  // Input Channels
+  conf.input_circular_offset = 0x8000;  // The weight matrix is transposed.
   conf.input_buf.mem = io_mem_;
   conf.input_buf.offs = 0;
 
@@ -1443,7 +1534,11 @@ void CKerasMobileNet::Layer_17() {
 //  ->: conv_pw_9_bn
 //  ->: conv_pw_9_relu
 void CKerasMobileNet::Layer_18() {
-  dmp_dv_cmdraw_conv_v0& conf = get_layer(18).conv_conf;
+  dmp_dv_cmdraw_conv_v1& conf_v1 = get_layer(18).conv_conf_v1;
+  conf_v1.header.size = sizeof(conf_v1);
+  conf_v1.header.device_type = DMP_DV_DEV_CONV;
+  conf_v1.header.version = 1;
+  dmp_dv_cmdraw_conv_v0& conf = conf_v1.conv_cmd;
   conf.header.size = sizeof(conf);
   conf.header.device_type = DMP_DV_DEV_CONV;
   conf.header.version = 0;
@@ -1455,6 +1550,7 @@ void CKerasMobileNet::Layer_18() {
   conf.h = 14;  // Input Height
   conf.z = 1;  // Input Depth
   conf.c = 512;  // Input Channels
+  conf.input_circular_offset = 0x8000;  // The weight matrix is transposed.
   conf.input_buf.mem = io_mem_;
   conf.input_buf.offs = 200704;
 
@@ -1519,7 +1615,11 @@ void CKerasMobileNet::Layer_18() {
 //  ->: conv_dw_10_bn
 //  ->: conv_dw_10_relu
 void CKerasMobileNet::Layer_19() {
-  dmp_dv_cmdraw_conv_v0& conf = get_layer(19).conv_conf;
+  dmp_dv_cmdraw_conv_v1& conf_v1 = get_layer(19).conv_conf_v1;
+  conf_v1.header.size = sizeof(conf_v1);
+  conf_v1.header.device_type = DMP_DV_DEV_CONV;
+  conf_v1.header.version = 1;
+  dmp_dv_cmdraw_conv_v0& conf = conf_v1.conv_cmd;
   conf.header.size = sizeof(conf);
   conf.header.device_type = DMP_DV_DEV_CONV;
   conf.header.version = 0;
@@ -1531,6 +1631,7 @@ void CKerasMobileNet::Layer_19() {
   conf.h = 14;  // Input Height
   conf.z = 1;  // Input Depth
   conf.c = 512;  // Input Channels
+  conf.input_circular_offset = 0x8000;  // The weight matrix is transposed.
   conf.input_buf.mem = io_mem_;
   conf.input_buf.offs = 0;
 
@@ -1595,7 +1696,11 @@ void CKerasMobileNet::Layer_19() {
 //  ->: conv_pw_10_bn
 //  ->: conv_pw_10_relu
 void CKerasMobileNet::Layer_20() {
-  dmp_dv_cmdraw_conv_v0& conf = get_layer(20).conv_conf;
+  dmp_dv_cmdraw_conv_v1& conf_v1 = get_layer(20).conv_conf_v1;
+  conf_v1.header.size = sizeof(conf_v1);
+  conf_v1.header.device_type = DMP_DV_DEV_CONV;
+  conf_v1.header.version = 1;
+  dmp_dv_cmdraw_conv_v0& conf = conf_v1.conv_cmd;
   conf.header.size = sizeof(conf);
   conf.header.device_type = DMP_DV_DEV_CONV;
   conf.header.version = 0;
@@ -1607,6 +1712,7 @@ void CKerasMobileNet::Layer_20() {
   conf.h = 14;  // Input Height
   conf.z = 1;  // Input Depth
   conf.c = 512;  // Input Channels
+  conf.input_circular_offset = 0x8000;  // The weight matrix is transposed.
   conf.input_buf.mem = io_mem_;
   conf.input_buf.offs = 200704;
 
@@ -1671,7 +1777,11 @@ void CKerasMobileNet::Layer_20() {
 //  ->: conv_dw_11_bn
 //  ->: conv_dw_11_relu
 void CKerasMobileNet::Layer_21() {
-  dmp_dv_cmdraw_conv_v0& conf = get_layer(21).conv_conf;
+  dmp_dv_cmdraw_conv_v1& conf_v1 = get_layer(21).conv_conf_v1;
+  conf_v1.header.size = sizeof(conf_v1);
+  conf_v1.header.device_type = DMP_DV_DEV_CONV;
+  conf_v1.header.version = 1;
+  dmp_dv_cmdraw_conv_v0& conf = conf_v1.conv_cmd;
   conf.header.size = sizeof(conf);
   conf.header.device_type = DMP_DV_DEV_CONV;
   conf.header.version = 0;
@@ -1683,6 +1793,7 @@ void CKerasMobileNet::Layer_21() {
   conf.h = 14;  // Input Height
   conf.z = 1;  // Input Depth
   conf.c = 512;  // Input Channels
+  conf.input_circular_offset = 0x8000;  // The weight matrix is transposed.
   conf.input_buf.mem = io_mem_;
   conf.input_buf.offs = 0;
 
@@ -1747,7 +1858,11 @@ void CKerasMobileNet::Layer_21() {
 //  ->: conv_pw_11_bn
 //  ->: conv_pw_11_relu
 void CKerasMobileNet::Layer_22() {
-  dmp_dv_cmdraw_conv_v0& conf = get_layer(22).conv_conf;
+  dmp_dv_cmdraw_conv_v1& conf_v1 = get_layer(22).conv_conf_v1;
+  conf_v1.header.size = sizeof(conf_v1);
+  conf_v1.header.device_type = DMP_DV_DEV_CONV;
+  conf_v1.header.version = 1;
+  dmp_dv_cmdraw_conv_v0& conf = conf_v1.conv_cmd;
   conf.header.size = sizeof(conf);
   conf.header.device_type = DMP_DV_DEV_CONV;
   conf.header.version = 0;
@@ -1759,6 +1874,7 @@ void CKerasMobileNet::Layer_22() {
   conf.h = 14;  // Input Height
   conf.z = 1;  // Input Depth
   conf.c = 512;  // Input Channels
+  conf.input_circular_offset = 0x8000;  // The weight matrix is transposed.
   conf.input_buf.mem = io_mem_;
   conf.input_buf.offs = 351232;
 
@@ -1823,7 +1939,11 @@ void CKerasMobileNet::Layer_22() {
 //  ->: conv_dw_12_bn
 //  ->: conv_dw_12_relu
 void CKerasMobileNet::Layer_23() {
-  dmp_dv_cmdraw_conv_v0& conf = get_layer(23).conv_conf;
+  dmp_dv_cmdraw_conv_v1& conf_v1 = get_layer(23).conv_conf_v1;
+  conf_v1.header.size = sizeof(conf_v1);
+  conf_v1.header.device_type = DMP_DV_DEV_CONV;
+  conf_v1.header.version = 1;
+  dmp_dv_cmdraw_conv_v0& conf = conf_v1.conv_cmd;
   conf.header.size = sizeof(conf);
   conf.header.device_type = DMP_DV_DEV_CONV;
   conf.header.version = 0;
@@ -1835,6 +1955,7 @@ void CKerasMobileNet::Layer_23() {
   conf.h = 14;  // Input Height
   conf.z = 1;  // Input Depth
   conf.c = 512;  // Input Channels
+  conf.input_circular_offset = 0x8000;  // The weight matrix is transposed.
   conf.input_buf.mem = io_mem_;
   conf.input_buf.offs = 150528;
 
@@ -1899,7 +2020,11 @@ void CKerasMobileNet::Layer_23() {
 //  ->: conv_pw_12_bn
 //  ->: conv_pw_12_relu
 void CKerasMobileNet::Layer_24() {
-  dmp_dv_cmdraw_conv_v0& conf = get_layer(24).conv_conf;
+  dmp_dv_cmdraw_conv_v1& conf_v1 = get_layer(24).conv_conf_v1;
+  conf_v1.header.size = sizeof(conf_v1);
+  conf_v1.header.device_type = DMP_DV_DEV_CONV;
+  conf_v1.header.version = 1;
+  dmp_dv_cmdraw_conv_v0& conf = conf_v1.conv_cmd;
   conf.header.size = sizeof(conf);
   conf.header.device_type = DMP_DV_DEV_CONV;
   conf.header.version = 0;
@@ -1911,6 +2036,7 @@ void CKerasMobileNet::Layer_24() {
   conf.h = 7;  // Input Height
   conf.z = 1;  // Input Depth
   conf.c = 512;  // Input Channels
+  conf.input_circular_offset = 0x8000;  // The weight matrix is transposed.
   conf.input_buf.mem = io_mem_;
   conf.input_buf.offs = 100352;
 
@@ -1975,7 +2101,11 @@ void CKerasMobileNet::Layer_24() {
 //  ->: conv_dw_13_bn
 //  ->: conv_dw_13_relu
 void CKerasMobileNet::Layer_25() {
-  dmp_dv_cmdraw_conv_v0& conf = get_layer(25).conv_conf;
+  dmp_dv_cmdraw_conv_v1& conf_v1 = get_layer(25).conv_conf_v1;
+  conf_v1.header.size = sizeof(conf_v1);
+  conf_v1.header.device_type = DMP_DV_DEV_CONV;
+  conf_v1.header.version = 1;
+  dmp_dv_cmdraw_conv_v0& conf = conf_v1.conv_cmd;
   conf.header.size = sizeof(conf);
   conf.header.device_type = DMP_DV_DEV_CONV;
   conf.header.version = 0;
@@ -1987,6 +2117,7 @@ void CKerasMobileNet::Layer_25() {
   conf.h = 7;  // Input Height
   conf.z = 1;  // Input Depth
   conf.c = 1024;  // Input Channels
+  conf.input_circular_offset = 0x8000;  // The weight matrix is transposed.
   conf.input_buf.mem = io_mem_;
   conf.input_buf.offs = 0;
 
@@ -2051,7 +2182,11 @@ void CKerasMobileNet::Layer_25() {
 //  ->: conv_pw_13_bn
 //  ->: conv_pw_13_relu
 void CKerasMobileNet::Layer_26() {
-  dmp_dv_cmdraw_conv_v0& conf = get_layer(26).conv_conf;
+  dmp_dv_cmdraw_conv_v1& conf_v1 = get_layer(26).conv_conf_v1;
+  conf_v1.header.size = sizeof(conf_v1);
+  conf_v1.header.device_type = DMP_DV_DEV_CONV;
+  conf_v1.header.version = 1;
+  dmp_dv_cmdraw_conv_v0& conf = conf_v1.conv_cmd;
   conf.header.size = sizeof(conf);
   conf.header.device_type = DMP_DV_DEV_CONV;
   conf.header.version = 0;
@@ -2063,6 +2198,7 @@ void CKerasMobileNet::Layer_26() {
   conf.h = 7;  // Input Height
   conf.z = 1;  // Input Depth
   conf.c = 1024;  // Input Channels
+  conf.input_circular_offset = 0x8000;  // The weight matrix is transposed.
   conf.input_buf.mem = io_mem_;
   conf.input_buf.offs = 106400;
 
@@ -2124,7 +2260,11 @@ void CKerasMobileNet::Layer_26() {
 //Layer_27: Convolution Layer
 //  ->: global_average_pooling2d_1
 void CKerasMobileNet::Layer_27() {
-  dmp_dv_cmdraw_conv_v0& conf = get_layer(27).conv_conf;
+  dmp_dv_cmdraw_conv_v1& conf_v1 = get_layer(27).conv_conf_v1;
+  conf_v1.header.size = sizeof(conf_v1);
+  conf_v1.header.device_type = DMP_DV_DEV_CONV;
+  conf_v1.header.version = 1;
+  dmp_dv_cmdraw_conv_v0& conf = conf_v1.conv_cmd;
   conf.header.size = sizeof(conf);
   conf.header.device_type = DMP_DV_DEV_CONV;
   conf.header.version = 0;
@@ -2136,6 +2276,7 @@ void CKerasMobileNet::Layer_27() {
   conf.h = 7;  // Input Height
   conf.z = 1;  // Input Depth
   conf.c = 1024;  // Input Channels
+  conf.input_circular_offset = 0x8000;  // The weight matrix is transposed.
   conf.input_buf.mem = io_mem_;
   conf.input_buf.offs = 6048;
 
@@ -2194,7 +2335,11 @@ void CKerasMobileNet::Layer_27() {
 //Layer_28: Convolution Layer
 //  ->: conv_preds
 void CKerasMobileNet::Layer_28() {
-  dmp_dv_cmdraw_conv_v0& conf = get_layer(28).conv_conf;
+  dmp_dv_cmdraw_conv_v1& conf_v1 = get_layer(28).conv_conf_v1;
+  conf_v1.header.size = sizeof(conf_v1);
+  conf_v1.header.device_type = DMP_DV_DEV_CONV;
+  conf_v1.header.version = 1;
+  dmp_dv_cmdraw_conv_v0& conf = conf_v1.conv_cmd;
   conf.header.size = sizeof(conf);
   conf.header.device_type = DMP_DV_DEV_CONV;
   conf.header.version = 0;
@@ -2206,6 +2351,7 @@ void CKerasMobileNet::Layer_28() {
   conf.h = 1;  // Input Height
   conf.z = 1;  // Input Depth
   conf.c = 1024;  // Input Channels
+  conf.input_circular_offset = 0x8000;  // The weight matrix is transposed.
   conf.input_buf.mem = io_mem_;
   conf.input_buf.offs = 4000;
 
