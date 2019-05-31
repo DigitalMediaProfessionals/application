@@ -486,7 +486,6 @@ bool CDMP_Network::RunNetwork() {
           ERR("Failed to end synchronization on memory for input/output: %s", dmp_dv_get_last_error_message());
           return false;
         }
-        dt.reset();  // start time measurement
         exec_id = dmp_dv_cmdlist_exec(layer.cmdlist);
         if (exec_id < 0) {
           ERR("Could not execute command list for layer %d, name=%s: %s\n",
@@ -512,7 +511,7 @@ bool CDMP_Network::RunNetwork() {
               i_layer, layer.name.c_str(), dmp_dv_get_last_error_message());
           return false;
         }
-        const int usec = dt.get_us();
+        const int usec = dmp_dv_cmdlist_get_last_exec_time(cmdlist);
         switch (layer.type) {
           case LT_CONV:
             conv_usec += usec;
