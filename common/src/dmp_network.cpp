@@ -176,8 +176,80 @@ bool CDMP_Network::LoadWeights(const std::string& filename) {
   return true;
 }
 
+bool CDMP_Network::SetConvertPolicy(convert_policy cvt_policy, bool to_bgr, uint16_t *cvt_table) {
+  if (cvt_policy == CP_USER_SPECIFY && cvt_table == NULL) {
+    ERR("Please specify cvt_table when cvt_policy == UCP_USER_SPECIFY");
+    return false;
+  }
+  cvt_policy_ = cvt_policy;
+  cvt_to_bgr_ = to_bgr;
+  cvt_table_ = cvt_table;
+  return true;
+}
+
+static bool fill_u8tofp16_table(dmp_dv_mem table, convert_policy policy, uint16_t *u8_cvt_table) {
+  __fp16 *map = reinterpret_cast<__fp16*>(dmp_dv_mem_map(table));
+  if (!map) {
+    return false;
+  }
+
+  if (policy == CP_USER_SPECIFY) {
+    memcpy(map, u8_cvt_table, sizeof(__fp16) * 3 * 256);
+  } else {
+    for (int i = 0; i < 256; i++) {
+      __fp16 v;
+      switch (policy) {
+        case CP_DIV_255:
+          v = i / 255.0;
+          break;
+        case CP_MINUS_128:
+          v = i - 128;
+          break;
+        case CP_MINUS_128_DIV_128:
+          v = (i - 128) / 128.0;
+          break;
+        case CP_MINUS_127_5_DIV_128:
+          v = (i - 127.5) / 128.0;
+          break;
+        case CP_DIRECT_CVT:
+          v = i;
+          break;
+        default: 
+          return false;
+      }
+      map[3 * i + 0] = v;
+      map[3 * i + 1] = v;
+      map[3 * i + 2] = v;
+    }
+  }
+
+  if (dmp_dv_mem_sync_start(table, 0, 1)) {
+    return false;
+  }
+  if (dmp_dv_mem_sync_end(table)) {
+    return false;
+  }
+  dmp_dv_mem_unmap(table);
+
+  return true;
+}
 
 bool CDMP_Network::Commit() {
+  if (cvt_policy_ != CP_NOTHING) {
+    struct fpga_layer &layer = layers_[0];
+    size_t sz = 256 * 3 * sizeof(__fp16);
+    dmp_dv_mem mem = dmp_dv_mem_alloc(ctx_, sz);
+    if (!mem) {
+      ERR("Failed to allocate %zu bytes for DV accelerator: %s\n",
+          io_size_, dmp_dv_get_last_error_message());
+      return false;
+    }
+    fill_u8tofp16_table(mem, cvt_policy_, cvt_table_);
+    layer.conv_conf_v1.u8tofp16_table.mem = mem;
+    layer.conv_conf_v1.u8tofp16_table.offs = 0;
+    layer.conv_conf_v1.to_bgr = cvt_to_bgr_;
+  }
+
   return GenerateCommandLists();
 }
 

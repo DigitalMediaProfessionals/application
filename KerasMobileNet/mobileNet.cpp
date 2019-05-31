@@ -107,6 +107,9 @@ int main(int argc, char** argv) {
   if (!network.LoadWeights(FILENAME_WEIGHTS)) {
     return -1;
   }
+  if (!network.SetConvertPolicy(CP_MINUS_127_5_DIV_128, true)) {
+    return -1;
+  }
   if (!network.Commit()) {
     return -1;
   }
@@ -154,12 +157,18 @@ int main(int argc, char** argv) {
         image_nr %= num_images;
       }
       overlay_input.convert_to_overlay_pixel_format(imgView, IMAGE_W * IMAGE_H);
-      preproc_image(imgView, imgProc, IMAGE_W, IMAGE_H, -127.5, -127.5, -127.5,
-                     0.0078431, true);
+      //preproc_image(imgView, imgProc, IMAGE_W, IMAGE_H, -127.5, -127.5, -127.5,
+      //               0.0078431, false);
     }
 
     // Run network in HW
-    memcpy(network.get_network_input_addr_cpu(), imgProc, IMAGE_W * IMAGE_H * 6);
+    uint8_t *input_buf = (uint8_t*)network.get_network_input_addr_cpu();
+    for (int y = 0; y < IMAGE_H; ++y) {
+      for (int x = 0; x < IMAGE_W; ++x) {
+        memcpy(input_buf + (y * IMAGE_W + x) * 3, imgView + (y * IMAGE_W + x), 3);
+      }
+    }
+    //memcpy(network.get_network_input_addr_cpu(), imgView, IMAGE_W * IMAGE_H * 3);
     network.RunNetwork();
 
     // Handle output from HW

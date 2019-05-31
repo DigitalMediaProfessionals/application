@@ -41,6 +41,7 @@
 #include "stats.h"
 #include "dmp_dv.h"
 #include "dmp_dv_cmdraw_v0.h"
+#include "dmp_dv_cmdraw_v1.h"
 
 
 /// @brief Layer type enumeration.
@@ -53,6 +54,17 @@ enum layer_type {
   LT_COPY_CONCAT,
   LT_SOFTMAX,
   LT_CUSTOM,
+};
+
+/// @brief Input data convert policy
+enum convert_policy {
+  CP_DIV_255,
+  CP_MINUS_128,
+  CP_MINUS_128_DIV_128,
+  CP_MINUS_127_5_DIV_128,
+  CP_DIRECT_CVT,
+  CP_USER_SPECIFY,
+  CP_NOTHING,
 };
 
 
@@ -73,6 +85,7 @@ struct fpga_layer {
   std::string name;  // layer name
   union {
     struct dmp_dv_cmdraw_conv_v0 conv_conf;  // convolutional configuration
+    struct dmp_dv_cmdraw_conv_v1 conv_conf_v1;  // convolutional configuration
     struct dmp_dv_cmdraw_fc_v0 fc_conf;      // fully connected configuration
     int softmax_axis;  // softmax configuration
     struct {
@@ -124,6 +137,10 @@ class CDMP_Network {
     last_conv_usec_ = 0;
     last_fc_usec_ = 0;
     last_cpu_usec_ = 0;
+    
+    cvt_policy_ = CP_NOTHING;
+    cvt_to_bgr_ = false;
+    cvt_table_ = NULL;
 
     weights_loaded_ = false;
     want_layer_outputs_ = false;
@@ -156,10 +173,19 @@ class CDMP_Network {
   virtual bool Initialize() = 0;
 
   /// @brief Loads packed weights from file.
+  /// @details Must be called before Commit.
   bool LoadWeights(const std::string& filename);
 
+  /// @brief Set network input convert policy.
+  /// @param cvt_policy The input format conversion policy.
+  /// @param to_bgr If set to true, the input will be converted to BGR format before sent to CONV module
+  /// @param cvt_table The custom conversion table when cvt_policy is CP_USER_SPECIFY.
+  /// @details Must be called before Commit. If set to policy other than CP_NOTHING,
+  ///          The input will be 8bit RGB format instead of FP16 format.
+  bool SetConvertPolicy(convert_policy cvt_policy, bool to_bgr, uint16_t *cvt_table=NULL);
+
   /// @brief Commits the network configuration.
-  /// @details Must be called after LoadWeights if network contains fully connected layer.
+  /// @details Must be called before RunNetwork.
   bool Commit();
 
   /// @brief Runs the network.
@@ -269,6 +295,15 @@ class CDMP_Network {
 
   /// @brief Last time spent on all layers executed on CPU in microseconds.
   int last_cpu_usec_;
+  
+  /// @brief Network input convert policy
+  convert_policy cvt_policy_;
+  
+  /// @brief Network input convert should output BGR format
+  bool cvt_to_bgr_;
+  
+  /// @brief Network input convert table
+  uint16_t *cvt_table_;
 
  private:
   /// @brief Releases held resources.
