@@ -176,13 +176,13 @@ bool CDMP_Network::LoadWeights(const std::string& filename) {
   return true;
 }
 
-bool CDMP_Network::SetConvertPolicy(convert_policy cvt_policy, bool is_bgr, uint16_t *cvt_table) {
+bool CDMP_Network::SetConvertPolicy(convert_policy cvt_policy, bool to_bgr, uint16_t *cvt_table) {
   if (cvt_policy == CP_USER_SPECIFY && cvt_table == NULL) {
     ERR("Please specify cvt_table when cvt_policy == UCP_USER_SPECIFY");
     return false;
   }
   cvt_policy_ = cvt_policy;
-  cvt_is_bgr_ = is_bgr;
+  cvt_to_bgr_ = to_bgr;
   cvt_table_ = cvt_table;
   return true;
 }
@@ -247,7 +247,7 @@ bool CDMP_Network::Commit() {
     fill_u8tofp16_table(mem, cvt_policy_, cvt_table_);
     layer.conv_conf_v1.u8tofp16_table.mem = mem;
     layer.conv_conf_v1.u8tofp16_table.offs = 0;
-    layer.conv_conf_v1.is_bgr = cvt_is_bgr_;
+    layer.conv_conf_v1.to_bgr = cvt_to_bgr_;
   }
 
   return GenerateCommandLists();

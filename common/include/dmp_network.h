@@ -139,7 +139,7 @@ class CDMP_Network {
     last_cpu_usec_ = 0;
     
     cvt_policy_ = CP_NOTHING;
-    cvt_is_bgr_ = false;
+    cvt_to_bgr_ = false;
     cvt_table_ = NULL;
 
     weights_loaded_ = false;
@@ -173,13 +173,19 @@ class CDMP_Network {
   virtual bool Initialize() = 0;
 
   /// @brief Loads packed weights from file.
+  /// @details Must be called before Commit.
   bool LoadWeights(const std::string& filename);
 
   /// @brief Set network input convert policy.
-  bool SetConvertPolicy(convert_policy cvt_policy, bool is_bgr, uint16_t *cvt_table=NULL);
+  /// @param cvt_policy The input format conversion policy.
+  /// @param to_bgr If set to true, the input will be converted to BGR format before sent to CONV module
+  /// @param cvt_table The custom conversion table when cvt_policy is CP_USER_SPECIFY.
+  /// @details Must be called before Commit. If set to policy other than CP_NOTHING,
+  ///          The input will be 8bit RGB format instead of FP16 format.
+  bool SetConvertPolicy(convert_policy cvt_policy, bool to_bgr, uint16_t *cvt_table=NULL);
 
   /// @brief Commits the network configuration.
-  /// @details Must be called after LoadWeights if network contains fully connected layer.
+  /// @details Must be called before RunNetwork.
   bool Commit();
 
   /// @brief Runs the network.
@@ -294,7 +300,7 @@ class CDMP_Network {
   convert_policy cvt_policy_;
   
   /// @brief Network input convert should output BGR format
-  bool cvt_is_bgr_;
+  bool cvt_to_bgr_;
   
   /// @brief Network input convert table
   uint16_t *cvt_table_;
