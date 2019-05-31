@@ -511,7 +511,7 @@ bool CDMP_Network::RunNetwork() {
               i_layer, layer.name.c_str(), dmp_dv_get_last_error_message());
           return false;
         }
-        const int usec = dmp_dv_get_last_cmdlist_exec_time(cmdlist);
+        const int usec = dmp_dv_cmdlist_get_last_exec_time(cmdlist);
         switch (layer.type) {
           case LT_CONV:
             conv_usec += usec;
