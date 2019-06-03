@@ -23,6 +23,9 @@
 #include "dmp_network.h"
 
 
+#define USE_DMA_API 0
+
+
 /// @brief Dummy layer to return on error (instantiation).
 fpga_layer CDMP_Network::err_layer_;
 
@@ -114,10 +117,17 @@ bool CDMP_Network::ReserveMemory(size_t weights_size, size_t io_size) {
     return false;
   }
 
+#if USE_DMA_API == 1
   if (dmp_dv_mem_sync_start(io_mem_, 1, 1)) {
     ERR("Failed to start synchronization on memory for input/output: %s", dmp_dv_get_last_error_message());
     return false;
   }
+#else
+  if (dmp_dv_mem_to_cpu(io_mem_, 0, dmp_dv_mem_get_size(io_mem_), 0)) {
+    ERR("Failed to synchronize memory with device: %s", dmp_dv_get_last_error_message());
+    return false;
+  }
+#endif
   memset(io_ptr_, 0, dmp_dv_mem_get_size(io_mem_));
 
   return true;
@@ -143,12 +153,19 @@ bool CDMP_Network::LoadWeights(const std::string& filename) {
     fclose(fin);
     return false;
   }
+#if USA_DMA_API == 1
   if (dmp_dv_mem_sync_start(weights_mem_, 0, 1)) {
     ERR("Failed to start CPU->Device memory synchronization for %zu bytes of weights memory: %s\n",
         dmp_dv_mem_get_size(weights_mem_), dmp_dv_get_last_error_message());
     fclose(fin);
     return false;
   }
+#else
+  if (dmp_dv_mem_to_cpu(weights_mem_, 0, dmp_dv_mem_get_size(weights_mem_), 0)) {
+    ERR("Failed to synchronize memory with device: %s", dmp_dv_get_last_error_message());
+    return false;
+  }
+#endif
   size_t n = fread(buf, 1, weights_size_, fin);
   if (n != weights_size_) {
     ERR("Incomplete read of weights from %s: read %zu bytes instead of %zu\n",
@@ -164,6 +181,13 @@ bool CDMP_Network::LoadWeights(const std::string& filename) {
     return false;
   }
   fclose(fin);
+#if USE_DMA_API == 1
+#else
+  if (dmp_dv_mem_to_device(weights_mem_, 0, dmp_dv_mem_get_size(weights_mem_), 1)) {
+    ERR("Failed to synchronize memory with device: %s", dmp_dv_get_last_error_message());
+    return false;
+  }
+#endif
   dmp_dv_mem_unmap(weights_mem_);
 
   weights_loaded_ = true;
@@ -192,6 +216,16 @@ static bool fill_u8tofp16_table(dmp_dv_mem table, convert_policy policy, uint16_
   if (!map) {
     return false;
   }
+#if USE_DMA_API == 1
+  if (dmp_dv_mem_sync_start(table, 0, 1)) {
+    return false;
+  }
+#else
+  if (dmp_dv_mem_to_cpu(table, 0, dmp_dv_mem_get_size(table), 0)) {
+    ERR("Failed to synchronize memory with device: %s", dmp_dv_get_last_error_message());
+    return false;
+  }
+#endif
 
   if (policy == CP_USER_SPECIFY) {
     memcpy(map, u8_cvt_table, sizeof(__fp16) * 3 * 256);
@@ -222,13 +256,13 @@ static bool fill_u8tofp16_table(dmp_dv_mem table, convert_policy policy, uint16_
       map[3 * i + 2] = v;
     }
   }
-
-  if (dmp_dv_mem_sync_start(table, 0, 1)) {
+#if USE_DMA_API == 1
+#else
+  if (dmp_dv_mem_to_device(table, 0, dmp_dv_mem_get_size(table), 1)) {
+    ERR("Failed to synchronize memory with device: %s", dmp_dv_get_last_error_message());
     return false;
   }
-  if (dmp_dv_mem_sync_end(table)) {
-    return false;
-  }
+#endif
   dmp_dv_mem_unmap(table);
 
   return true;
@@ -542,6 +576,7 @@ bool CDMP_Network::RunNetwork() {
   int conv_usec = 0;
   int fc_usec = 0;
   int cpu_usec = 0;
+  int sz;
 
   const int n_layers = (int)layers_.size();
   for (int i_layer = 0; i_layer < n_layers; ++i_layer) {
@@ -554,10 +589,20 @@ bool CDMP_Network::RunNetwork() {
               i_layer, layer.name.c_str(), layer.cmdlist_pos, layer.cmdlist_size);
           return false;
         }
+#if USE_DMA_API == 1
         if (dmp_dv_mem_sync_end(io_mem_)) {
           ERR("Failed to end synchronization on memory for input/output: %s", dmp_dv_get_last_error_message());
           return false;
         }
+#else
+        sz = layer.input_dim[0] << 1;
+        sz *= layer.input_dim_size > 0 ? layer.input_dim[1] : 1;
+        sz *= layer.input_dim_size > 1 ? layer.input_dim[2] : 1;
+        if (dmp_dv_mem_to_device(io_mem_, layer.input_offs, layer.input_dim_size, 1)) {
+          ERR("Failed to synchronize memory with device: %s", dmp_dv_get_last_error_message());
+          return false;
+        }
+#endif
         exec_id = dmp_dv_cmdlist_exec(layer.cmdlist);
         if (exec_id < 0) {
           ERR("Could not execute command list for layer %d, name=%s: %s\n",
@@ -624,37 +669,77 @@ bool CDMP_Network::RunNetwork() {
         }
         break;
       case LT_SOFTMAX:
+#if USE_DMA_API == 1
         if (dmp_dv_mem_sync_start(io_mem_, 1, 1)) {
           ERR("Failed to start synchronization on memory for input/output: %s", dmp_dv_get_last_error_message());
           return false;
         }
+#else
+        sz = layer.input_dim[0] << 1;
+        sz *= layer.input_dim_size > 0 ? layer.input_dim[1] : 1;
+        sz *= layer.input_dim_size > 1 ? layer.input_dim[2] : 1;
+        if (dmp_dv_mem_to_cpu(io_mem_, layer.input_offs, layer.input_dim_size, 1)) {
+          ERR("Failed to synchronize memory with device: %s", dmp_dv_get_last_error_message());
+          return false;
+        }
+#endif
         dt.reset();
         run_softmax(layer, layer.softmax_axis, io_ptr_, !is_weight_transposed);
         cpu_usec += dt.get_us();
         break;
       case LT_FLATTEN:
+#if USE_DMA_API == 1
         if (dmp_dv_mem_sync_start(io_mem_, 1, 1)) {
           ERR("Failed to start synchronization on memory for input/output: %s", dmp_dv_get_last_error_message());
           return false;
         }
+#else
+        sz = layer.input_dim[0] << 1;
+        sz *= layer.input_dim_size > 0 ? layer.input_dim[1] : 1;
+        sz *= layer.input_dim_size > 1 ? layer.input_dim[2] : 1;
+        if (dmp_dv_mem_to_cpu(io_mem_, layer.input_offs, layer.input_dim_size, 1)) {
+          ERR("Failed to synchronize memory with device: %s", dmp_dv_get_last_error_message());
+          return false;
+        }
+#endif
         dt.reset();
         run_flatten(layer, io_ptr_, !is_weight_transposed);
         cpu_usec += dt.get_us();
         break;
       case LT_COPY_CONCAT:
+#if USE_DMA_API == 1
         if (dmp_dv_mem_sync_start(io_mem_, 1, 1)) {
           ERR("Failed to start synchronization on memory for input/output: %s", dmp_dv_get_last_error_message());
           return false;
         }
+#else
+        sz = layer.input_dim[0] << 1;
+        sz *= layer.input_dim_size > 0 ? layer.input_dim[1] : 1;
+        sz *= layer.input_dim_size > 1 ? layer.input_dim[2] : 1;
+        if (dmp_dv_mem_to_cpu(io_mem_, layer.input_offs, layer.input_dim_size, 1)) {
+          ERR("Failed to synchronize memory with device: %s", dmp_dv_get_last_error_message());
+          return false;
+        }
+#endif
         dt.reset();
         run_copy_concat(layer, layer.input_layer_num, layer.input_layers, io_ptr_);
         cpu_usec += dt.get_us();
         break;
       case LT_CUSTOM:
+#if USE_DMA_API == 1
         if (dmp_dv_mem_sync_start(io_mem_, 1, 1)) {
           ERR("Failed to start synchronization on memory for input/output: %s", dmp_dv_get_last_error_message());
           return false;
         }
+#else
+        sz = layer.input_dim[0] << 1;
+        sz *= layer.input_dim_size > 0 ? layer.input_dim[1] : 1;
+        sz *= layer.input_dim_size > 1 ? layer.input_dim[2] : 1;
+        if (dmp_dv_mem_to_cpu(io_mem_, layer.input_offs, layer.input_dim_size, 1)) {
+          ERR("Failed to synchronize memory with device: %s", dmp_dv_get_last_error_message());
+          return false;
+        }
+#endif
         dt.reset();
         (*(layer.custom_proc_ptr))(layer, layer.custom_param, io_ptr_);
         cpu_usec += dt.get_us();
@@ -666,10 +751,20 @@ bool CDMP_Network::RunNetwork() {
     }
 
     if (want_layer_outputs_) {
+#if USE_DMA_API == 1
       if (dmp_dv_mem_sync_start(io_mem_, 1, 1)) {
         ERR("Failed to start synchronization on memory for input/output: %s", dmp_dv_get_last_error_message());
         return false;
       }
+#else
+      sz = layer.input_dim[0] << 1;
+      sz *= layer.input_dim_size > 0 ? layer.input_dim[1] : 1;
+      sz *= layer.input_dim_size > 1 ? layer.input_dim[2] : 1;
+      if (dmp_dv_mem_to_cpu(io_mem_, layer.input_offs, layer.input_dim_size, 1)) {
+        ERR("Failed to synchronize memory with device: %s", dmp_dv_get_last_error_message());
+        return false;
+      }
+#endif
       layer.output.resize(layer.output_size >> 1);
       memcpy(layer.output.data(), io_ptr_ + layer.output_offs, (layer.output_size >> 1) << 1);
     }
@@ -679,10 +774,23 @@ bool CDMP_Network::RunNetwork() {
   last_fc_usec_ = fc_usec;
   last_cpu_usec_ = cpu_usec;
 
+#if USE_DMA_API == 1
   if (dmp_dv_mem_sync_start(io_mem_, 1, 1)) {
     ERR("Failed to start synchronization on memory for input/output: %s", dmp_dv_get_last_error_message());
     return false;
   }
+#else
+  {
+    fpga_layer& layer = layers_[n_layers - 1];
+    sz = layer.input_dim[0] << 1;
+    sz *= layer.input_dim_size > 0 ? layer.input_dim[1] : 1;
+    sz *= layer.input_dim_size > 1 ? layer.input_dim[2] : 1;
+    if (dmp_dv_mem_to_cpu(io_mem_, layer.input_offs, layer.input_dim_size, 1)) {
+      ERR("Failed to synchronize memory with device: %s", dmp_dv_get_last_error_message());
+      return false;
+    }
+  }
+#endif
 
   return true;
 }
