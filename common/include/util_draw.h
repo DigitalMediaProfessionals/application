@@ -218,6 +218,16 @@ class COverlayRGB
     void set_box(int32_t x0pos, int32_t y0pos,
                     int32_t x1pos, int32_t y1pos, uint32_t color);
 
+    /*! Utility function to draw line without text, color is argb format
+    * @param[in] x0pos begin x position of line in overlay
+    * @param[in] y0pos begin y position of line in overlay
+    * @param[in] x1pos end x position of line in overlay
+    * @param[in] y1pos end y position of line in overlay
+    * @param[in] color color of line
+    */
+    void set_line(int32_t x0pos, int32_t y0pos,
+                    int32_t x1pos, int32_t y1pos, uint32_t color);
+
     /*! Utility function to blend 2 overlays with same size
     * @param[in] overlay overlay to blend
     * @param[in] alpha alpha value
