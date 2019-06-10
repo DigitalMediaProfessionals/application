@@ -754,6 +754,30 @@ void COverlayRGB::set_box(int32_t x0pos, int32_t y0pos,
   }
 }
 
+void COverlayRGB::set_line(int32_t x0pos, int32_t y0pos,
+                           int32_t x1pos, int32_t y1pos, uint32_t color)
+{
+  typedef agg::pixfmt_rgb24 pixfmt;
+  typedef agg::renderer_base<pixfmt> renderer_base;
+  typedef agg::renderer_primitives<renderer_base> renderer_primitives;
+
+  if(buff_rgb_ != NULL)
+  {
+    pixfmt pixf(render_buf_overlay_rgb_);
+    renderer_base rb(pixf);
+
+    //draw line
+    renderer_primitives rp_line(rb);
+    rp_line.line_color(agg::rgba8((color & 0x00ff0000) >> 16,
+          (color & 0x0000ff00) >>  8 , (color & 0x000000ff)));
+    rp_line.line(x0pos * 256, y0pos * 256, x1pos * 256, y1pos * 256, true);
+  }
+  else
+  {
+    ERR("set_box() failed\n" );
+  }
+}
+
 void COverlayRGB::blend_from(COverlayRGB &overlay, double alpha)
 {
   typedef agg::rgba8 color_type;
