@@ -184,7 +184,7 @@ bool CDMP_Network::LoadWeights(const std::string& filename) {
   fclose(fin);
 #if USE_DMA_API == 1
 #else
-  if (dmp_dv_mem_to_device(weights_mem_, 0, dmp_dv_mem_get_size(weights_mem_), 1, 0)) {
+  if (dmp_dv_mem_to_device(weights_mem_, 0, dmp_dv_mem_get_size(weights_mem_), DMP_DV_MEM_CPU_WONT_READ)) {
     ERR("Failed to synchronize memory with device: %s", dmp_dv_get_last_error_message());
     return false;
   }
@@ -259,7 +259,7 @@ static bool fill_u8tofp16_table(dmp_dv_mem table, convert_policy policy, uint16_
   }
 #if USE_DMA_API == 1
 #else
-  if (dmp_dv_mem_to_device(table, 0, dmp_dv_mem_get_size(table), 1, 0)) {
+  if (dmp_dv_mem_to_device(table, 0, dmp_dv_mem_get_size(table), DMP_DV_MEM_CPU_WONT_READ)) {
     ERR("Failed to synchronize memory with device: %s", dmp_dv_get_last_error_message());
     return false;
   }
@@ -600,7 +600,7 @@ bool CDMP_Network::RunNetwork() {
         }
 #else
         // Put everything on device to be 100% safe
-        if (dmp_dv_mem_to_device(io_mem_, 0, sz, 1, 0)) {
+        if (dmp_dv_mem_to_device(io_mem_, 0, sz, DMP_DV_MEM_CPU_WONT_READ)) {
           ERR("Failed to transfer memory to device for input/output: %s", dmp_dv_get_last_error_message());
           return false;
         }
@@ -678,7 +678,7 @@ bool CDMP_Network::RunNetwork() {
         }
 #else
         // Get everything from device to be 100% safe (no op in case of shared memory)
-        if (dmp_dv_mem_to_cpu(io_mem_, 0, sz, 1)) {
+        if (dmp_dv_mem_to_cpu(io_mem_, 0, sz, DMP_DV_MEM_CPU_HADNT_READ)) {
           ERR("Failed to transfer memory from device for input/output: %s", dmp_dv_get_last_error_message());
           return false;
         }
@@ -695,7 +695,7 @@ bool CDMP_Network::RunNetwork() {
         }
 #else
         // Get everything from device to be 100% safe (no op in case of shared memory)
-        if (dmp_dv_mem_to_cpu(io_mem_, 0, sz, 1)) {
+        if (dmp_dv_mem_to_cpu(io_mem_, 0, sz, DMP_DV_MEM_CPU_HADNT_READ)) {
           ERR("Failed to transfer memory from device for input/output: %s", dmp_dv_get_last_error_message());
           return false;
         }
@@ -712,7 +712,7 @@ bool CDMP_Network::RunNetwork() {
         }
 #else
         // Get everything from device to be 100% safe (no op in case of shared memory)
-        if (dmp_dv_mem_to_cpu(io_mem_, 0, sz, 1)) {
+        if (dmp_dv_mem_to_cpu(io_mem_, 0, sz, DMP_DV_MEM_CPU_HADNT_READ)) {
           ERR("Failed to transfer memory from device for input/output: %s", dmp_dv_get_last_error_message());
           return false;
         }
@@ -729,7 +729,7 @@ bool CDMP_Network::RunNetwork() {
         }
 #else
         // Get everything from device to be 100% safe (no op in case of shared memory)
-        if (dmp_dv_mem_to_cpu(io_mem_, 0, sz, 1)) {
+        if (dmp_dv_mem_to_cpu(io_mem_, 0, sz, DMP_DV_MEM_CPU_HADNT_READ)) {
           ERR("Failed to transfer memory from device for input/output: %s", dmp_dv_get_last_error_message());
           return false;
         }
@@ -752,7 +752,7 @@ bool CDMP_Network::RunNetwork() {
       }
 #else
       // Get everything from device to be 100% safe (no op in case of shared memory)
-      if (dmp_dv_mem_to_cpu(io_mem_, 0, sz, 1)) {
+      if (dmp_dv_mem_to_cpu(io_mem_, 0, sz, DMP_DV_MEM_CPU_HADNT_READ)) {
         ERR("Failed to transfer memory from device for input/output: %s", dmp_dv_get_last_error_message());
         return false;
       }
@@ -774,7 +774,7 @@ bool CDMP_Network::RunNetwork() {
 #else
   {
     // Get everything from device to be 100% safe (no op in case of shared memory)
-    if (dmp_dv_mem_to_cpu(io_mem_, 0, sz, 1)) {
+    if (dmp_dv_mem_to_cpu(io_mem_, 0, sz, DMP_DV_MEM_CPU_HADNT_READ)) {
       ERR("Failed to transfer memory from device for input/output: %s", dmp_dv_get_last_error_message());
       return false;
     }
