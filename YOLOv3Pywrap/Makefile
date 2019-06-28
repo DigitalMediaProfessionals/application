@@ -1,7 +1,7 @@
 include ../../env.mk
 
-INC = -I../../dv-user-driver/include -I../common/include -I/usr/include/python3.6
-LIB = -L../../dv-user-driver -ldmpdv -lboost_python3 -lboost_numpy3
+INC = -I../common/include -I/usr/include/python3.6
+LIB = -ldmpdv -lboost_python3 -lboost_numpy3
 
 CFLAGS = -pthread -std=c++11 $(OPT) -fPIC -Wall -Werror -c $(INC)
 LFLAGS = -pthread -std=c++11 $(OPT) -shared -fPIC
