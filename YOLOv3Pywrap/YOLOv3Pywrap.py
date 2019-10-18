@@ -16,6 +16,7 @@
 """
 import os
 import sys
+import math
 import numpy as np
 import cv2
 import argparse
@@ -158,30 +159,33 @@ def get_bboxes(yolo_out, cls_thres=0.2, objness_thres=0.2, nms_thres=0.45):
     :return: ndarray representing acceppted bounding boxes in shape of [-1, LEN_BBOX]
     """
     def sigmoid(x):
-        return 0.5 + 0.5 * np.tanh(0.5 * x)
+        return 1.0 / (1.0 + math.exp(-x))
+
+    def sigmoid_np(x):
+        return 1.0 / (1.0 + np.exp(-x))
 
     def decode_yolo_box(box, anchor, dim, grid_x, grid_y):
-        box[YOLO_OUT_W] = np.exp(box[YOLO_OUT_W]) * (anchor[0] / INPUT_W)
-        box[YOLO_OUT_H] = np.exp(box[YOLO_OUT_H]) * (anchor[1] / INPUT_H)
+        box[YOLO_OUT_W] = math.exp(box[YOLO_OUT_W]) * (anchor[0] / INPUT_W)
+        box[YOLO_OUT_H] = math.exp(box[YOLO_OUT_H]) * (anchor[1] / INPUT_H)
         box[YOLO_OUT_X] = (grid_x + box[YOLO_OUT_X]) / dim[0] - box[YOLO_OUT_W] / 2
         box[YOLO_OUT_Y] = (grid_y + box[YOLO_OUT_Y]) / dim[1] - box[YOLO_OUT_H] / 2
 
     ret = np.empty((0, LEN_BBOX))
     bbox_idx = 0
+    inv_objness_thres = math.log(objness_thres / (1.0 - objness_thres))
     for i in (0, 1):
         for y in range(0, DIM[i * 2 + 1]):
             for x in range(0, DIM[i * 2]):
                 for n in range(0, N_BOX):
                     out = yolo_out[bbox_idx:bbox_idx + LEN_BBOX]
                     bbox_idx = bbox_idx + LEN_BBOX
-                    if sigmoid(out[YOLO_OUT_OBJNESS]) >= objness_thres:
+                    if out[YOLO_OUT_OBJNESS] >= inv_objness_thres:
                         out[YOLO_OUT_OBJNESS] = sigmoid(out[YOLO_OUT_OBJNESS])
                         out[YOLO_OUT_X] = sigmoid(out[YOLO_OUT_X])
                         out[YOLO_OUT_Y] = sigmoid(out[YOLO_OUT_Y])
-                        for j in range(YOLO_OUT_CLS, LEN_BBOX):
-                            out[j] = out[YOLO_OUT_OBJNESS] * sigmoid(out[j])
-                            if out[j] < cls_thres:
-                                out[j] = 0
+                        out_cls = out[YOLO_OUT_CLS:]
+                        out_cls = sigmoid_np(out_cls) * out[YOLO_OUT_OBJNESS]
+                        out_cls[out_cls < cls_thres] = 0
 
                         decode_yolo_box(out, ANCHOR[(i * N_BOX + n) * 2:], DIM[i * 2:], x, y)
                         ret = np.concatenate([ret, [out]], axis=0)
