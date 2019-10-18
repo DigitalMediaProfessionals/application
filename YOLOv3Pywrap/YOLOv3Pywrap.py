@@ -173,6 +173,8 @@ def get_bboxes(yolo_out, cls_thres=0.2, objness_thres=0.2, nms_thres=0.45):
     ret = np.empty((0, LEN_BBOX))
     bbox_idx = 0
     inv_objness_thres = math.log(objness_thres / (1.0 - objness_thres))
+    inv_objness_thres = np.float32(inv_objness_thres)
+    cls_thres = np.float32(cls_thres)
     for i in (0, 1):
         for y in range(0, DIM[i * 2 + 1]):
             for x in range(0, DIM[i * 2]):
