@@ -159,10 +159,10 @@ def get_bboxes(yolo_out, cls_thres=0.2, objness_thres=0.2, nms_thres=0.45):
     :return: ndarray representing acceppted bounding boxes in shape of [-1, LEN_BBOX]
     """
     def sigmoid(x):
-        return 1.0 / (1.0 + math.exp(-x))
+        return 0.5 + 0.5 * math.tanh(0.5 * x)
 
     def sigmoid_np(x):
-        return 1.0 / (1.0 + np.exp(-x))
+        return 0.5 + 0.5 * np.tanh(0.5 * x)
 
     def decode_yolo_box(box, anchor, dim, grid_x, grid_y):
         box[YOLO_OUT_W] = math.exp(box[YOLO_OUT_W]) * (anchor[0] / INPUT_W)
