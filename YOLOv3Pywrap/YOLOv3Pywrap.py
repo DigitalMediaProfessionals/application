@@ -161,8 +161,13 @@ def get_bboxes(yolo_out, cls_thres=0.2, objness_thres=0.2, nms_thres=0.45):
     def sigmoid(x):
         return 0.5 + 0.5 * math.tanh(0.5 * x)
 
-    def sigmoid_np(x):
-        return 0.5 + 0.5 * np.tanh(0.5 * x)
+    def class_calc(x, thres, objness):
+        x *= 0.5
+        np.tanh(x, out=x)
+        x *= 0.5
+        x += 0.5
+        x *= objness
+        x[x < thres] = 0
 
     def decode_yolo_box(box, anchor, dim, grid_x, grid_y):
         box[YOLO_OUT_W] = math.exp(box[YOLO_OUT_W]) * (anchor[0] / INPUT_W)
@@ -174,7 +179,6 @@ def get_bboxes(yolo_out, cls_thres=0.2, objness_thres=0.2, nms_thres=0.45):
     bbox_idx = 0
     inv_objness_thres = math.log(objness_thres / (1.0 - objness_thres))
     inv_objness_thres = np.float32(inv_objness_thres)
-    cls_thres = np.float32(cls_thres)
     for i in (0, 1):
         for y in range(0, DIM[i * 2 + 1]):
             for x in range(0, DIM[i * 2]):
@@ -185,47 +189,44 @@ def get_bboxes(yolo_out, cls_thres=0.2, objness_thres=0.2, nms_thres=0.45):
                         out[YOLO_OUT_OBJNESS] = sigmoid(out[YOLO_OUT_OBJNESS])
                         out[YOLO_OUT_X] = sigmoid(out[YOLO_OUT_X])
                         out[YOLO_OUT_Y] = sigmoid(out[YOLO_OUT_Y])
-                        out_cls = out[YOLO_OUT_CLS:]
-                        out_cls = sigmoid_np(out_cls) * out[YOLO_OUT_OBJNESS]
-                        out_cls[out_cls < cls_thres] = 0
+                        class_calc(out[YOLO_OUT_CLS:], cls_thres, out[YOLO_OUT_OBJNESS])
 
                         decode_yolo_box(out, ANCHOR[(i * N_BOX + n) * 2:], DIM[i * 2:], x, y)
                         ret = np.concatenate([ret, [out]], axis=0)
 
-    def box_iou(a, b):
-        def overlap(x1, w1, x2, w2):
-            left = max(x1, x2)
-            right = min(x1 + w1, x2 + w2)
-            return max(right - left, 0.0)
-        ow = overlap(a[YOLO_OUT_X], a[YOLO_OUT_W], b[YOLO_OUT_X], b[YOLO_OUT_W])
-        oh = overlap(a[YOLO_OUT_Y], a[YOLO_OUT_H], b[YOLO_OUT_Y], b[YOLO_OUT_H])
-        box_int = ow * oh
-        box_uni = a[YOLO_OUT_W] * a[YOLO_OUT_H] + b[YOLO_OUT_W] * b[YOLO_OUT_H] - box_int
-        return box_int / box_uni
-
     # handle overlapping bboxes
+    x1 = ret[:,YOLO_OUT_X]
+    y1 = ret[:,YOLO_OUT_Y]
+    w1 = ret[:,YOLO_OUT_W]
+    h1 = ret[:,YOLO_OUT_H]
+    x2 = x1 + w1
+    y2 = y1 + h1
+    area = w1 * h1
     for ci in range(YOLO_OUT_CLS, LEN_BBOX):
-        lastprob = 1.0
-        while True:
-            mbox = None  # bbox with @mprob
-            mprob = 0.0  # max prob
-            # find bbox whose prob of the class is the highest in bboxes that has not been found yet.
-            for box in ret:
-                if mprob < box[ci] < lastprob:
-                    mbox = box
-                    mprob = box[ci]
-
-            lastprob = mprob  # if no bbox whose class prob is in (0, lastprob) exists, lastprob = 0 then finish
-            if mbox is not None:
-                for box in ret:
-                    if box[ci] == 0.0 or (mbox == box).all():
-                        continue
-                    # bbox overlapping with another whose class probability is highest
-                    #   cannot be considered as an object of the class
-                    if box_iou(mbox, box) > nms_thres:
-                        box[ci] = 0.0
-            if lastprob <= 0.0:
+        idxs = np.argsort(ret[:,ci])
+        while len(idxs) > 0:
+            last = len(idxs) - 1
+            i = idxs[last]
+            if ret[i, ci] <= 0.0:
                 break
+
+            #find minimum and maximum x y coordinates
+            xx1 = np.maximum(x1[i], x1[idxs[:last]])
+            yy1 = np.maximum(y1[i], y1[idxs[:last]])
+            xx2 = np.minimum(x2[i], x2[idxs[:last]])
+            yy2 = np.minimum(y2[i], y2[idxs[:last]])
+
+            # compute the width and height of the bounding box
+            w2 = np.maximum(0, xx2 - xx1)
+            h2 = np.maximum(0, yy2 - yy1)
+            area2 = w2 * h2
+
+            # compute the ratio of overlap
+            overlap = area2 / (area[idxs[:last]] + area[i] - area2)
+
+            over_idx = np.where(overlap > nms_thres)
+            ret[idxs[over_idx],ci] = 0.0
+            idxs = np.delete(idxs[:last], over_idx)
 
     return [o for o in ret if (o[YOLO_OUT_CLS:] != 0).any()]
 
