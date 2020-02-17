@@ -53,6 +53,7 @@ enum layer_type {
   LT_CONCAT,
   LT_COPY_CONCAT,
   LT_SOFTMAX,
+  LT_FO_POOLING,
   LT_CUSTOM,
 };
 

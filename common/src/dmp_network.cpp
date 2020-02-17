@@ -530,6 +530,32 @@ static void run_copy_concat(fpga_layer& layer, int input_layer_num, fpga_layer *
 }
 
 
+/// @brief Executes fo-pooling.
+static void run_fo_pooling(fpga_layer& layer, int input_layer_num, fpga_layer **input_layers, uint8_t *io_ptr) {
+  const __fp16 *src_z = (const __fp16*)(io_ptr + input_layers[0]->output_offs);
+  const __fp16 *src_f = (const __fp16*)(io_ptr + input_layers[1]->output_offs);
+  const __fp16 *src_o = (const __fp16*)(io_ptr + input_layers[2]->output_offs);
+  __fp16 *dst = (__fp16*)(io_ptr + layer.output_offs);
+  const int chunk_size = 8;
+  const int length = layer.input_dim[0];
+  const int channel_size = layer.input_dim[2];
+  float prev_output[chunk_size];
+
+  for (int c_b = 0; c_b < channel_size; c_b += chunk_size) {
+    int cb_size = std::max(chunk_size, channel_size - c_b);
+    memset(prev_output, 0, sizeof(float) * chunk_size);
+    for (int i = 0; i < length; ++i) {
+      for (int c = 0; c < cb_size; ++c) {
+        float z = *(src_z++);
+        float f = *(src_f++);
+        float o = *(src_o++);
+        *(dst++) = prev_output[c] = o * (f * prev_output[c] + (1.0f - f) * z);
+      }
+    }
+  }
+}
+
+
 bool CDMP_Network::RunNetwork() {
   if ((!weights_loaded_) && (weights_size_)) {
     ERR("LoadWeights() must be called first");
@@ -648,6 +674,15 @@ bool CDMP_Network::RunNetwork() {
         }
         dt.reset();
         run_copy_concat(layer, layer.input_layer_num, layer.input_layers, io_ptr_);
+        cpu_usec += dt.get_us();
+        break;
+      case LT_FO_POOLING:
+        if (dmp_dv_mem_sync_start(io_mem_, 1, 1)) {
+          ERR("Failed to start synchronization on memory for input/output: %s", dmp_dv_get_last_error_message());
+          return false;
+        }
+        dt.reset();
+        run_fo_pooling(layer, layer.input_layer_num, layer.input_layers, io_ptr_);
         cpu_usec += dt.get_us();
         break;
       case LT_CUSTOM:
