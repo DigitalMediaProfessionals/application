@@ -543,7 +543,7 @@ static void run_fo_pooling(fpga_layer& layer, int input_layer_num, fpga_layer **
   float prev_output[chunk_size];
 
   for (int c_b = 0; c_b < channel_size; c_b += chunk_size) {
-    int cb_size = std::max(chunk_size, channel_size - c_b);
+    int cb_size = std::min(chunk_size, channel_size - c_b);
     memset(prev_output, 0, sizeof(float) * chunk_size);
     for (int i = 0; i < length; ++i) {
       for (int c = 0; c < cb_size; ++c) {
