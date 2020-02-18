@@ -539,6 +539,7 @@ static void run_fo_pooling(fpga_layer& layer, int input_layer_num, fpga_layer **
   const int chunk_size = 8;
   const int length = layer.input_dim[0];
   const int channel_size = layer.input_dim[2];
+  const bool return_sequences = layer.output_dim[0] > 1;
   float prev_output[chunk_size];
 
   for (int c_b = 0; c_b < channel_size; c_b += chunk_size) {
@@ -549,7 +550,9 @@ static void run_fo_pooling(fpga_layer& layer, int input_layer_num, fpga_layer **
         float z = *(src_z++);
         float f = *(src_f++);
         float o = *(src_o++);
-        *(dst++) = prev_output[c] = o * (f * prev_output[c] + (1.0f - f) * z);
+        prev_output[c] = o * (f * prev_output[c] + (1.0f - f) * z);
+        if (return_sequences || i == length - 1)
+          *(dst++) = prev_output[c];
       }
     }
   }
