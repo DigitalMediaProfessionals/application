@@ -550,9 +550,9 @@ static void run_fo_pooling(fpga_layer& layer, int input_layer_num, fpga_layer **
         float z = *(src_z++);
         float f = *(src_f++);
         float o = *(src_o++);
-        prev_output[c] = o * (f * prev_output[c] + (1.0f - f) * z);
+        prev_output[c] = f * prev_output[c] + (1.0f - f) * z;
         if (return_sequences || i == length - 1)
-          *(dst++) = prev_output[c];
+          *(dst++) = o * prev_output[c];
       }
     }
   }
