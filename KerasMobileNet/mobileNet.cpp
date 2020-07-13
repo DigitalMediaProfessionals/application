@@ -163,9 +163,10 @@ int main(int argc, char** argv) {
 
     // Run network in HW
     uint8_t *input_buf = (uint8_t*)network.get_network_input_addr_cpu();
+    uint8_t *u8_img = (uint8_t*)imgView;
     for (int y = 0; y < IMAGE_H; ++y) {
       for (int x = 0; x < IMAGE_W; ++x) {
-        memcpy(input_buf + (y * IMAGE_W + x) * 3, imgView + (y * IMAGE_W + x), 3);
+        memcpy(input_buf + (y * IMAGE_W + x) * 3, u8_img + (y * IMAGE_W + x) * 4 + 1, 3);
       }
     }
     //memcpy(network.get_network_input_addr_cpu(), imgView, IMAGE_W * IMAGE_H * 3);
